@@ -1,3 +1,7 @@
+# These functions are accessable via GIST:
+# https://gist.github.com/ardenn/76aa5653245388519a2edb690d8ed7ba
+# https://gist.github.com/ardenn/30f94f57876a70832a5c960fd4742d89
+
 def convert_to_dict(obj: object) -> dict:
     """
     A function takes in a custom object and returns a dictionary representation of the object.
