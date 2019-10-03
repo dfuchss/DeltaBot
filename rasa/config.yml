@@ -1,0 +1,17 @@
+language: "de"
+pipeline: "supervised_embeddings"
+
+#language: "de_core_news_sm"
+#pipeline: 
+#- name: "CountVectorsFeaturizer"
+#- name: "EmbeddingIntentClassifier"
+#- name: "SpacyNLP"
+#- name: "SpacyTokenizer"
+#- name: "RegexFeaturizer"
+#- name: "CRFEntityExtractor"
+#  features: [
+#              ["low", "title", "upper"],
+#              ["bias", "low", "prefix5", "prefix2", "suffix5", "suffix3",
+#               "suffix2", "upper", "title", "digit", "pattern"],
+#              ["low", "title", "upper"]
+#            ]
