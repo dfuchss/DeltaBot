@@ -4,9 +4,9 @@ This repo contains my first [Discord](https://discordapp.com/) bot. It uses [RAS
 ## Requirements (Development):
 - python3 with pip
 - ffmpeg executable in path
-- opus lib in libaray path
+- opus lib in library path
 
-## Run the Bot
+## Run the Bot (via Docker)
 You'll need the following three things:
 * The possibility to run a docker container
 * A Discord Bot Account
@@ -15,5 +15,10 @@ You'll need the following three things:
 Then simply run ``docker build -t deltabot .`` to build a docker image of the bot.
  
 To start the bot simply run:
-
-``docker run -d --env TTSKey="Your TTS Key" --env TTSResource="Your TTS Resource" --env DiscordToken="Your Discord Token" deltabot``
+```
+docker run -d \
+    --env TTSKey="Your TTS Key" \
+    --env TTSResource="Your TTS Resource" \
+    --env DiscordToken="Your Discord Token" \
+deltabot
+ ```
