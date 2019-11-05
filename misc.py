@@ -76,16 +76,19 @@ async def send(respondee: User, channel: Union[DMChannel, TextChannel], bot: Bot
         await send_tts(respondee, message, bot, bot.tts)
 
 
-def get_vc(user: User) -> Optional[VoiceChannel]:
+def find_voice_channel(user: User, bot: Union[Bot, Client]) -> Optional[VoiceChannel]:
     if hasattr(user, "voice") and user.voice is not None:
-        vc = user.voice.channel
-    else:
-        vc = None
-    return vc
+        return user.voice.channel
+    for guild in bot.guilds:
+        for channel in guild.channels:
+            if channel.type == ChannelType.voice and user in channel.members:
+                return channel
+    return None
 
 
 async def send_tts(respondee: User, message: str, bot: Bot, tts: TextToSpeech) -> None:
-    vc = get_vc(respondee)
+    vc = find_voice_channel(respondee, bot)
+
     if vc is None:
         return
 
