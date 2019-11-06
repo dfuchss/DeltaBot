@@ -22,3 +22,15 @@ docker run -d \
     --env DiscordToken="Your Discord Token" \
 deltabot
  ```
+
+Optionally you can already specify group channels for listening:
+```
+docker run -d \
+    --env TTSKey="Your TTS Key" \
+    --env TTSResource="Your TTS Resource" \
+    --env DiscordToken="Your Discord Token" \
+    --env Channels="ID1;ID2" \
+deltabot
+ ```
+
+

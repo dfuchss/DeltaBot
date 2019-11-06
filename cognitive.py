@@ -13,29 +13,55 @@ from json_objects import dict_to_obj
 
 
 class Entity:
+    """Defines an entity."""
+
     def __init__(self, name: str, values: List[str]) -> None:
+        """ Initialize Entity.
+        :param name the name of the entity
+        :param values the values / synonyms of the entity
+        """
         self.name = name
         self.values = list(map(lambda s: s.lower(), values))
 
 
 class EntityGroup:
+    """ Defines a group of entities. """
+
     def __init__(self, name: str, entities=None) -> None:
+        """ Initialize group of entities.
+        :param name the name of the group
+        :param entities the initial set of entities
+        """
         if entities is None:
             entities = []
         self.entities = entities
         self.name = name
 
     def add_entity(self, entity: Entity) -> None:
+        """ Add an entity to group.
+        :param entity the entity
+        """
         self.entities.append(entity)
 
 
 class EntityModel:
+    """ Defines a serializable Entity Model. """
+
     def __init__(self, groups: List[EntityGroup]):
+        """ Create a new Entity Model.
+        :param groups the groups in the model.
+        """
         self.groups = groups
 
 
 class IntentResult:
+    """ Defines a result of intents from NLU. """
+
     def __init__(self, name: str, score: float) -> None:
+        """ Create a new Intent Result.
+        :param name the name of the intent
+        :param score the probability of the intent.
+        """
         self.name = name
         self.score = score
 
@@ -44,7 +70,14 @@ class IntentResult:
 
 
 class EntityResult:
+    """ Defines a result of entities from NLU. """
+
     def __init__(self, name: str, group: str, value: str) -> None:
+        """ Create the new Entity Result.
+        :param name the name of the entity
+        :param group the group of the entity
+        :param value the actual value of the entity
+        """
         self.name = name
         self.group = group
         self.value = value
@@ -54,14 +87,23 @@ class EntityResult:
 
 
 class NLUService:
+    """ Defines a enhanced RASA NLU Service. """
+
     def __init__(self, config: Configuration) -> None:
+        """ Create service by config.
+        :param config the bot configuration
+        """
         self._config = config
         model = f"{get_model(self._config.nlu_dir)}/{self._config.nlu_name}"
         self.interpreter = Interpreter.load(model)
         with open(config.entity_file, encoding="utf-8-sig") as ef:
-            self.entityModel = loads(ef.read(), object_hook=dict_to_obj)
+            self.entity_model = loads(ef.read(), object_hook=dict_to_obj)
 
     def recognize(self, content: str) -> (List[IntentResult], List[EntityResult]):
+        """ Interpret input.
+        :param content the text input
+        :return a tuple which contains a list of intent results and a list of entity results
+        """
         content = sub(r"[^a-zA-Z0-9ÄÖÜäöüß -]", "", content)
         if content == "":
             return None, None
@@ -91,7 +133,7 @@ class NLUService:
         result = []
         content = content.lower()
 
-        for group in self.entityModel.groups:
+        for group in self.entity_model.groups:
             for entity in group.entities:
                 for value in entity.values:
                     if search(f"\\b{value}\\b", content) is not None:
@@ -103,9 +145,13 @@ class NLUService:
 
 
 class TextToSpeech:
-    TokenLife = 600
+    """ Defines a text to speech service based on MS Cognitive Services."""
+    _token_life = 600
 
     def __init__(self, config: Configuration) -> None:
+        """ Create the service by configuration.
+        :param config the bot configuration
+        """
         self._access_token = None
         self._access_time = None
         self._config = config
@@ -118,7 +164,12 @@ class TextToSpeech:
         self._access_time = datetime.now()
 
     def create_tts(self, text: str, path: str) -> bool:
-        if self._access_token is None or (datetime.now() - self._access_time).total_seconds() >= self.TokenLife:
+        """ Save a speech to a file.
+        :param text the actual text
+        :param path the path to a file (mp3)
+        :return indicator of success
+        """
+        if self._access_token is None or (datetime.now() - self._access_time).total_seconds() >= self._token_life:
             self._get_token()
 
         url = f"https://{self._config.tts_region}.tts.speech.microsoft.com/cognitiveservices/v1"

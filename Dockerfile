@@ -1,8 +1,9 @@
 FROM python:3
 
-ENV TTSKey The_TTS_Key
-ENV TTSResource The_TTS_Resource
-ENV DiscordToken The_Discord_Token
+ENV TTSKey "The_TTS_Key"
+ENV TTSResource "The_TTS_Resource"
+ENV DiscordToken "The_Discord_Token"
+ENV Channels ""
 
 WORKDIR /usr/src/
 

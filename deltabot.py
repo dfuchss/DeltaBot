@@ -1,17 +1,19 @@
-from typing import Optional
+from typing import Optional, Dict, Union
+from inspect import iscoroutine
 
 from discord import Client, Game, Status, User
 
 from handler import *
+from handler import NewsHandler, DebugHandler, ShutdownHandler, LoLHandler, ClockHandler, NoneHandler, QnAHandler
 from misc import Bot, cleanup, delete, is_direct, send
 
 
 class DeltaBot(Client, Bot):
-    """ The DeltaBot main client .. """
+    """ The DeltaBot main client. """
 
-    channels = [174101906854117376, 369422961821745162]
+    channels: List[int] = []
 
-    nluHandler = {
+    nluHandler: Dict[str, Handler] = {
         "None".lower(): NoneHandler(),
         "QnA".lower(): QnAHandler(),
         "Clock".lower(): ClockHandler(),
@@ -22,10 +24,14 @@ class DeltaBot(Client, Bot):
     }
 
     def __init__(self) -> None:
+        """ Initialize the DeltaBot. """
         Client.__init__(self)
         Bot.__init__(self)
+        for channel in self.config.channels:
+            self.channels.append(channel)
 
     async def on_ready(self) -> None:
+        """ Will be executed on ready event. """
         print('Logged on as', self.user)
         game = Game("Schreib' mir ..")
         await self.change_presence(status=Status.idle, activity=game)
@@ -48,20 +54,22 @@ class DeltaBot(Client, Bot):
         return self.user
 
     @staticmethod
-    def log(message):
+    def log(message: Message):
+        """ Log a message to std out.
+        :param message the actual message
+        """
         print(f"{datetime.now()} => {message.author}[{message.channel}]: {message.content}")
 
     async def on_message(self, message: Message) -> None:
         """Handle a new message.
-
-        Arguments:
-            message {discord.Message} -- the message
+        :param message: the discord.Message
         """
+
         # don't respond to ourselves
         if message.author == self.user:
             return
 
-        if await self._handle_special(message):
+        if await self.__handle_special(message):
             return
 
         if not is_direct(message) and message.channel.id not in self.channels:
@@ -72,75 +80,80 @@ class DeltaBot(Client, Bot):
 
         await delete(message, self)
         self.log(message)
-        await self._handle(message)
+        await self.__handle(message)
 
-    async def _handle_special(self, message: Message) -> bool:
-        if message.content == "\\listen":
-            if is_direct(message):
-                await send(message.author, message.channel, self, "Ich höre Dich schon!")
-                return True
+    async def __handling_template(self, cmd: str, message: Message, func_dm, func_not_admin, func):
+        if not message.content.startswith(cmd):
+            return False
 
-            if not self.is_admin(message.author):
-                await send(message.author, message.channel, self, "Du bist nicht authorisiert!")
-                await delete(message, self)
-                return True
-
-            self.channels.append(message.channel.id)
-            await delete(message, self)
-            return True
-
-        if message.content.startswith("\\echo"):
-            if not self.is_admin(message.author):
-                await send(message.author, message.channel, self, "Du bist nicht authorisiert!")
-                await delete(message, self)
-                return True
-
-            await message.channel.send(message.content.replace("<", "").replace(">", ""))
-            await delete(message, self)
-            return True
-
-        if message.content.startswith("\\tts"):
-            if not self.is_admin(message.author):
-                await send(message.author, message.channel, self, "Du bist nicht authorisiert!")
-                await delete(message, self)
-                return True
-            await send(message.author, message.channel, self, f"TTS ist jetzt: {self.toggle_tts()}")
-            await delete(message, self)
-            return True
-
-        if message.content.startswith("\\cleanup"):
-            if not self.is_admin(message.author):
-                await send(message.author, message.channel, self, "Du bist nicht authorisiert!")
-                await delete(message, self)
-                return True
-            await CleanupHandler().handle(self, None, message)
-            await delete(message, self)
-            return True
-
-        if message.content.startswith("\\answer"):
-            if not self.is_admin(message.author):
-                await send(message.author, message.channel, self, "Du bist nicht authorisiert!")
-                await delete(message, self)
-                return True
-
-            await QnAAnswerHandler().handle(self, None, message)
-            await delete(message, self)
+        if is_direct(message):
+            run = func_dm()
+            if iscoroutine(run):
+                await run
 
             return True
 
-        if message.content.startswith("\\test"):
-            if not self.is_admin(message.author):
-                await send(message.author, message.channel, self, "Du bist nicht authorisiert!")
-                await delete(message, self)
-                return True
+        if not self.is_admin(message.author):
+            run = func_not_admin()
+            if iscoroutine(run):
+                await run
 
-            await TestHandler().handle(self, None, message)
             await delete(message, self)
-
             return True
+
+        run = func()
+        if iscoroutine(run):
+            await run
+
+        await delete(message, self)
+        return True
+
+    async def __handle_special(self, message: Message) -> bool:
+        if await self.__handling_template("\\listen", message,
+                                          lambda: send(message.author, message.channel, self, "Ich höre Dich schon!"),
+                                          lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
+                                          lambda: self.channels.append(message.channel.id)
+                                          ):
+            return True
+
+        if await self.__handling_template("\\echo", message,
+                                          lambda: message.channel.send(message.content.replace("<", "").replace(">", "")),
+                                          lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
+                                          lambda: message.channel.send(message.content.replace("<", "").replace(">", ""))
+                                          ):
+            return True
+
+        if await self.__handling_template("\\tts", message,
+                                          lambda: send(message.author, message.channel, self, f"TTS ist jetzt: {self.toggle_tts()}"),
+                                          lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
+                                          lambda: send(message.author, message.channel, self, f"TTS ist jetzt: {self.toggle_tts()}")
+                                          ):
+            return True
+
+        if await self.__handling_template("\\cleanup", message,
+                                          lambda: send(message.author, message.channel, self, f"Für DM nicht sinnvoll."),
+                                          lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
+                                          lambda: CleanupHandler().handle(self, None, message)
+                                          ):
+            return True
+
+        if await self.__handling_template("\\answer", message,
+                                    lambda: QnAAnswerHandler().handle(self, None, message),
+                                    lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
+                                    lambda: QnAAnswerHandler().handle(self, None, message)
+                                    ):
+            return True
+
+        if await self.__handling_template("\\test", message,
+                                          lambda: TestHandler().handle(self, None, message),
+                                          lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
+                                          lambda: TestHandler().handle(self, None, message)
+                                          ):
+            return True
+
         return False
 
-    async def _handle(self, message: Message):
+    async def __handle(self, message: Message):
         (intents, entities) = self._nlu.recognize(cleanup(message.content, self))
 
         await self.print_intents_entities(message, intents, entities)
@@ -161,9 +174,12 @@ class DeltaBot(Client, Bot):
                 intent.lower(), self.nluHandler["none"])
         await handler.handle(self, (intents, entities), message)
 
-    async def print_intents_entities(self, message: Message, intents: List[IntentResult],
-                                     entities: List[EntityResult]) -> None:
-
+    async def print_intents_entities(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]) -> None:
+        """ Prints the stats of classification of one message.
+        :param message the message
+        :param intents the intent result
+        :param entities the found entities
+        """
         if not self.debug:
             return
 

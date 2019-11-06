@@ -21,3 +21,8 @@ class Configuration:
         # Discord
         self.ttl = 10.0
         self.token = environ["DiscordToken"]
+
+        # Load accepted channels
+        env_channels_str = getenv("Channels", "")
+        env_channels = env_channels_str.split(';')
+        self.channels = map(int, env_channels)

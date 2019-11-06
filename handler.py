@@ -1,7 +1,7 @@
 from calendar import timegm
 from datetime import datetime
 from os.path import exists
-from typing import List
+from typing import List, Dict
 from random import choice
 
 from discord import Message
@@ -16,10 +16,17 @@ class Handler:
     """Defines a handler for a message event"""
 
     async def handle(self, bot: Bot, nlu_result: (List[IntentResult], List[EntityResult]), message: Message):
+        """ Entry point to the handler.
+        :param bot the bot
+        :param nlu_result the result of NLU classification
+        :param message the raw message
+        """
         await send(message.author, message.channel, bot, f"{type(self).__name__}: NIY")
 
 
 class CleanupHandler(Handler):
+    """ Deletes all messages from the author and the bot itself from a channel. """
+
     async def handle(self, bot: Bot, nlu_result: (List[IntentResult], List[EntityResult]), message: Message):
         if not bot.is_admin(message.author) or is_direct(message):
             return
@@ -30,15 +37,20 @@ class CleanupHandler(Handler):
 
 
 class TestHandler(Handler):
+    """ Just for testing .."""
     pass
 
 
 class NoneHandler(Handler):
+    """ Handler for not classified messages. """
+
     async def handle(self, bot: Bot, nlu_result: (List[IntentResult], List[EntityResult]), message: Message):
         await send(message.author, message.channel, bot, "Das war zu viel für mich :( Ich hab das nicht verstanden")
 
 
 class QnAHandler(Handler):
+    """ Handler for QnA/Simple Responses."""
+
     async def handle(self, bot: Bot, nlu_result: (List[IntentResult], List[EntityResult]), message: Message):
         (intents, _) = nlu_result
         intent = intents[0].name[4:]
@@ -55,28 +67,34 @@ class QnAHandler(Handler):
 
 
 class ClockHandler(Handler):
+    """ Handler to get the current time. """
+
     async def handle(self, bot: Bot, nlu_result: (List[IntentResult], List[EntityResult]), message: Message):
         await send(message.author, message.channel, bot, datetime.now())
 
 
 class DebugHandler(Handler):
+    """ Handler which toggles Debug state. """
+
     async def handle(self, bot: Bot, nlu_result: (List[IntentResult], List[EntityResult]), message: Message):
         await send(message.author, message.channel, bot, f"Entwicklermodus ist jetzt: {bot.toggle_debug()}")
 
 
 class NewsHandler(Handler):
+    """ Handler which provides current news. """
+
     class NewsProvider:
+        """ Defines a simple provider (rss) for news. """
+
         def __init__(self, name, url):
             """Create a new news provider
-
-            Arguments:
-                name {str} -- the name of the provider
-                url {str} -- the url to the provider
+            :param name the name of the provider
+            :param url the url to the rss feed of the provider
             """
             self.name = name
             self.url = url
 
-    Providers = {
+    Providers: Dict[str, List[NewsProvider]] = {
         "Allgemein": [
             NewsProvider("Tagesschau", "https://www.tagesschau.de/xml/rss2"),
             NewsProvider("heise online", "https://www.heise.de/rss/heise-top-atom.xml")
@@ -88,9 +106,10 @@ class NewsHandler(Handler):
 
     @staticmethod
     def to_date(time_tuple):
+        """ Converts a time tuple to actual time. """
         return datetime.fromtimestamp(timegm(time_tuple))
 
-    MaxNews = 10
+    MaxNews: int = 10
 
     async def handle(self, bot: Bot, nlu_result: (List[IntentResult], List[EntityResult]), message: Message):
         entities = nlu_result[1]
@@ -121,6 +140,8 @@ class NewsHandler(Handler):
 
 
 class LoLHandler(Handler):
+    """ First skeleton (WIP) of a LoL handler which can help choosing runes and builds for different champions. """
+
     async def handle(self, bot: Bot, nlu_result: (List[IntentResult], List[EntityResult]), message: Message):
         entities = nlu_result[1]
         entities = list(map(lambda e: e.name, filter(lambda e: e.group == "lol", entities)))
@@ -132,10 +153,13 @@ class LoLHandler(Handler):
             await self._handle_champion(champion, bot, message)
 
     async def _handle_champion(self, champion: str, bot: Bot, message: Message):
+        """ Handle information extraction for a specific champion. """
         pass
 
 
 class ShutdownHandler(Handler):
+    """ Shutdown the bot. """
+
     async def handle(self, bot: Bot, nlu_result: (List[IntentResult], List[EntityResult]), message: Message):
         if not bot.is_admin(message.author):
             await send(message.author, message.channel, bot, "Du bist nicht berechtigt, mich zu deaktivieren!")
@@ -145,6 +169,8 @@ class ShutdownHandler(Handler):
 
 
 class QnAAnswerHandler(Handler):
+    """ Handler which can add answers for QnA to the local files."""
+
     async def handle(self, bot: Bot, nlu_result: (List[IntentResult], List[EntityResult]), message: Message):
         text: str = message.content
         # Command, qna, text
