@@ -1,4 +1,4 @@
-from typing import Optional, Dict, Union
+from typing import Optional, Union, Callable, Awaitable
 from inspect import iscoroutine
 
 from discord import Client, Game, Status, User
@@ -82,7 +82,9 @@ class DeltaBot(Client, Bot):
         self.log(message)
         await self.__handle(message)
 
-    async def __handling_template(self, cmd: str, message: Message, func_dm, func_not_admin, func):
+    __handling_function = Union[Callable[[], None], Callable[[], Awaitable[None]]]
+
+    async def __handling_template(self, cmd: str, message: Message, func_dm: __handling_function, func_not_admin: __handling_function, func: __handling_function):
         if not message.content.startswith(cmd):
             return False
 
@@ -138,10 +140,10 @@ class DeltaBot(Client, Bot):
             return True
 
         if await self.__handling_template("\\answer", message,
-                                    lambda: QnAAnswerHandler().handle(self, None, message),
-                                    lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
-                                    lambda: QnAAnswerHandler().handle(self, None, message)
-                                    ):
+                                          lambda: QnAAnswerHandler().handle(self, None, message),
+                                          lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
+                                          lambda: QnAAnswerHandler().handle(self, None, message)
+                                          ):
             return True
 
         if await self.__handling_template("\\test", message,
