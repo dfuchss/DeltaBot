@@ -25,4 +25,4 @@ class Configuration:
         # Load accepted channels
         env_channels_str = getenv("Channels", "")
         env_channels = env_channels_str.split(';')
-        self.channels = map(int, env_channels)
+        self.channels = map(int, filter(None, env_channels))
