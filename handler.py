@@ -63,7 +63,23 @@ class QnAHandler(Handler):
         response = loads(qna_file.read().strip())
         qna_file.close()
         response = choice(response)
+        response = self.__enhance(response, message)
         await send(message.author, message.channel, bot, response)
+
+    @staticmethod
+    def __enhance(response: str, reference: Message) -> str:
+        """ Enhances the response by information like user, channel etc.
+        :param response the message to enhance
+        :param reference the reference message (from the user)
+        :return the new response
+        """
+        result = response.replace("#USER", reference.author.name)
+        if is_direct(reference):
+            channel_name = f"@{reference.author.name}"
+        else:
+            channel_name = f"@{reference.channel.name}"
+        result = result.replace("#CHANNEL", channel_name)
+        return result
 
 
 class ClockHandler(Handler):
