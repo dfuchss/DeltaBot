@@ -86,7 +86,7 @@ class ClockHandler(Handler):
     """ Handler to get the current time. """
 
     async def handle(self, bot: Bot, nlu_result: (List[IntentResult], List[EntityResult]), message: Message):
-        await send(message.author, message.channel, bot, datetime.now())
+        await send(message.author, message.channel, bot, f"{datetime.now()}")
 
 
 class DebugHandler(Handler):

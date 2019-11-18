@@ -183,8 +183,8 @@ class TextToSpeech:
         xml_body.set('{http://www.w3.org/XML/1998/namespace}lang', 'de-DE')
         voice = ElementTree.SubElement(xml_body, 'voice')
         voice.set('{http://www.w3.org/XML/1998/namespace}lang', 'de-DE')
-        # Speeches: Hedda, HeddaRUS, Stefan-Apollo
-        voice.set('name', 'Microsoft Server Speech Text to Speech Voice (de-DE, Stefan, Apollo)')
+        # Speeches: "Hedda", "HeddaRUS", "Stefan, Apollo"
+        voice.set('name', 'Microsoft Server Speech Text to Speech Voice (de-DE, HeddaRUS)')
         voice.text = sub(r"[^.,;:\na-zA-Z0-9ÄÖÜäöüß -]", "", text)
         body = ElementTree.tostring(xml_body)
 

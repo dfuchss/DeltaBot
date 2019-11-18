@@ -126,7 +126,7 @@ class DeltaBot(Client, Bot):
             return True
 
         if await self.__handling_template("\\tts", message,
-                                          lambda: send(message.author, message.channel, self, f"TTS ist jetzt: {self.toggle_tts()}"),
+                                          lambda: send(message.author, message.channel, self, f"Sprachausgabe ist jetzt {'an' if self.toggle_tts() else 'aus'}"),
                                           lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
                                           lambda: send(message.author, message.channel, self, f"TTS ist jetzt: {self.toggle_tts()}")
                                           ):
