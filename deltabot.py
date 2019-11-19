@@ -1,4 +1,4 @@
-from typing import Optional, Union, Callable, Awaitable
+from typing import Optional, Union, Callable, Awaitable, Tuple
 from inspect import iscoroutine
 
 from discord import Client, Game, Status, User
@@ -12,6 +12,7 @@ class DeltaBot(Client, Bot):
     """ The DeltaBot main client. """
 
     channels: List[int] = []
+    admins: List[Tuple[str, str]] = []
 
     nluHandler: Dict[str, Handler] = {
         "None".lower(): NoneHandler(),
@@ -30,15 +31,27 @@ class DeltaBot(Client, Bot):
         for channel in self.config.channels:
             self.channels.append(channel)
 
+        for admin in self.config.admins:
+            self.admins.append((admin[0], admin[1]))
+
     async def on_ready(self) -> None:
         """ Will be executed on ready event. """
         print('Logged on as', self.user)
         game = Game("Schreib' mir ..")
         await self.change_presence(status=Status.idle, activity=game)
 
-    @staticmethod
-    def is_admin(user: User) -> bool:
-        return user.name == "Dominik" and user.discriminator == "0292"
+    def is_admin(self, user: User) -> bool:
+        if len(self.admins) == 0:
+            return True
+
+        for (name, dsc) in self.admins:
+            if user.name == name and user.discriminator == dsc:
+                return True
+        return False
+
+    def add_admins(self, message: Message):
+        for user in message.mentions:
+            self.admins.append((user.name, user.discriminator))
 
     async def shutdown(self) -> None:
         await self.close()
@@ -115,6 +128,12 @@ class DeltaBot(Client, Bot):
                                           lambda: send(message.author, message.channel, self, "Ich höre Dich schon!"),
                                           lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
                                           lambda: self.channels.append(message.channel.id)
+                                          ):
+            return True
+        if await self.__handling_template("\\admin", message,
+                                          lambda: send(message.author, message.channel, self, f"Für DM nicht sinnvoll."),
+                                          lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
+                                          lambda: self.add_admins(message)
                                           ):
             return True
 

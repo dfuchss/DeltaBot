@@ -26,3 +26,8 @@ class Configuration:
         env_channels_str = getenv("Channels", "")
         env_channels = env_channels_str.split(';')
         self.channels = map(int, filter(None, env_channels))
+
+        # Load admin users
+        env_admin_str = getenv("Admins", "")
+        env_admins = env_admin_str.split(';')
+        self.admins = map(lambda name: name.split(','), filter(None, env_admins))

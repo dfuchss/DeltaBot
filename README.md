@@ -23,13 +23,14 @@ docker run -d \
 deltabot
  ```
 
-Optionally you can already specify group channels for listening:
+Optionally you can already specify group channels for listening or the default admin users:
 ```
 docker run -d \
     --env TTSKey="Your TTS Key" \
     --env TTSResource="Your TTS Resource" \
     --env DiscordToken="Your Discord Token" \
     --env Channels="ID1;ID2" \
+    --env Admins="Dominik,0292;UserName2,Dsc2" \
 deltabot
  ```
 

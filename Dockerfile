@@ -4,6 +4,7 @@ ENV TTSKey "The_TTS_Key"
 ENV TTSResource "The_TTS_Resource"
 ENV DiscordToken "The_Discord_Token"
 ENV Channels ""
+ENV Admins ""
 
 WORKDIR /usr/src/
 

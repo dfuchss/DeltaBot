@@ -52,8 +52,7 @@ class Bot:
         """
         pass
 
-    @staticmethod
-    def is_admin(user: User) -> bool:
+    def is_admin(self, user: User) -> bool:
         """
         Check for Admin.
         :param user: the actual user object
