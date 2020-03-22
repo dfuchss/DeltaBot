@@ -1,6 +1,7 @@
 .git
 .gitignore
 .gitattributes
+.environment.env
 
 .venv
 .idea

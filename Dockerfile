@@ -1,4 +1,4 @@
-FROM python:3
+FROM python:3.6
 
 ENV TTSKey "The_TTS_Key"
 ENV TTSResource "The_TTS_Resource"
