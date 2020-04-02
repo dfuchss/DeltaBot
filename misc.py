@@ -23,7 +23,7 @@ async def send(respondee: User, channel: Union[DMChannel, TextChannel], bot, mes
     else:
         msg = await channel.send(message)
     if not channel.type == ChannelType.private:
-        await delete(msg, bot, bot.config.ttl)
+        await delete(msg, bot, delay=bot.config.ttl)
     if bot.config.tts_indicator:
         await send_tts(respondee, message, bot, bot.tts)
 
