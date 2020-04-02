@@ -4,7 +4,7 @@ from re import sub, findall
 from tempfile import NamedTemporaryFile
 from typing import List, Optional, TypeVar, Union, Any
 
-from discord import ChannelType, FFmpegPCMAudio, Message, User, VoiceChannel, DMChannel, TextChannel
+from discord import ChannelType, FFmpegPCMAudio, Message, User, VoiceChannel, DMChannel, TextChannel, NotFound
 
 from cognitive import TextToSpeech
 
@@ -89,7 +89,10 @@ async def delete(message: Message, bot, try_force: bool = False) -> None:
     if is_direct(message):
         return
 
-    await message.delete()
+    try:
+        await message.delete()
+    except NotFound:
+        pass
 
 
 def is_direct(message: Message) -> bool:

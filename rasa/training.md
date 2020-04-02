@@ -137,3 +137,9 @@
 - bitte schalte dich aus
 - du kannst dich beenden
 - shutdown
+
+## intent:cleanup
+- bitte den channel aufräumen
+- lösche alle nachrichten von mir
+- räume meine nachrichten auf
+- cleanup

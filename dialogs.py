@@ -66,16 +66,37 @@ class Cleanup(Dialog):
 
     def __init__(self, bot: DeltaBot):
         super().__init__(bot, Cleanup.ID)
+        self.__channel_user_msg: Message = None
 
     def _load_initial_steps(self):
-        self.add_step(self._cleanup_step)
+        self.add_step(self._ask_cleanup)
+        self.add_step(self._vfy_cleanup)
+
+    def reset(self):
+        super().reset()
+        self.__channel_user_msg = None
+
+    async def _ask_cleanup(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
+        await send(message.author, message.channel, self._bot, f"Soll ich alle Nachrichten von {str(message.author)} aus {str(message.channel)} löschen? (Yes/No)?")
+        self.__channel_user_msg = message
+        return DialogResult.WAIT_FOR_INPUT
+
+    async def _vfy_cleanup(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
+        if "yes" in message.content.lower():
+            self.add_step(self._cleanup_step)
+        else:
+            await send(message.author, message.channel, self._bot, f"Alles klar, wurde abgebrochen!")
+
+        return DialogResult.NEXT
 
     async def _cleanup_step(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
         if not self._bot.is_admin(message.author) or is_direct(message):
+            await send(message.author, message.channel, self._bot, f"Das kann ich leider nicht tun!")
             return
 
-        async for m in message.channel.history():
-            if (message.author == m.author or m.author == self._bot.get_bot_user()) and m.id != message.id:
+        author = self.__channel_user_msg.author
+        async for m in self.__channel_user_msg.channel.history():
+            if (author == m.author or m.author == self._bot.get_bot_user()) and m.id != self.__channel_user_msg.id and m.id != message.id:
                 await delete(m, self._bot, try_force=True)
 
         return DialogResult.NEXT
