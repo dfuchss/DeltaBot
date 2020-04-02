@@ -19,24 +19,6 @@
 - zeig mir mehr
 - zeig mir weniger
 
-## intent:lol
-- lol
-- user welchen build sollte user wählen
-- was braucht user für runen
-- was ist der richtige build
-- was soll ich für runen verwenden
-- was soll ich zuerst skillen
-- was soll ich zuerst skillen?
-- was sollte user für runen verwenden
-- was sollte user für runen wählen
-- welche runen brauche ich?
-- welche runen braucht user?
-- welchen build sollte user wählen
-- welchen build sollte user wählen?
-- welcher build ist der beste für mich
-- welcher build ist der richtige für user
-- wie sollte der build sein für user
-
 ## intent:news
 - bitte ein kurzes briefing
 - briefe mich
@@ -143,3 +125,21 @@
 - lösche alle nachrichten von mir
 - räume meine nachrichten auf
 - cleanup
+
+## intent:yes
+- ja
+- jep
+- jup
+- yes
+
+## intent:no
+- nein
+- no
+- nope
+
+## intent:answer
+- ich möchte eine neue antwort eingeben
+- neue antwort
+- neuen witz
+- neuen qna
+- neues qna

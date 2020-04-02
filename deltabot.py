@@ -1,5 +1,5 @@
 from threading import Lock
-from typing import Optional, Tuple
+from typing import Tuple
 
 from discord import Client, Game, Status, User
 
@@ -38,29 +38,19 @@ class BotInstance:
             "Debug".lower(): Debug.ID,
             "News".lower(): News.ID,
             "Shutdown".lower(): Shutdown.ID,
-            "Cleanup".lower(): Cleanup.ID
+            "Cleanup".lower(): Cleanup.ID,
+            "Answer".lower(): QnAAnswer.ID
         }
 
     def __lookup_dialog(self, dialog_id: str):
-        return next((d for d in self._dialogs if d.dialog_id == dialog_id), [None])
-
-    @staticmethod
-    def _check_special_intents(message: Message) -> Optional[str]:
-        if message.content.startswith("\\answer"):
-            return QnAAnswer.ID
-
-        return None
+        return next((d for d in self._dialogs if d.dialog_id == dialog_id), None)
 
     async def handle(self, message: Message):
         (intents, entities) = self._bot.nlu.recognize(cleanup(message.content, self))
 
         await self.print_intents_entities(message, intents, entities)
 
-        special_intents = self._check_special_intents(message)
-
-        if special_intents is not None:
-            dialog = special_intents
-        elif len(self.__active_dialog_stack) != 0:
+        if len(self.__active_dialog_stack) != 0:
             dialog = self.__active_dialog_stack.pop(0)
         elif intents is None or len(intents) == 0:
             dialog = NotUnderstanding.ID
@@ -76,7 +66,7 @@ class BotInstance:
 
         dialog = self.__lookup_dialog(dialog)
         if dialog is None:
-            await send(message.author, message.channel, self, "Dialog nicht gefunden. Bitte an Botadmin wenden!")
+            await send(message.author, message.channel, self._bot, "Dialog nicht gefunden. Bitte an Botadmin wenden!")
             return
 
         result = await dialog.proceed(message, intents, entities)
@@ -104,7 +94,7 @@ class BotInstance:
 
         result += "------------"
 
-        await send(message.author, message.channel, self, result, mention=False)
+        await send(message.author, message.channel, self._bot, result, mention=False)
 
     def has_active_dialog(self):
         return len(self.__active_dialog_stack) != 0

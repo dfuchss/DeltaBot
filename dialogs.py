@@ -1,7 +1,7 @@
 from calendar import timegm
 from json import loads, dumps
 from random import choice
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 from discord import Message
 from feedparser import parse
@@ -66,7 +66,7 @@ class Cleanup(Dialog):
 
     def __init__(self, bot: DeltaBot):
         super().__init__(bot, Cleanup.ID)
-        self.__channel_user_msg: Message = None
+        self.__channel_user_msg: Optional[Message] = None
 
     def _load_initial_steps(self):
         self.add_step(self._ask_cleanup)
@@ -77,12 +77,12 @@ class Cleanup(Dialog):
         self.__channel_user_msg = None
 
     async def _ask_cleanup(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
-        await send(message.author, message.channel, self._bot, f"Soll ich alle Nachrichten von {str(message.author)} aus {str(message.channel)} löschen? (Yes/No)?")
+        await send(message.author, message.channel, self._bot, f"Soll ich alle Nachrichten von {str(message.author)} aus {str(message.channel)} und meine Nachrichten löschen? (Yes/No)?")
         self.__channel_user_msg = message
         return DialogResult.WAIT_FOR_INPUT
 
     async def _vfy_cleanup(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
-        if "yes" in message.content.lower():
+        if len(intents) != 0 and intents[0].name == "yes":
             self.add_step(self._cleanup_step)
         else:
             await send(message.author, message.channel, self._bot, f"Alles klar, wurde abgebrochen!")
@@ -90,7 +90,7 @@ class Cleanup(Dialog):
         return DialogResult.NEXT
 
     async def _cleanup_step(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
-        if not self._bot.is_admin(message.author) or is_direct(message):
+        if not self._bot.is_admin(message.author) or is_direct(self.__channel_user_msg):
             await send(message.author, message.channel, self._bot, f"Das kann ich leider nicht tun!")
             return
 
@@ -148,39 +148,60 @@ class QnAAnswer(Dialog):
 
     def __init__(self, bot: DeltaBot):
         super().__init__(bot, QnAAnswer.ID)
+        self._qna = None
+        self._text = None
 
     def _load_initial_steps(self):
-        self.add_step(self._qna_step)
+        self.add_step(self._find_qna)
 
-    async def _qna_step(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
+    async def _find_qna(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
         if not self._bot.is_admin(message.author):
             await send(message.author, message.channel, self._bot, f"Dazu hast Du keine Berechtigung")
             return DialogResult.NEXT
 
-        text: str = message.content
-        # Command, qna, text
-        spl = text.split(" ", 2)
-        if len(spl) != 3:
-            await send(message.author, message.channel, self._bot, f"Ich finde keinen gültigen Text")
-            return
+        await send(message.author, message.channel, self._bot, f"Für welches QnA soll ein neuer Text gespeichert werden?")
+        self.add_step(self._store_qna_ask_text)
+        return DialogResult.WAIT_FOR_INPUT
 
-        name = f"QnA/{spl[1]}.json"
+    async def _store_qna_ask_text(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
+        name = f"QnA/{message.content}.json"
         if not exists(name):
             await send(message.author, message.channel, self._bot, f"Ich finde keinen Eintrag für {name}")
-            return
+            return DialogResult.NEXT
 
-        qna_file = open(name, "r", encoding="utf-8-sig")
+        self._qna = name
+        await send(message.author, message.channel, self._bot, f"Bitte gib jetzt Deinen Text für {name} ein:")
+        self.add_step(self._store_text_ask_confirmation)
+        return DialogResult.WAIT_FOR_INPUT
+
+    async def _store_text_ask_confirmation(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
+        self._text = message.content
+        await send(message.author, message.channel, self._bot, f"Soll ich in {self._qna} '{self._text}' speichern? (Y/N)")
+        self.add_step(self._qna_step)
+        return DialogResult.WAIT_FOR_INPUT
+
+    async def _qna_step(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
+        if len(intents) == 0 or intents[0].name != "yes":
+            await send(message.author, message.channel, self._bot, f"OK. Keine Änderung vorgenommen!")
+            return DialogResult.NEXT
+
+        qna_file = open(self._qna, "r", encoding="utf-8-sig")
         response: list = loads(qna_file.read().strip())
         qna_file.close()
 
-        response.insert(0, spl[2])
+        response.insert(0, self._text)
 
-        qna_file = open(name, "w", encoding="utf-8-sig")
+        qna_file = open(self._qna, "w", encoding="utf-8-sig")
         qna_file.write(dumps(response, indent=True))
         qna_file.close()
 
-        await send(message.author, message.channel, self._bot, f"Habs hinzugefügt zu {name}")
+        await send(message.author, message.channel, self._bot, f"Habs hinzugefügt!")
         return DialogResult.NEXT
+
+    def reset(self):
+        super().reset()
+        self._qna = None
+        self._text = None
 
 
 class Clock(Dialog):
