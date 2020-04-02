@@ -35,6 +35,7 @@ class Configuration:
         # Indicators
         self.tts_indicator = False
         self.debug_indicator = False
+        self.listen_all = False
 
     def toggle_tts(self):
         self.tts_indicator = not self.tts_indicator
@@ -43,4 +44,8 @@ class Configuration:
     def toggle_debug(self):
         self.debug_indicator = not self.debug_indicator
         return self.debug_indicator
+
+    def toggle_listen_all(self):
+        self.listen_all = not self.listen_all
+        return self.listen_all
 

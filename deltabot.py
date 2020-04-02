@@ -188,7 +188,7 @@ class DeltaBot(Client):
 
         instance = self.__get_bot_instance(message.author)
 
-        if not (is_direct(message) or (self.user in message.mentions and message.channel.id in self.channels) or instance.has_active_dialog()):
+        if not (is_direct(message) or ((self.user in message.mentions or self.config.listen_all) and message.channel.id in self.channels) or instance.has_active_dialog()):
             return
 
         await delete(message, self)

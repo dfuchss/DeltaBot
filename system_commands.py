@@ -59,7 +59,14 @@ async def handle_system(self, message: Message) -> bool:
     if await __handling_template(self, "\\tts", message,
                                  lambda: send(message.author, message.channel, self, f"Sprachausgabe ist jetzt {'an' if (self.config.toggle_tts()) else 'aus'}"),
                                  lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
-                                 lambda: send(message.author, message.channel, self, f"TTS ist jetzt: {self.config.toggle_tts()}")
+                                 lambda: send(message.author, message.channel, self, f"TTS ist jetzt: {'an' if (self.config.toggle_tts()) else 'aus'}")
+                                 ):
+        return True
+
+    if await __handling_template(self, "\\listen-all", message,
+                                 lambda: send(message.author, message.channel, self, f"Immer Antworten-Modus ist jetzt {'an' if (self.config.toggle_listen_all()) else 'aus'}"),
+                                 lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
+                                 lambda: send(message.author, message.channel, self, f"Immer Antworten-Modus ist jetzt {'an' if (self.config.toggle_listen_all()) else 'aus'}")
                                  ):
         return True
 
