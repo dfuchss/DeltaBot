@@ -31,3 +31,16 @@ class Configuration:
         env_admin_str = getenv("Admins", "")
         env_admins = env_admin_str.split(';')
         self.admins = map(lambda name: name.split(','), filter(None, env_admins))
+
+        # Indicators
+        self.tts_indicator = False
+        self.debug_indicator = False
+
+    def toggle_tts(self):
+        self.tts_indicator = not self.tts_indicator
+        return self.tts_indicator
+
+    def toggle_debug(self):
+        self.debug_indicator = not self.debug_indicator
+        return self.debug_indicator
+

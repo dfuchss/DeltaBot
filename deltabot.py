@@ -1,38 +1,62 @@
-from typing import Optional, Union, Callable, Awaitable, Tuple
-from inspect import iscoroutine
+from typing import Optional, Tuple
 
 from discord import Client, Game, Status, User
 
-from handler import *
-from handler import NewsHandler, DebugHandler, ShutdownHandler, LoLHandler, ClockHandler, NoneHandler, QnAHandler
-from misc import Bot, cleanup, delete, is_direct, send
+from cognitive import TextToSpeech, NLUService
+from configuration import Configuration
+from dialogs import *
+from misc import cleanup, delete, is_direct, send
+from system_commands import handle_system
 
 
-class DeltaBot(Client, Bot):
+class DeltaBot(Client):
     """ The DeltaBot main client. """
 
     channels: List[int] = []
     admins: List[Tuple[str, str]] = []
 
-    nluHandler: Dict[str, Handler] = {
-        "None".lower(): NoneHandler(),
-        "QnA".lower(): QnAHandler(),
-        "Clock".lower(): ClockHandler(),
-        "Debug".lower(): DebugHandler(),
-        "News".lower(): NewsHandler(),
-        "LoL".lower(): LoLHandler(),
-        "Shutdown".lower(): ShutdownHandler()
-    }
-
     def __init__(self) -> None:
         """ Initialize the DeltaBot. """
         Client.__init__(self)
-        Bot.__init__(self)
+        self.config = Configuration()
+        self.tts = TextToSpeech(self.config)
+        self._nlu = NLUService(self.config)
+
         for channel in self.config.channels:
             self.channels.append(channel)
 
         for admin in self.config.admins:
             self.admins.append((admin[0], admin[1]))
+
+        self._dialogs: List[Dialog] = []
+        self._intent_to_dialog: Dict[str, str] = {}
+        self._load_dialogs()
+
+        self.__active_dialog_stack = []
+
+    def _load_dialogs(self):
+        self._dialogs = [
+            NotUnderstanding(self),
+            QnA(self),
+            Clock(self),
+            Debug(self),
+            News(self),
+            Shutdown(self),
+            Cleanup(self),
+            QnAAnswer(self)
+        ]
+
+        self._intent_to_dialog = {
+            "None".lower(): NotUnderstanding.ID,
+            "QnA".lower(): QnA.ID,
+            "Clock".lower(): Clock.ID,
+            "Debug".lower(): Debug.ID,
+            "News".lower(): News.ID,
+            "Shutdown".lower(): Shutdown.ID,
+        }
+
+    def __lookup_dialog(self, dialog_id: str):
+        return next((d for d in self._dialogs if d.dialog_id == dialog_id), [None])
 
     async def on_ready(self) -> None:
         """ Will be executed on ready event. """
@@ -41,6 +65,11 @@ class DeltaBot(Client, Bot):
         await self.change_presence(status=Status.idle, activity=game)
 
     def is_admin(self, user: User) -> bool:
+        """
+        Check for Admin.
+        :param user: the actual user object
+        :return: indicator for administrative privileges
+        """
         if len(self.admins) == 0:
             return True
 
@@ -54,16 +83,24 @@ class DeltaBot(Client, Bot):
             self.admins.append((user.name, user.discriminator))
 
     async def shutdown(self) -> None:
+        """Shutdown the bot"""
         await self.close()
         await self.logout()
 
     def lookup_user(self, user_id: int) -> Optional[User]:
+        """Find user by id
+        :param user_id: the id of the user
+        :return the found user object or None
+        """
         users = list(filter(lambda u: u.id == user_id, self.users))
         if len(users) != 1:
             return None
         return users[0]
 
     def get_bot_user(self) -> Client:
+        """ Get the Discord User of the Bot.
+        :return the Discord User as Client
+        """
         return self.user
 
     @staticmethod
@@ -82,7 +119,7 @@ class DeltaBot(Client, Bot):
         if message.author == self.user:
             return
 
-        if await self.__handle_special(message):
+        if await handle_system(self, message):
             return
 
         if not is_direct(message) and message.channel.id not in self.channels:
@@ -95,105 +132,46 @@ class DeltaBot(Client, Bot):
         self.log(message)
         await self.__handle(message)
 
-    __handling_function = Union[Callable[[], None], Callable[[], Awaitable[None]]]
+    @staticmethod
+    def _check_special_intents(message: Message) -> Optional[str]:
+        if message.content.startswith("\\cleanup"):
+            return Cleanup.ID
+        if message.content.startswith("\\answer"):
+            return QnAAnswer.ID
 
-    async def __handling_template(self, cmd: str, message: Message, func_dm: __handling_function, func_not_admin: __handling_function, func: __handling_function):
-        if not message.content.startswith(cmd):
-            return False
-
-        if is_direct(message):
-            run = func_dm()
-            if iscoroutine(run):
-                await run
-
-            return True
-
-        if not self.is_admin(message.author):
-            run = func_not_admin()
-            if iscoroutine(run):
-                await run
-
-            await delete(message, self)
-            return True
-
-        run = func()
-        if iscoroutine(run):
-            await run
-
-        await delete(message, self)
-        return True
-
-    async def __handle_special(self, message: Message) -> bool:
-        if await self.__handling_template("\\listen", message,
-                                          lambda: send(message.author, message.channel, self, "Ich höre Dich schon!"),
-                                          lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
-                                          lambda: self.channels.append(message.channel.id)
-                                          ):
-            return True
-        if await self.__handling_template("\\admin", message,
-                                          lambda: send(message.author, message.channel, self, f"Für DM nicht sinnvoll."),
-                                          lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
-                                          lambda: self.add_admins(message)
-                                          ):
-            return True
-
-        if await self.__handling_template("\\echo", message,
-                                          lambda: message.channel.send(message.content.replace("<", "").replace(">", "")),
-                                          lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
-                                          lambda: message.channel.send(message.content.replace("<", "").replace(">", ""))
-                                          ):
-            return True
-
-        if await self.__handling_template("\\tts", message,
-                                          lambda: send(message.author, message.channel, self, f"Sprachausgabe ist jetzt {'an' if self.toggle_tts() else 'aus'}"),
-                                          lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
-                                          lambda: send(message.author, message.channel, self, f"TTS ist jetzt: {self.toggle_tts()}")
-                                          ):
-            return True
-
-        if await self.__handling_template("\\cleanup", message,
-                                          lambda: send(message.author, message.channel, self, f"Für DM nicht sinnvoll."),
-                                          lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
-                                          lambda: CleanupHandler().handle(self, None, message)
-                                          ):
-            return True
-
-        if await self.__handling_template("\\answer", message,
-                                          lambda: QnAAnswerHandler().handle(self, None, message),
-                                          lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
-                                          lambda: QnAAnswerHandler().handle(self, None, message)
-                                          ):
-            return True
-
-        if await self.__handling_template("\\test", message,
-                                          lambda: TestHandler().handle(self, None, message),
-                                          lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
-                                          lambda: TestHandler().handle(self, None, message)
-                                          ):
-            return True
-
-        return False
+        return None
 
     async def __handle(self, message: Message):
         (intents, entities) = self._nlu.recognize(cleanup(message.content, self))
 
         await self.print_intents_entities(message, intents, entities)
 
-        if intents is None or len(intents) == 0:
-            await self.nluHandler["none"].handle(self, (intents, entities), message)
+        special_intents = self._check_special_intents(message)
+
+        if special_intents is not None:
+            dialog = special_intents
+        elif len(self.__active_dialog_stack) != 0:
+            dialog = self.__active_dialog_stack.pop(0)
+        elif intents is None or len(intents) == 0:
+            dialog = NotUnderstanding.ID
+        else:
+            intent = intents[0].name
+            score = intents[0].score
+            dialog = self._intent_to_dialog.get(intent)
+
+            if score <= self.config.nlu_threshold:
+                dialog = NotUnderstanding.ID
+            elif intent.startswith("QnA"):
+                dialog = QnA.ID
+
+        dialog = self.__lookup_dialog(dialog)
+        if dialog is None:
+            await send(message.author, message.channel, self, "Dialog nicht gefunden. Bitte an Botadmin wenden!")
             return
 
-        intent = intents[0].name
-        score = intents[0].score
-
-        if score <= self.config.nlu_threshold:
-            handler = self.nluHandler["none"]
-        elif intent.startswith("QnA"):
-            handler = self.nluHandler["qna"]
-        else:
-            handler = self.nluHandler.get(
-                intent.lower(), self.nluHandler["none"])
-        await handler.handle(self, (intents, entities), message)
+        result = await dialog.proceed(message, intents, entities)
+        if result == DialogResult.WAIT_FOR_INPUT:
+            self.__active_dialog_stack.insert(0, dialog.dialog_id)
 
     async def print_intents_entities(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]) -> None:
         """ Prints the stats of classification of one message.
@@ -201,7 +179,7 @@ class DeltaBot(Client, Bot):
         :param intents the intent result
         :param entities the found entities
         """
-        if not self.debug:
+        if not self.config.debug_indicator:
             return
 
         result: str = "------------\n"

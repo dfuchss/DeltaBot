@@ -4,64 +4,12 @@ from re import sub, findall
 from tempfile import NamedTemporaryFile
 from typing import List, Optional, TypeVar, Union, Any
 
-from discord import ChannelType, FFmpegPCMAudio, Message, User, VoiceChannel, DMChannel, TextChannel, Client
+from discord import ChannelType, FFmpegPCMAudio, Message, User, VoiceChannel, DMChannel, TextChannel
 
-from cognitive import NLUService, TextToSpeech
-from configuration import Configuration
-
-
-class Bot:
-    """ The base interface for the bot. """
-
-    def __init__(self) -> None:
-        """ Initialize the bot. """
-        self.config = Configuration()
-        self.tts_indicator = False
-        self.debug = False
-        self.tts = TextToSpeech(self.config)
-        self._nlu = NLUService(self.config)
-
-    def get_bot_user(self) -> Client:
-        """ Get the Discord User of the Bot.
-        :return the Discord User as Client
-        """
-        pass
-
-    def toggle_tts(self) -> bool:
-        """ Toggles the tts flag.
-        :return the new state
-        """
-        self.tts_indicator = not self.tts_indicator
-        return self.tts_indicator
-
-    def toggle_debug(self) -> bool:
-        """ Toggles the debug flag.
-        :return the new state
-        """
-        self.debug = not self.debug
-        return self.debug
-
-    async def shutdown(self) -> None:
-        """Shutdown the bot"""
-        pass
-
-    def lookup_user(self, user_id: int) -> Optional[User]:
-        """Find user by id
-        :param user_id: the id of the user
-        :return the found user object or None
-        """
-        pass
-
-    def is_admin(self, user: User) -> bool:
-        """
-        Check for Admin.
-        :param user: the actual user object
-        :return: indicator for administrative privileges
-        """
-        pass
+from cognitive import TextToSpeech
 
 
-async def send(respondee: User, channel: Union[DMChannel, TextChannel], bot: Bot, message: Any, mention: bool = True):
+async def send(respondee: User, channel: Union[DMChannel, TextChannel], bot, message: Any, mention: bool = True):
     """ Send a message to a channel.
     :param respondee: the user which has started the conversation
     :param channel: the target channel for sending the message
@@ -76,11 +24,11 @@ async def send(respondee: User, channel: Union[DMChannel, TextChannel], bot: Bot
         msg = await channel.send(message)
     if not channel.type == ChannelType.private:
         await msg.delete(delay=bot.config.ttl)
-    if bot.tts_indicator:
+    if bot.config.tts_indicator:
         await send_tts(respondee, message, bot, bot.tts)
 
 
-def __find_voice_channel(user: User, bot: Union[Bot, Client]) -> Optional[VoiceChannel]:
+def __find_voice_channel(user: User, bot) -> Optional[VoiceChannel]:
     """ Find a voice channel by user.
     :param user the user
     :param bot the actual bot (has to be Bot and Client!)
@@ -95,7 +43,7 @@ def __find_voice_channel(user: User, bot: Union[Bot, Client]) -> Optional[VoiceC
     return None
 
 
-async def send_tts(respondee: User, message: str, bot: Bot, tts: TextToSpeech) -> None:
+async def send_tts(respondee: User, message: str, bot, tts: TextToSpeech) -> None:
     """ Send a TextToSpeech message.
     :param respondee the user for the search for VoiceChannel
     :param message the message to be sent
@@ -129,13 +77,13 @@ async def send_tts(respondee: User, message: str, bot: Bot, tts: TextToSpeech) -
     remove(path)
 
 
-async def delete(message: Message, bot: Bot, try_force: bool = False) -> None:
+async def delete(message: Message, bot, try_force: bool = False) -> None:
     """ Delete a message.
     :param message the actual message
     :param bot the actual bot
     :param try_force indicates whether the bot shall try to delete even iff debug is activated
     """
-    if bot.debug and not try_force:
+    if bot.config.debug_indicator and not try_force:
         return
 
     if is_direct(message):
@@ -152,7 +100,7 @@ def is_direct(message: Message) -> bool:
     return message.channel.type == ChannelType.private
 
 
-def cleanup(message: str, bot: Bot) -> str:
+def cleanup(message: str, bot) -> str:
     """ Cleanups a message. E.g. replaces the ids of users by their names.
     :param message the message
     :param bot the bot
