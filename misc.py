@@ -23,7 +23,7 @@ async def send(respondee: User, channel: Union[DMChannel, TextChannel], bot, mes
     else:
         msg = await channel.send(message)
     if not channel.type == ChannelType.private:
-        await msg.delete(delay=bot.config.ttl)
+        await delete(msg, bot, bot.config.ttl)
     if bot.config.tts_indicator:
         await send_tts(respondee, message, bot, bot.tts)
 
@@ -77,11 +77,12 @@ async def send_tts(respondee: User, message: str, bot, tts: TextToSpeech) -> Non
     remove(path)
 
 
-async def delete(message: Message, bot, try_force: bool = False) -> None:
+async def delete(message: Message, bot, try_force: bool = False, delay=None) -> None:
     """ Delete a message.
     :param message the actual message
     :param bot the actual bot
     :param try_force indicates whether the bot shall try to delete even iff debug is activated
+    :param delay some delay
     """
     if bot.config.debug_indicator and not try_force:
         return
@@ -90,7 +91,7 @@ async def delete(message: Message, bot, try_force: bool = False) -> None:
         return
 
     try:
-        await message.delete()
+        await message.delete(delay=delay)
     except NotFound:
         pass
 
