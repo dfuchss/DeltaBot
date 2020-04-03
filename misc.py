@@ -2,14 +2,96 @@ from asyncio import sleep
 from os import remove
 from re import sub, findall
 from tempfile import NamedTemporaryFile
-from typing import List, Optional, TypeVar, Union, Any
+from typing import List, Optional, TypeVar, Union, Any, Tuple
 
-from discord import ChannelType, FFmpegPCMAudio, Message, User, VoiceChannel, DMChannel, TextChannel, NotFound
+from discord import ChannelType, FFmpegPCMAudio, Message, User, VoiceChannel, DMChannel, TextChannel, NotFound, Client
 
-from cognitive import TextToSpeech
+from cognitive import TextToSpeech, NLUService, IntentResult, EntityResult
+from configuration import Configuration
+from datetime import datetime
 
 
-async def send(respondee: User, channel: Union[DMChannel, TextChannel], bot, message: Any, mention: bool = True):
+class BotBase(Client):
+    channels: List[int] = []
+    admins: List[Tuple[str, str]] = []
+
+    def __init__(self):
+        super().__init__()
+        self.config = Configuration()
+        self.tts = TextToSpeech(self.config)
+        self.nlu = NLUService(self.config)
+
+    @staticmethod
+    def log(message: Message):
+        """ Log a message to std out.
+        :param message the actual message
+        """
+        print(f"{datetime.now()} => {message.author}[{message.channel}]: {message.content}")
+
+    async def print_intents_entities(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]) -> None:
+        """ Prints the stats of classification of one message.
+        :param message the message
+        :param intents the intent result
+        :param entities the found entities
+        """
+        if not self.config.debug_indicator:
+            return
+
+        result: str = "------------\n"
+        result += f"Intents({len(intents)}):\n"
+
+        for intent in intents:
+            result += f"{intent}\n"
+
+        result += f"\nEntities({len(entities)}):\n"
+        for entity in entities:
+            result += f"{entity}\n"
+
+        result += "------------"
+
+        await send(message.author, message.channel, self, result, mention=False)
+
+    def lookup_user(self, user_id: int) -> Optional[User]:
+        """Find user by id
+        :param user_id: the id of the user
+        :return the found user object or None
+        """
+        users = list(filter(lambda u: u.id == user_id, self.users))
+        if len(users) != 1:
+            return None
+        return users[0]
+
+    def get_bot_user(self) -> Client:
+        """ Get the Discord User of the Bot.
+        :return the Discord User as Client
+        """
+        return self.user
+
+    def is_admin(self, user: User) -> bool:
+        """
+        Check for Admin.
+        :param user: the actual user object
+        :return: indicator for administrative privileges
+        """
+        if len(self.admins) == 0:
+            return True
+
+        for (name, dsc) in self.admins:
+            if user.name == name and user.discriminator == dsc:
+                return True
+        return False
+
+    def add_admins(self, message: Message):
+        for user in message.mentions:
+            self.admins.append((user.name, user.discriminator))
+
+    async def shutdown(self) -> None:
+        """Shutdown the bot"""
+        await self.close()
+        await self.logout()
+
+
+async def send(respondee: User, channel: Union[DMChannel, TextChannel], bot: BotBase, message: Any, mention: bool = True):
     """ Send a message to a channel.
     :param respondee: the user which has started the conversation
     :param channel: the target channel for sending the message
@@ -28,7 +110,7 @@ async def send(respondee: User, channel: Union[DMChannel, TextChannel], bot, mes
         await send_tts(respondee, message, bot, bot.tts)
 
 
-def __find_voice_channel(user: User, bot) -> Optional[VoiceChannel]:
+def __find_voice_channel(user: User, bot: BotBase) -> Optional[VoiceChannel]:
     """ Find a voice channel by user.
     :param user the user
     :param bot the actual bot (has to be Bot and Client!)
@@ -43,7 +125,7 @@ def __find_voice_channel(user: User, bot) -> Optional[VoiceChannel]:
     return None
 
 
-async def send_tts(respondee: User, message: str, bot, tts: TextToSpeech) -> None:
+async def send_tts(respondee: User, message: str, bot: BotBase, tts: TextToSpeech) -> None:
     """ Send a TextToSpeech message.
     :param respondee the user for the search for VoiceChannel
     :param message the message to be sent
@@ -77,14 +159,14 @@ async def send_tts(respondee: User, message: str, bot, tts: TextToSpeech) -> Non
     remove(path)
 
 
-async def delete(message: Message, bot, try_force: bool = False, delay=None) -> None:
+async def delete(message: Message, bot: BotBase, try_force: bool = False, delay=None) -> None:
     """ Delete a message.
     :param message the actual message
     :param bot the actual bot
     :param try_force indicates whether the bot shall try to delete even iff debug is activated
     :param delay some delay
     """
-    if bot.config.debug_indicator and not try_force:
+    if (bot.config.debug_indicator or bot.config.keep_messages) and not try_force:
         return
 
     if is_direct(message):
@@ -104,7 +186,7 @@ def is_direct(message: Message) -> bool:
     return message.channel.type == ChannelType.private
 
 
-def cleanup(message: str, bot) -> str:
+def cleanup(message: str, bot: BotBase) -> str:
     """ Cleanups a message. E.g. replaces the ids of users by their names.
     :param message the message
     :param bot the bot

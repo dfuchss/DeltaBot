@@ -3,12 +3,12 @@ from typing import Union, Callable, Awaitable
 
 from discord import Message
 
-from misc import is_direct, delete, send
+from misc import is_direct, delete, send, BotBase
 
 HandlingFunction = Union[Callable[[], None], Callable[[], Awaitable[None]]]
 
 
-async def __handling_template(self, cmd: str, message: Message, func_dm: HandlingFunction, func_not_admin: HandlingFunction, func: HandlingFunction):
+async def __handling_template(self: BotBase, cmd: str, message: Message, func_dm: HandlingFunction, func_not_admin: HandlingFunction, func: HandlingFunction):
     if not message.content.startswith(cmd):
         return False
 
@@ -35,7 +35,7 @@ async def __handling_template(self, cmd: str, message: Message, func_dm: Handlin
     return True
 
 
-async def handle_system(self, message: Message) -> bool:
+async def handle_system(self: BotBase, message: Message) -> bool:
     if await __handling_template(self, "\\listen-all", message,
                                  lambda: send(message.author, message.channel, self, f"Immer Antworten-Modus ist jetzt {'an' if (self.config.toggle_listen_all()) else 'aus'}"),
                                  lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
@@ -49,7 +49,14 @@ async def handle_system(self, message: Message) -> bool:
                                  lambda: self.channels.append(message.channel.id)
                                  ):
         return True
-    
+
+    if await __handling_template(self, "\\keep", message,
+                                 lambda: send(message.author, message.channel, self, f"Nachrichten löschen ist jetzt {'aus' if (self.config.toggle_keep_messages()) else 'an'}"),
+                                 lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
+                                 lambda: send(message.author, message.channel, self, f"Nachrichten löschen ist jetzt {'aus' if (self.config.toggle_keep_messages()) else 'an'}")
+                                 ):
+        return True
+
     if await __handling_template(self, "\\admin", message,
                                  lambda: send(message.author, message.channel, self, f"Für DM nicht sinnvoll."),
                                  lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
@@ -67,7 +74,7 @@ async def handle_system(self, message: Message) -> bool:
     if await __handling_template(self, "\\tts", message,
                                  lambda: send(message.author, message.channel, self, f"Sprachausgabe ist jetzt {'an' if (self.config.toggle_tts()) else 'aus'}"),
                                  lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
-                                 lambda: send(message.author, message.channel, self, f"TTS ist jetzt: {'an' if (self.config.toggle_tts()) else 'aus'}")
+                                 lambda: send(message.author, message.channel, self, f"Sprachausgabe ist jetzt {'an' if (self.config.toggle_tts()) else 'aus'}")
                                  ):
         return True
 

@@ -23,10 +23,10 @@ WORKDIR /usr/src/app
 COPY ./requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY ./ ./
-
 WORKDIR /usr/src/app/rasa
+COPY ./rasa/ ./
 RUN rasa train nlu --nlu ./training.md
 
 WORKDIR /usr/src/app
+COPY ./ ./
 CMD ["python", "./deltabot.py"]

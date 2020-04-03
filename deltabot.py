@@ -1,12 +1,9 @@
 from threading import Lock
-from typing import Tuple
 
-from discord import Client, Game, Status, User
+from discord import Game, Status, User
 
-from cognitive import TextToSpeech, NLUService
-from configuration import Configuration
 from dialogs import *
-from misc import delete, is_direct, cleanup
+from misc import delete, is_direct, cleanup, BotBase
 from system_commands import handle_system
 
 
@@ -46,9 +43,9 @@ class BotInstance:
         return next((d for d in self._dialogs if d.dialog_id == dialog_id), None)
 
     async def handle(self, message: Message):
-        (intents, entities) = self._bot.nlu.recognize(cleanup(message.content, self))
+        (intents, entities) = self._bot.nlu.recognize(cleanup(message.content, self._bot))
 
-        await self.print_intents_entities(message, intents, entities)
+        await self._bot.print_intents_entities(message, intents, entities)
 
         if len(self.__active_dialog_stack) != 0:
             dialog = self.__active_dialog_stack.pop(0)
@@ -73,46 +70,16 @@ class BotInstance:
         if result == DialogResult.WAIT_FOR_INPUT:
             self.__active_dialog_stack.insert(0, dialog.dialog_id)
 
-    async def print_intents_entities(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]) -> None:
-        """ Prints the stats of classification of one message.
-        :param message the message
-        :param intents the intent result
-        :param entities the found entities
-        """
-        if not self._bot.config.debug_indicator:
-            return
-
-        result: str = "------------\n"
-        result += f"Intents({len(intents)}):\n"
-
-        for intent in intents:
-            result += f"{intent}\n"
-
-        result += f"\nEntities({len(entities)}):\n"
-        for entity in entities:
-            result += f"{entity}\n"
-
-        result += "------------"
-
-        await send(message.author, message.channel, self._bot, result, mention=False)
-
     def has_active_dialog(self):
         return len(self.__active_dialog_stack) != 0
 
 
-class DeltaBot(Client):
+class DeltaBot(BotBase):
     """ The DeltaBot main client. """
-
-    channels: List[int] = []
-    admins: List[Tuple[str, str]] = []
 
     def __init__(self) -> None:
         """ Initialize the DeltaBot. """
-        Client.__init__(self)
-        self.config = Configuration()
-        self.tts = TextToSpeech(self.config)
-        self.nlu = NLUService(self.config)
-
+        super().__init__()
         self._user_to_instance = {}
         self._user_to_instance_lock = Lock()
 
@@ -127,52 +94,6 @@ class DeltaBot(Client):
         print('Logged on as', self.user)
         game = Game("Schreib' mir ..")
         await self.change_presence(status=Status.idle, activity=game)
-
-    def is_admin(self, user: User) -> bool:
-        """
-        Check for Admin.
-        :param user: the actual user object
-        :return: indicator for administrative privileges
-        """
-        if len(self.admins) == 0:
-            return True
-
-        for (name, dsc) in self.admins:
-            if user.name == name and user.discriminator == dsc:
-                return True
-        return False
-
-    def add_admins(self, message: Message):
-        for user in message.mentions:
-            self.admins.append((user.name, user.discriminator))
-
-    async def shutdown(self) -> None:
-        """Shutdown the bot"""
-        await self.close()
-        await self.logout()
-
-    def lookup_user(self, user_id: int) -> Optional[User]:
-        """Find user by id
-        :param user_id: the id of the user
-        :return the found user object or None
-        """
-        users = list(filter(lambda u: u.id == user_id, self.users))
-        if len(users) != 1:
-            return None
-        return users[0]
-
-    def get_bot_user(self) -> Client:
-        """ Get the Discord User of the Bot.
-        :return the Discord User as Client
-        """
-        return self.user
-
-    @staticmethod
-    def log(message: Message):
-        """ Log a message to std out.
-        :param message the actual message
-        """
-        print(f"{datetime.now()} => {message.author}[{message.channel}]: {message.content}")
 
     async def on_message(self, message: Message) -> None:
         """Handle a new message.

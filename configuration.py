@@ -36,6 +36,7 @@ class Configuration:
         self.tts_indicator = False
         self.debug_indicator = False
         self.listen_all = False
+        self.keep_messages = True
 
     def toggle_tts(self):
         self.tts_indicator = not self.tts_indicator
@@ -48,4 +49,8 @@ class Configuration:
     def toggle_listen_all(self):
         self.listen_all = not self.listen_all
         return self.listen_all
+
+    def toggle_keep_messages(self):
+        self.keep_messages = not self.keep_messages
+        return self.keep_messages
 
