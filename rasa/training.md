@@ -143,3 +143,15 @@
 - neuen witz
 - neuen qna
 - neues qna
+
+## intent:QnA-Good
+- mir geht es gut
+- dann ists ja gut
+- das ist schön
+- das freut mich
+
+## intent:QnA-Bad
+- mir geht es nicht gut
+- mir geht es schlecht
+- das ist blöd
+- das macht mich traurig

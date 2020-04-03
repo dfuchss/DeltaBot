@@ -6,6 +6,7 @@ from discord import Message
 
 from cognitive import IntentResult, EntityResult
 from deltabot import DeltaBot
+from misc import is_direct
 
 
 class DialogResult(Enum):
@@ -46,3 +47,18 @@ class Dialog:
         self._steps.clear()
         self._next = 0
         self._load_initial_steps()
+
+    @staticmethod
+    def enhance(response: str, reference: Message) -> str:
+        """ Enhances the response by information like user, channel etc.
+        :param response the message to enhance
+        :param reference the reference message (from the user)
+        :return the new response
+        """
+        result = response.replace("#USER", reference.author.name)
+        if is_direct(reference):
+            channel_name = f"@{reference.author.name}"
+        else:
+            channel_name = f"@{reference.channel.name}"
+        result = result.replace("#CHANNEL", channel_name)
+        return result

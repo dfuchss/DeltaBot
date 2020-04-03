@@ -24,7 +24,12 @@ class NotUnderstanding(Dialog):
         self.add_step(self._not_understood_step)
 
     async def _not_understood_step(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
-        await send(message.author, message.channel, self._bot, "Das war zu viel für mich :( Ich hab das nicht verstanden")
+        responses = open("QnA/NotUnderstanding.json", "r", encoding="utf-8-sig")
+        response = loads(responses.read().strip())
+        responses.close()
+        response = choice(response)
+        response = self.enhance(response, message)
+        await send(message.author, message.channel, self._bot, response)
         return DialogResult.NEXT
 
 
@@ -122,25 +127,10 @@ class QnA(Dialog):
         response = loads(qna_file.read().strip())
         qna_file.close()
         response = choice(response)
-        response = self.__enhance(response, message)
+        response = self.enhance(response, message)
         await send(message.author, message.channel, self._bot, response)
 
         return DialogResult.NEXT
-
-    @staticmethod
-    def __enhance(response: str, reference: Message) -> str:
-        """ Enhances the response by information like user, channel etc.
-        :param response the message to enhance
-        :param reference the reference message (from the user)
-        :return the new response
-        """
-        result = response.replace("#USER", reference.author.name)
-        if is_direct(reference):
-            channel_name = f"@{reference.author.name}"
-        else:
-            channel_name = f"@{reference.channel.name}"
-        result = result.replace("#CHANNEL", channel_name)
-        return result
 
 
 class QnAAnswer(Dialog):
