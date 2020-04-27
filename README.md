@@ -1,5 +1,5 @@
 # DeltaBot - My simple Discord Bot
-This repo contains my first [Discord](https://discordapp.com/) bot. It uses [RASA]("https://rasa.com") for NLP and [Microsoft Speech Services](https://docs.microsoft.com/en-us/azure/cognitive-services/speech-service/) for Voice Synthesis.
+This repo contains my first [Discord](https://discordapp.com/) bot. It uses [RASA]("https://rasa.com") for NLP.
 
 ## Requirements (Development):
 - python3 with pip
@@ -7,18 +7,15 @@ This repo contains my first [Discord](https://discordapp.com/) bot. It uses [RAS
 - opus lib in library path
 
 ## Run the Bot (via Docker)
-You'll need the following three things:
+You'll need the following two things:
 * The possibility to run a docker container
 * A Discord Bot Account
-* A subscription for the Speech Services on Azure
 
 Then simply run ``docker build -t deltabot .`` to build a docker image of the bot.
  
 To start the bot simply run:
 ```
 docker run -d \
-    --env TTSKey="Your TTS Key" \
-    --env TTSResource="Your TTS Resource" \
     --env DiscordToken="Your Discord Token" \
 deltabot
  ```
@@ -26,8 +23,6 @@ deltabot
 Optionally you can already specify group channels for listening or the default admin users:
 ```
 docker run -d \
-    --env TTSKey="Your TTS Key" \
-    --env TTSResource="Your TTS Resource" \
     --env DiscordToken="Your Discord Token" \
     --env Channels="ID1;ID2" \
     --env Admins="Dominik,0292;UserName2,Dsc2" \

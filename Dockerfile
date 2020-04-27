@@ -1,22 +1,20 @@
 FROM python:3.6
 
-ENV TTSKey "The_TTS_Key"
-ENV TTSResource "The_TTS_Resource"
 ENV DiscordToken "The_Discord_Token"
 ENV Channels ""
 ENV Admins ""
 
-WORKDIR /usr/src/
+# WORKDIR /usr/src/
 
-# FFMPEG
-RUN wget https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz
-RUN tar xJf ffmpeg-release-amd64-static.tar.xz
-RUN rm ffmpeg-release-amd64-static.tar.xz
-RUN mv ffmpeg* ffmpeg
-RUN ln -s /usr/src/ffmpeg/ffmpeg /usr/bin/ffmpeg
+# FFMPEG (Voice)
+# RUN wget https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz
+# RUN tar xJf ffmpeg-release-amd64-static.tar.xz
+# RUN rm ffmpeg-release-amd64-static.tar.xz
+# RUN mv ffmpeg* ffmpeg
+# RUN ln -s /usr/src/ffmpeg/ffmpeg /usr/bin/ffmpeg
 
-# OPUS
-RUN apt update && apt install libopus0 opus-tools -y && apt clean
+# OPUS (Voice)
+# RUN apt update && apt install libopus0 opus-tools -y && apt clean
 
 WORKDIR /usr/src/app
 

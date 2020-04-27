@@ -15,7 +15,7 @@ class DialogResult(Enum):
 
 
 class Dialog:
-    StepType = Callable[[str, List[IntentResult], List[EntityResult]], DialogResult]
+    StepType = Callable[[Message, List[IntentResult], List[EntityResult]], DialogResult]
 
     def __init__(self, bot: DeltaBot, dialog_id: str):
         self._steps: List[Dialog.StepType] = []

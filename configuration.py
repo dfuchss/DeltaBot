@@ -13,11 +13,6 @@ class Configuration:
         # Entities
         self.entity_file = getenv("EntityFile", "rasa/training-entities.json")
 
-        # TTS
-        self.tts_region = getenv("TTSRegion", "westeurope")
-        self.tts_key = environ["TTSKey"]
-        self.tts_resource = environ["TTSResource"]
-
         # Discord
         self.ttl = 10.0
         self.token = environ["DiscordToken"]
@@ -33,14 +28,9 @@ class Configuration:
         self.admins = map(lambda name: name.split(','), filter(None, env_admins))
 
         # Indicators
-        self.tts_indicator = False
         self.debug_indicator = False
         self.listen_all = False
         self.keep_messages = True
-
-    def toggle_tts(self):
-        self.tts_indicator = not self.tts_indicator
-        return self.tts_indicator
 
     def toggle_debug(self):
         self.debug_indicator = not self.debug_indicator
@@ -53,4 +43,3 @@ class Configuration:
     def toggle_keep_messages(self):
         self.keep_messages = not self.keep_messages
         return self.keep_messages
-

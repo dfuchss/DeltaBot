@@ -1,12 +1,9 @@
-from asyncio import sleep
-from os import remove
 from re import sub, findall
-from tempfile import NamedTemporaryFile
 from typing import List, Optional, TypeVar, Union, Any, Tuple
 
-from discord import ChannelType, FFmpegPCMAudio, Message, User, VoiceChannel, DMChannel, TextChannel, NotFound, Client
+from discord import ChannelType, Message, User, DMChannel, TextChannel, NotFound, Client
 
-from cognitive import TextToSpeech, NLUService, IntentResult, EntityResult
+from cognitive import NLUService, IntentResult, EntityResult
 from configuration import Configuration
 from datetime import datetime
 
@@ -18,7 +15,6 @@ class BotBase(Client):
     def __init__(self):
         super().__init__()
         self.config = Configuration()
-        self.tts = TextToSpeech(self.config)
         self.nlu = NLUService(self.config)
 
     @staticmethod
@@ -82,6 +78,9 @@ class BotBase(Client):
         return False
 
     def add_admins(self, message: Message):
+        if not self.is_admin(message.author):
+            return
+
         for user in message.mentions:
             self.admins.append((user.name, user.discriminator))
 
@@ -106,57 +105,6 @@ async def send(respondee: User, channel: Union[DMChannel, TextChannel], bot: Bot
         msg = await channel.send(message)
     if not channel.type == ChannelType.private:
         await delete(msg, bot, delay=bot.config.ttl)
-    if bot.config.tts_indicator:
-        await send_tts(respondee, message, bot, bot.tts)
-
-
-def __find_voice_channel(user: User, bot: BotBase) -> Optional[VoiceChannel]:
-    """ Find a voice channel by user.
-    :param user the user
-    :param bot the actual bot (has to be Bot and Client!)
-    :return the found voice channel or None
-    """
-    if hasattr(user, "voice") and user.voice is not None:
-        return user.voice.channel
-    for guild in bot.guilds:
-        for channel in guild.channels:
-            if channel.type == ChannelType.voice and user in channel.members:
-                return channel
-    return None
-
-
-async def send_tts(respondee: User, message: str, bot: BotBase, tts: TextToSpeech) -> None:
-    """ Send a TextToSpeech message.
-    :param respondee the user for the search for VoiceChannel
-    :param message the message to be sent
-    :param bot: the actual bot
-    :param tts: the TextToSpeech service
-    """
-    vc = __find_voice_channel(respondee, bot)
-
-    if vc is None:
-        return
-
-    temp = NamedTemporaryFile(suffix=".mp3")
-    path = temp.name
-    temp.close()
-
-    # Generate TTS
-    res = tts.create_tts(cleanup(message, bot), path)
-    if not res:
-        return
-
-    # Play it ..
-    client = await vc.connect()
-    audio = FFmpegPCMAudio(path)
-    client.play(audio)
-    while client.is_playing():
-        await sleep(1)
-    client.stop()
-    await client.disconnect()
-
-    # Cleanup ..
-    remove(path)
 
 
 async def delete(message: Message, bot: BotBase, try_force: bool = False, delay=None) -> None:
@@ -212,9 +160,9 @@ def cleanup(message: str, bot: BotBase) -> str:
 T = TypeVar('T')
 
 
-def flatten(l: List[List[T]]) -> List[T]:
+def flatten(inlist: List[List[T]]) -> List[T]:
     """ Flatten a List of Lists.
-    :param l the list of lists
+    :param inlist the list of lists
     :return the new list
     """
-    return [item for sublist in l for item in sublist]
+    return [item for sublist in inlist for item in sublist]

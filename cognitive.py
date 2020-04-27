@@ -1,12 +1,9 @@
-from datetime import datetime
 from json import loads
 from re import search, sub
 from typing import List
-from xml.etree import ElementTree
 
 from rasa.model import get_model
 from rasa.nlu.model import Interpreter
-from requests import post
 
 from configuration import Configuration
 from json_objects import dict_to_obj
@@ -142,55 +139,3 @@ class NLUService:
                         break
 
         return result
-
-
-class TextToSpeech:
-    """ Defines a text to speech service based on MS Cognitive Services."""
-    _token_life = 600
-
-    def __init__(self, config: Configuration) -> None:
-        """ Create the service by configuration.
-        :param config the bot configuration
-        """
-        self._access_token = None
-        self._access_time = None
-        self._config = config
-
-    def _get_token(self) -> None:
-        fetch_token_url = f"https://{self._config.tts_region}.api.cognitive.microsoft.com/sts/v1.0/issueToken"
-        headers = {'Ocp-Apim-Subscription-Key': self._config.tts_key}
-        response = post(fetch_token_url, headers=headers)
-        self._access_token = str(response.text)
-        self._access_time = datetime.now()
-
-    def create_tts(self, text: str, path: str) -> bool:
-        """ Save a speech to a file.
-        :param text the actual text
-        :param path the path to a file (mp3)
-        :return indicator of success
-        """
-        if self._access_token is None or (datetime.now() - self._access_time).total_seconds() >= self._token_life:
-            self._get_token()
-
-        url = f"https://{self._config.tts_region}.tts.speech.microsoft.com/cognitiveservices/v1"
-        headers = {
-            'Authorization': 'Bearer ' + self._access_token,
-            'Content-Type': 'application/ssml+xml',
-            'X-Microsoft-OutputFormat': "audio-24khz-48kbitrate-mono-mp3",
-            'User-Agent': self._config.tts_resource
-        }
-        xml_body = ElementTree.Element('speak', version='1.0')
-        xml_body.set('{http://www.w3.org/XML/1998/namespace}lang', 'de-DE')
-        voice = ElementTree.SubElement(xml_body, 'voice')
-        voice.set('{http://www.w3.org/XML/1998/namespace}lang', 'de-DE')
-        # Speeches: "Hedda", "HeddaRUS", "Stefan, Apollo"
-        voice.set('name', 'Microsoft Server Speech Text to Speech Voice (de-DE, Stefan, Apollo)')
-        voice.text = sub(r"[^.,;:\na-zA-Z0-9ÄÖÜäöüß -]", "", text)
-        body = ElementTree.tostring(xml_body)
-
-        response = post(url, headers=headers, data=body)
-        if response.status_code == 200:
-            with open(path, 'wb') as audio:
-                audio.write(response.content)
-                return True
-        return False

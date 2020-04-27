@@ -243,14 +243,27 @@ class News(Dialog):
         super().__init__(bot, News.ID)
 
     def _load_initial_steps(self):
+        self.add_step(self._select_news)
+
+    async def _select_news(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
+        entities = filter(lambda e: e.group == "news", entities)
+        categories = list(map(lambda e: e.name, entities))
+        if len(categories) != 0:
+            self.add_step(self._news_step)
+            return DialogResult.NEXT
+
+        await send(message.author, message.channel, self._bot, f"Für welche Kategorie(n) willst Du Nachrichten?\n{', '.join(self.Providers.keys())}")
         self.add_step(self._news_step)
+        return DialogResult.WAIT_FOR_INPUT
 
     async def _news_step(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
         entities = filter(lambda e: e.group == "news", entities)
         categories = list(map(lambda e: e.name, entities))
         if not categories:
-            categories = ["Allgemein"]
+            await send(message.author, message.channel, self._bot, "Leider habe ich keine Kategorie erkannt. Dialog erstmal beenden ;)")
+            return DialogResult.NEXT
 
+        sent = False
         for category in categories:
             for provider in self.Providers[category]:
                 response = f"\n**{provider.name}**\n"
@@ -268,7 +281,10 @@ class News(Dialog):
                     response += news["title"]
                     response += f" (<{url}>)\n"
                 if len(news_feed) == 0:
-                    response += "Nix, rein gar nichts .."
+                    # response += "Nix, rein gar nichts .."
+                    sent = True
                 await send(message.author, message.channel, self._bot, response)
 
+        if not sent:
+            await send(message.author, message.channel, self._bot, "Keine neuen Nachrichten.")
         return DialogResult.NEXT
