@@ -230,10 +230,7 @@ class News(Dialog):
             self.url = url
 
     Providers: Dict[str, List[NewsProvider]] = {
-        "Allgemein": [
-            NewsProvider("Tagesschau", "https://www.tagesschau.de/xml/rss2"),
-            NewsProvider("heise online", "https://www.heise.de/rss/heise-top-atom.xml")
-        ],
+        "Allgemein": [NewsProvider("Tagesschau", "https://www.tagesschau.de/xml/rss2")],
         "Sport": [NewsProvider("Sport1", "https://www.sport1.de/news.rss")],
         "IT": [NewsProvider("heise online", "https://www.heise.de/rss/heise-top-atom.xml")],
         "Netcup": [NewsProvider("Netcup", "https://www.netcup-sonderangebote.de/feed")]
@@ -280,7 +277,7 @@ class News(Dialog):
                     url = url.replace("http://www.", "http://")
                     response += news["title"]
                     response += f" (<{url}>)\n"
-                if len(news_feed) == 0:
+                if len(news_feed) != 0:
                     # response += "Nix, rein gar nichts .."
                     sent = True
                 await send(message.author, message.channel, self._bot, response)

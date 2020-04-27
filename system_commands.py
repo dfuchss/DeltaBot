@@ -40,8 +40,8 @@ async def __state(user, channel, bot: BotBase):
     msg += f"NLU-Threshold: {bot.config.nlu_threshold}\n"
     msg += f"Entities: {bot.config.entity_file}\n"
     msg += f"TTL: {bot.config.ttl}\n"
-    msg += f"Channels: {', '.join(map(str, bot.config.channels))}\n"
-    msg += f"Admins: {', '.join(map(str, bot.config.admins))}\n"
+    msg += f"Channels: {', '.join(map(str, bot.channels))}\n"
+    msg += f"Admins: {', '.join(map(str, bot.admins))}\n"
     msg += f"Debug: {bot.config.debug_indicator}\n"
     msg += f"Listen-All: {bot.config.listen_all}\n"
     msg += f"Keep-Messages: {bot.config.keep_messages}"
@@ -71,7 +71,7 @@ async def handle_system(self: BotBase, message: Message) -> bool:
         return True
 
     if await __handling_template(self, "\\admin", message,
-                                 lambda: self.add_admins(message),
+                                 lambda: send(message.author, message.channel, self, "Das geht nicht im Privaten channel!"),
                                  lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
                                  lambda: self.add_admins(message)
                                  ):
