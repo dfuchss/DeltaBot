@@ -104,6 +104,8 @@
 - was kannst du nochmal alles
 - was sind deine fähigkeiten
 - what can you do for me
+- was kannst du
+- was kannst du?
 
 ## intent:QnA-WhoAreYou
 - wer bist Du

@@ -1,17 +1,22 @@
-language: "de"
-pipeline: "supervised_embeddings"
+language: de
+pipeline: 
+  - name: "WhitespaceTokenizer"
+  - name: "RegexFeaturizer"
+  - name: "CountVectorsFeaturizer"
+  - name: "CountVectorsFeaturizer"
+    analyzer: "char_wb"
+    min_ngram: 1
+    max_ngram: 4
+  - name: DIETClassifier
+    epochs: 500
+    hidden_layers_sizes:
+      text: [256, 128]
+    number_of_transformer_layers: 2
+    weight_sparsity: 0.8
+    intent_classification: True
+    entity_recognition: False
+    use_masked_language_model: False
+    BILOU_flag: False
 
-#language: "de_core_news_sm"
-#pipeline: 
-#- name: "CountVectorsFeaturizer"
-#- name: "EmbeddingIntentClassifier"
-#- name: "SpacyNLP"
-#- name: "SpacyTokenizer"
-#- name: "RegexFeaturizer"
-#- name: "CRFEntityExtractor"
-#  features: [
-#              ["low", "title", "upper"],
-#              ["bias", "low", "prefix5", "prefix2", "suffix5", "suffix3",
-#               "suffix2", "upper", "title", "digit", "pattern"],
-#              ["low", "title", "upper"]
-#            ]
+
+
