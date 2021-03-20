@@ -24,7 +24,8 @@ class BotBase(Client):
         """
         print(f"{datetime.now()} => {message.author}[{message.channel}]: {message.content}")
 
-    async def print_intents_entities(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]) -> None:
+    async def print_intents_entities(self, message: Message, intents: List[IntentResult],
+                                     entities: List[EntityResult]) -> None:
         """ Prints the stats of classification of one message.
         :param message the message
         :param intents the intent result
@@ -90,7 +91,8 @@ class BotBase(Client):
         await self.logout()
 
 
-async def send(respondee: User, channel: Union[DMChannel, TextChannel], bot: BotBase, message: Any, mention: bool = True):
+async def send(respondee: User, channel: Union[DMChannel, TextChannel], bot: BotBase, message: Any,
+               mention: bool = True):
     """ Send a message to a channel.
     :param respondee: the user which has started the conversation
     :param channel: the target channel for sending the message
@@ -140,6 +142,11 @@ def cleanup(message: str, bot: BotBase) -> str:
     :param bot the bot
     :return the new message
     """
+
+    self_ref = f"<@!{bot.user.id}>"
+    if self_ref in message:
+        message = message.replace(self_ref, "")
+
     refs = findall("<@[0-9]+>", message)
     if not refs:
         return message

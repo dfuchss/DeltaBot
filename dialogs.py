@@ -9,9 +9,11 @@ from feedparser import parse
 from cognitive import IntentResult, EntityResult
 from deltabot import DeltaBot
 from dialog_management import Dialog, DialogResult
-from misc import send, is_direct, delete
+from misc import send, is_direct, delete, cleanup
 from genericpath import exists
 from datetime import datetime
+from random import shuffle
+from re import split
 
 
 class NotUnderstanding(Dialog):
@@ -43,7 +45,8 @@ class Debug(Dialog):
         self.add_step(self._toggle_debug_step)
 
     async def _toggle_debug_step(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
-        await send(message.author, message.channel, self._bot, f"Entwicklermodus ist jetzt: {self._bot.config.toggle_debug()}")
+        await send(message.author, message.channel, self._bot,
+                   f"Entwicklermodus ist jetzt: {self._bot.config.toggle_debug()}")
         return DialogResult.NEXT
 
 
@@ -82,7 +85,8 @@ class Cleanup(Dialog):
         self.__channel_user_msg = None
 
     async def _ask_cleanup(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
-        await send(message.author, message.channel, self._bot, f"Soll ich alle Nachrichten von {str(message.author)} aus {str(message.channel)} und meine Nachrichten löschen? (Yes/No)?")
+        await send(message.author, message.channel, self._bot,
+                   f"Soll ich alle Nachrichten von {str(message.author)} aus {str(message.channel)} und meine Nachrichten löschen? (Yes/No)?")
         self.__channel_user_msg = message
         return DialogResult.WAIT_FOR_INPUT
 
@@ -101,7 +105,8 @@ class Cleanup(Dialog):
 
         author = self.__channel_user_msg.author
         async for m in self.__channel_user_msg.channel.history():
-            if (author == m.author or m.author == self._bot.get_bot_user()) and m.id != self.__channel_user_msg.id and m.id != message.id:
+            if (
+                    author == m.author or m.author == self._bot.get_bot_user()) and m.id != self.__channel_user_msg.id and m.id != message.id:
                 await delete(m, self._bot, try_force=True)
 
         return DialogResult.NEXT
@@ -149,7 +154,8 @@ class QnAAnswer(Dialog):
             await send(message.author, message.channel, self._bot, f"Dazu hast Du keine Berechtigung")
             return DialogResult.NEXT
 
-        await send(message.author, message.channel, self._bot, f"Für welches QnA soll ein neuer Text gespeichert werden?")
+        await send(message.author, message.channel, self._bot,
+                   f"Für welches QnA soll ein neuer Text gespeichert werden?")
         self.add_step(self._store_qna_ask_text)
         return DialogResult.WAIT_FOR_INPUT
 
@@ -164,9 +170,11 @@ class QnAAnswer(Dialog):
         self.add_step(self._store_text_ask_confirmation)
         return DialogResult.WAIT_FOR_INPUT
 
-    async def _store_text_ask_confirmation(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
+    async def _store_text_ask_confirmation(self, message: Message, intents: List[IntentResult],
+                                           entities: List[EntityResult]):
         self._text = message.content
-        await send(message.author, message.channel, self._bot, f"Soll ich in {self._qna} '{self._text}' speichern? (Y/N)")
+        await send(message.author, message.channel, self._bot,
+                   f"Soll ich in {self._qna} '{self._text}' speichern? (Y/N)")
         self.add_step(self._qna_step)
         return DialogResult.WAIT_FOR_INPUT
 
@@ -205,6 +213,105 @@ class Clock(Dialog):
 
     async def _time_step(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
         await send(message.author, message.channel, self._bot, f"{datetime.now()}")
+        return DialogResult.NEXT
+
+
+class Random(Dialog):
+    ID = "Choose"
+
+    def __init__(self, bot: DeltaBot):
+        super().__init__(bot, Random.ID)
+        self._element_map = {}
+        self._num_map = {}
+
+    def _elements(self, key):
+        if key not in self._element_map.keys():
+            self._element_map[key] = []
+        return self._element_map[key]
+
+    def _load_initial_steps(self):
+        self.add_step(self._check_state)
+
+    async def _check_state(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
+        if len(self._elements(message.author)) != 0:
+            self.add_step(self._ask_for_use_old_elements)
+        else:
+            self.add_step(self._ask_for_new_elements)
+
+        return DialogResult.NEXT
+
+    async def _ask_for_use_old_elements(self, message: Message, intents: List[IntentResult],
+                                        entities: List[EntityResult]):
+        await send(message.author, message.channel, self._bot,
+                   f"Soll ich die alten Werte nochmal neu zuordnen? : {self._elements(message.author)}")
+        self.add_step(self._check_ask_for_use_old_elements)
+        return DialogResult.WAIT_FOR_INPUT
+
+    async def _check_ask_for_use_old_elements(self, message: Message, intents: List[IntentResult],
+                                              entities: List[EntityResult]):
+        if len(intents) == 0 or intents[0].name != "yes":
+            self.add_step(self._ask_for_new_elements)
+        else:
+            self.add_step(self._generate)
+
+        return DialogResult.NEXT
+
+    async def _ask_for_new_elements(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
+        await send(message.author, message.channel, self._bot, f"Bitte gib die Werte an, die zur Auswahl stehen ..")
+        self.add_step(self._update_elements)
+        return DialogResult.WAIT_FOR_INPUT
+
+    async def _update_elements(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
+        text: str = cleanup(message.content, self._bot)
+        splits = split("\\s+", text)
+        splits = list(filter(lambda x: len(x.strip()) != 0, splits))
+        ls: List[str] = self._elements(message.author)
+        ls.clear()
+        for val in splits:
+            ls.append(val)
+
+        self.add_step(self._ask_for_groups)
+        return DialogResult.NEXT
+
+    async def _ask_for_groups(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
+        await send(message.author, message.channel, self._bot,
+                   f"Bitte gib in wieviele Gruppen ich die Menge teilen muss")
+        self.add_step(self._check_ask_for_groups)
+        return DialogResult.WAIT_FOR_INPUT
+
+    async def _check_ask_for_groups(self, message: Message, intents: List[IntentResult],
+                                    entities: List[EntityResult]):
+        text: str = cleanup(message.content, self._bot)
+        text = text.strip()
+        value = -1
+        try:
+            value = int(text)
+        except Exception:
+            pass
+        if value < 1:
+            await send(message.author, message.channel, self._bot, f"Das ist keine gute Zahl")
+            self.add_step(self._ask_for_groups)
+            return DialogResult.NEXT
+
+        self._num_map[message.author] = value
+        self.add_step(self._generate)
+        return DialogResult.NEXT
+
+    async def _generate(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
+        elements = self._elements(message.author)
+        num_groups = self._num_map[message.author]
+        shuffle(elements)
+
+        groups = {}
+        for i in range(0, num_groups):
+            groups[i] = []
+
+        i = 0
+        for e in elements:
+            groups[i].append(e)
+            i = (i + 1) % num_groups
+
+        await send(message.author, message.channel, self._bot, f"Zuordnung: {groups}")
         return DialogResult.NEXT
 
 
@@ -249,7 +356,8 @@ class News(Dialog):
             self.add_step(self._news_step)
             return DialogResult.NEXT
 
-        await send(message.author, message.channel, self._bot, f"Für welche Kategorie(n) willst Du Nachrichten?\n{', '.join(self.Providers.keys())}")
+        await send(message.author, message.channel, self._bot,
+                   f"Für welche Kategorie(n) willst Du Nachrichten?\n{', '.join(self.Providers.keys())}")
         self.add_step(self._news_step)
         return DialogResult.WAIT_FOR_INPUT
 
@@ -257,7 +365,8 @@ class News(Dialog):
         entities = filter(lambda e: e.group == "news", entities)
         categories = list(map(lambda e: e.name, entities))
         if not categories:
-            await send(message.author, message.channel, self._bot, "Leider habe ich keine Kategorie erkannt. Dialog erstmal beenden ;)")
+            await send(message.author, message.channel, self._bot,
+                       "Leider habe ich keine Kategorie erkannt. Dialog erstmal beenden ;)")
             return DialogResult.NEXT
 
         sent = False

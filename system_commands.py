@@ -43,16 +43,16 @@ async def __state(user, channel, bot: BotBase):
     msg += f"Channels: {', '.join(map(str, bot.channels))}\n"
     msg += f"Admins: {', '.join(map(str, bot.admins))}\n"
     msg += f"Debug: {bot.config.debug_indicator}\n"
-    msg += f"Listen-All: {bot.config.listen_all}\n"
+    msg += f"Respond-All: {bot.config.respond_all}\n"
     msg += f"Keep-Messages: {bot.config.keep_messages}"
     await send(user, channel, bot, msg)
 
 
 async def handle_system(self: BotBase, message: Message) -> bool:
-    if await __handling_template(self, "\\listen-all", message,
-                                 lambda: send(message.author, message.channel, self, f"Immer Antworten-Modus ist jetzt {'an' if (self.config.toggle_listen_all()) else 'aus'}"),
+    if await __handling_template(self, "\\respond-all", message,
+                                 lambda: send(message.author, message.channel, self, f"Immer Antworten-Modus ist jetzt {'an' if (self.config.toggle_respond_all()) else 'aus'}"),
                                  lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
-                                 lambda: send(message.author, message.channel, self, f"Immer Antworten-Modus ist jetzt {'an' if (self.config.toggle_listen_all()) else 'aus'}")
+                                 lambda: send(message.author, message.channel, self, f"Immer Antworten-Modus ist jetzt {'an' if (self.config.toggle_respond_all()) else 'aus'}")
                                  ):
         return True
 

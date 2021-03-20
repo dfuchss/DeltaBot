@@ -25,7 +25,8 @@ class BotInstance:
             News(self._bot),
             Shutdown(self._bot),
             Cleanup(self._bot),
-            QnAAnswer(self._bot)
+            QnAAnswer(self._bot),
+            Random(self._bot)
         ]
 
         self._intent_to_dialog = {
@@ -36,7 +37,8 @@ class BotInstance:
             "News".lower(): News.ID,
             "Shutdown".lower(): Shutdown.ID,
             "Cleanup".lower(): Cleanup.ID,
-            "Answer".lower(): QnAAnswer.ID
+            "Answer".lower(): QnAAnswer.ID,
+            "Choose".lower(): Random.ID
         }
 
     def __lookup_dialog(self, dialog_id: str):
@@ -109,7 +111,7 @@ class DeltaBot(BotBase):
 
         instance = self.__get_bot_instance(message.author)
 
-        if not (is_direct(message) or ((self.user in message.mentions or self.config.listen_all) and message.channel.id in self.channels) or instance.has_active_dialog()):
+        if not (is_direct(message) or ((self.user in message.mentions or self.config.respond_all) and message.channel.id in self.channels) or instance.has_active_dialog()):
             return
 
         await delete(message, self)

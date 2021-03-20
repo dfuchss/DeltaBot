@@ -157,3 +157,23 @@
 - mir geht es schlecht
 - das ist blöd
 - das macht mich traurig
+
+## intent:QnA-Thanks
+- danke dir
+- vielen lieben dank
+- gut
+- das hast du toll gemacht
+- danke
+- ich bin zufrienden mit dir
+- das hast du toll gemacht
+- das war genial
+- das hat funktioniert
+
+## intent:choose
+- bitte verteile die leute
+- zufällige auswahl
+- ich brauche wieder eine zuordnung
+- mach mal nen bisschen was random
+- zufall
+- ordne die teams zu
+- ich brauch teams

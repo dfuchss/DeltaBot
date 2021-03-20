@@ -29,16 +29,16 @@ class Configuration:
 
         # Indicators
         self.debug_indicator = False
-        self.listen_all = False
+        self.respond_all = False
         self.keep_messages = True
 
     def toggle_debug(self):
         self.debug_indicator = not self.debug_indicator
         return self.debug_indicator
 
-    def toggle_listen_all(self):
-        self.listen_all = not self.listen_all
-        return self.listen_all
+    def toggle_respond_all(self):
+        self.respond_all = not self.respond_all
+        return self.respond_all
 
     def toggle_keep_messages(self):
         self.keep_messages = not self.keep_messages
