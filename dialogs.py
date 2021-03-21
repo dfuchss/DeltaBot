@@ -374,8 +374,7 @@ class News(Dialog):
             for provider in self.Providers[category]:
                 response = f"\n**{provider.name}**\n"
                 news_feed = parse(provider.url).entries
-                news_feed = filter(lambda e: self.to_date(e.published_parsed).date() == datetime.today().date(),
-                                   news_feed)
+                news_feed = filter(lambda e: self._last24h(e), news_feed)
                 news_feed = sorted(news_feed, key=lambda e: self.to_date(e.published_parsed).time(), reverse=True)
 
                 for idx, news in enumerate(news_feed):
@@ -394,3 +393,9 @@ class News(Dialog):
         if not sent:
             await send(message.author, message.channel, self._bot, "Keine neuen Nachrichten.")
         return DialogResult.NEXT
+
+    def _last24h(self, e) -> bool:
+        published = self.to_date(e.published_parsed)
+        now = datetime.now()
+        diff = now - published
+        return diff.total_seconds() < 24 * 60 * 60  # If less than 24 hours
