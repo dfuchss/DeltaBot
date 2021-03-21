@@ -5,6 +5,7 @@ from discord import Game, Status, User
 from dialogs import *
 from misc import delete, is_direct, cleanup, BotBase
 from system_commands import handle_system
+from user_commands import handle_user
 
 
 class BotInstance:
@@ -107,6 +108,9 @@ class DeltaBot(BotBase):
             return
 
         if await handle_system(self, message):
+            return
+
+        if await handle_user(self, message):
             return
 
         instance = self.__get_bot_instance(message.author)

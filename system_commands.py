@@ -7,8 +7,12 @@ from misc import is_direct, delete, send, BotBase
 
 HandlingFunction = Union[Callable[[], None], Callable[[], Awaitable[None]]]
 
+SYSTEM_COMMAND_SYMBOL = "\\"
 
-async def __handling_template(self: BotBase, cmd: str, message: Message, func_dm: HandlingFunction, func_not_admin: HandlingFunction, func: HandlingFunction):
+
+async def __handling_template(self: BotBase, cmd: str, message: Message, func_dm: HandlingFunction,
+                              func_not_admin: HandlingFunction, func: HandlingFunction):
+    cmd = f"{SYSTEM_COMMAND_SYMBOL}{cmd}"
     if not message.content.startswith(cmd):
         return False
 
@@ -54,49 +58,54 @@ async def __listen(user, channel, bot: BotBase):
 
 
 async def handle_system(self: BotBase, message: Message) -> bool:
-    if await __handling_template(self, "\\respond-all", message,
-                                 lambda: send(message.author, message.channel, self, f"Immer Antworten-Modus ist jetzt {'an' if (self.config.toggle_respond_all()) else 'aus'}"),
+    if await __handling_template(self, "respond-all", message,
+                                 lambda: send(message.author, message.channel, self,
+                                              f"Immer Antworten-Modus ist jetzt {'an' if (self.config.toggle_respond_all()) else 'aus'}"),
                                  lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
-                                 lambda: send(message.author, message.channel, self, f"Immer Antworten-Modus ist jetzt {'an' if (self.config.toggle_respond_all()) else 'aus'}")
+                                 lambda: send(message.author, message.channel, self,
+                                              f"Immer Antworten-Modus ist jetzt {'an' if (self.config.toggle_respond_all()) else 'aus'}")
                                  ):
         return True
 
-    if await __handling_template(self, "\\listen", message,
+    if await __handling_template(self, "listen", message,
                                  lambda: send(message.author, message.channel, self, "Ich höre Dich schon!"),
                                  lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
                                  lambda: __listen(message.author, message.channel, self)
                                  ):
         return True
 
-    if await __handling_template(self, "\\keep", message,
-                                 lambda: send(message.author, message.channel, self, f"Nachrichten löschen ist jetzt {'aus' if (self.config.toggle_keep_messages()) else 'an'}"),
+    if await __handling_template(self, "keep", message,
+                                 lambda: send(message.author, message.channel, self,
+                                              f"Nachrichten löschen ist jetzt {'aus' if (self.config.toggle_keep_messages()) else 'an'}"),
                                  lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
-                                 lambda: send(message.author, message.channel, self, f"Nachrichten löschen ist jetzt {'aus' if (self.config.toggle_keep_messages()) else 'an'}")
+                                 lambda: send(message.author, message.channel, self,
+                                              f"Nachrichten löschen ist jetzt {'aus' if (self.config.toggle_keep_messages()) else 'an'}")
                                  ):
         return True
 
-    if await __handling_template(self, "\\admin", message,
-                                 lambda: send(message.author, message.channel, self, "Das geht nicht im Privaten channel!"),
+    if await __handling_template(self, "admin", message,
+                                 lambda: send(message.author, message.channel, self,
+                                              "Das geht nicht im Privaten channel!"),
                                  lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
                                  lambda: self.add_admins(message)
                                  ):
         return True
 
-    if await __handling_template(self, "\\echo", message,
+    if await __handling_template(self, "echo", message,
                                  lambda: message.channel.send(message.content.replace("<", "").replace(">", "")),
                                  lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
                                  lambda: message.channel.send(message.content.replace("<", "").replace(">", ""))
                                  ):
         return True
 
-    if await __handling_template(self, "\\state", message,
+    if await __handling_template(self, "state", message,
                                  lambda: __state(message.author, message.channel, self),
                                  lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
                                  lambda: __state(message.author, message.channel, self)
                                  ):
         return True
 
-    if await __handling_template(self, "\\", message,
+    if await __handling_template(self, "", message,
                                  lambda: send(message.author, message.channel, self, "Unbekannter Befehl"),
                                  lambda: send(message.author, message.channel, self, "Unbekannter Befehl"),
                                  lambda: send(message.author, message.channel, self, "Unbekannter Befehl"),
