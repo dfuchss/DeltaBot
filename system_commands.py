@@ -48,6 +48,11 @@ async def __state(user, channel, bot: BotBase):
     await send(user, channel, bot, msg)
 
 
+async def __listen(user, channel, bot: BotBase):
+    bot.channels.append(channel.id)
+    await send(user, channel, bot, f"Bitte vom Admin folgende ID eintragen lassen: {channel.id}")
+
+
 async def handle_system(self: BotBase, message: Message) -> bool:
     if await __handling_template(self, "\\respond-all", message,
                                  lambda: send(message.author, message.channel, self, f"Immer Antworten-Modus ist jetzt {'an' if (self.config.toggle_respond_all()) else 'aus'}"),
@@ -59,7 +64,7 @@ async def handle_system(self: BotBase, message: Message) -> bool:
     if await __handling_template(self, "\\listen", message,
                                  lambda: send(message.author, message.channel, self, "Ich höre Dich schon!"),
                                  lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
-                                 lambda: self.channels.append(message.channel.id)
+                                 lambda: __listen(message.author, message.channel, self)
                                  ):
         return True
 
