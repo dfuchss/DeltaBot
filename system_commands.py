@@ -91,4 +91,11 @@ async def handle_system(self: BotBase, message: Message) -> bool:
                                  ):
         return True
 
+    if await __handling_template(self, "\\", message,
+                                 lambda: send(message.author, message.channel, self, "Unbekannter Befehl"),
+                                 lambda: send(message.author, message.channel, self, "Unbekannter Befehl"),
+                                 lambda: send(message.author, message.channel, self, "Unbekannter Befehl"),
+                                 ):
+        return True
+
     return False
