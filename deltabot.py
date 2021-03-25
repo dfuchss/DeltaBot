@@ -27,7 +27,7 @@ class BotInstance:
             Shutdown(self._bot),
             Cleanup(self._bot),
             QnAAnswer(self._bot),
-            Random(self._bot)
+            Choose(self._bot)
         ]
 
         self._intent_to_dialog = {
@@ -39,7 +39,7 @@ class BotInstance:
             "Shutdown".lower(): Shutdown.ID,
             "Cleanup".lower(): Cleanup.ID,
             "Answer".lower(): QnAAnswer.ID,
-            "Choose".lower(): Random.ID
+            "Choose".lower(): Choose.ID
         }
 
     def __lookup_dialog(self, dialog_id: str):

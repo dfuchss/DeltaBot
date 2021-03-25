@@ -216,11 +216,11 @@ class Clock(Dialog):
         return DialogResult.NEXT
 
 
-class Random(Dialog):
+class Choose(Dialog):
     ID = "Choose"
 
     def __init__(self, bot: DeltaBot):
-        super().__init__(bot, Random.ID)
+        super().__init__(bot, Choose.ID)
         self._elements = []
         self._num = -1
 
