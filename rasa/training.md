@@ -89,6 +89,9 @@
 - tell me a joke
 - was weißt du über sandkörner
 - witz
+- bring mich zum lachen
+- sei bitte lustig
+- ich will lachen
 
 ## intent:QnA-State
 - wie geht es dir
