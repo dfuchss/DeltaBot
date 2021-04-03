@@ -1,8 +1,14 @@
 from threading import Lock
+from typing import List, Dict
 
 from discord import Game, Status, User
 
-from dialogs import *
+from dialogs.generic_dialogs import *
+from dialogs.misc_dialogs import *
+from dialogs.admin_dialogs import *
+from dialogs.news_dialog import News
+from dialogs.qna import *
+from dialogs.choose_dialog import Choose
 from misc import delete, is_direct, cleanup, BotBase
 from system_commands import handle_system
 from user_commands import handle_user
@@ -115,7 +121,8 @@ class DeltaBot(BotBase):
 
         instance = self.__get_bot_instance(message.author)
 
-        if not (is_direct(message) or ((self.user in message.mentions or self.config.respond_all) and message.channel.id in self.channels) or instance.has_active_dialog()):
+        if not (is_direct(message) or ((
+                                               self.user in message.mentions or self.config.respond_all) and message.channel.id in self.channels) or instance.has_active_dialog()):
             return
 
         await delete(message, self)

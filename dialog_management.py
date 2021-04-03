@@ -5,8 +5,7 @@ from typing import List, Callable
 from discord import Message
 
 from cognitive import IntentResult, EntityResult
-from deltabot import DeltaBot
-from misc import is_direct
+from misc import is_direct, BotBase
 
 
 class DialogResult(Enum):
@@ -17,7 +16,7 @@ class DialogResult(Enum):
 class Dialog:
     StepType = Callable[[Message, List[IntentResult], List[EntityResult]], DialogResult]
 
-    def __init__(self, bot: DeltaBot, dialog_id: str):
+    def __init__(self, bot: BotBase, dialog_id: str):
         self._steps: List[Dialog.StepType] = []
         self._next = 0
         self._bot = bot
@@ -27,7 +26,8 @@ class Dialog:
     def _load_initial_steps(self):
         pass
 
-    async def proceed(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]) -> DialogResult:
+    async def proceed(self, message: Message, intents: List[IntentResult],
+                      entities: List[EntityResult]) -> DialogResult:
         while len(self._steps) > self._next:
             res = self._steps[self._next](message, intents, entities)
             if iscoroutine(res):
