@@ -101,7 +101,7 @@ class DeltaBot(BotBase):
     async def on_ready(self) -> None:
         """ Will be executed on ready event. """
         print('Logged on as', self.user)
-        activity = Activity(type=ActivityType.watching, name="fuchss.org/projects")
+        activity = Activity(type=ActivityType.watching, name="fuchss.org/L/DeltaBot")
         await self.change_presence(status=Status.online, activity=activity)
 
     async def on_message(self, message: Message) -> None:
