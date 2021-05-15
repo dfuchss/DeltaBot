@@ -1,7 +1,7 @@
 from threading import Lock
-from typing import List, Dict
+from typing import Dict
 
-from discord import Game, Status, User
+from discord import Status, User, Activity, ActivityType
 
 from dialogs.generic_dialogs import *
 from dialogs.misc_dialogs import *
@@ -101,8 +101,8 @@ class DeltaBot(BotBase):
     async def on_ready(self) -> None:
         """ Will be executed on ready event. """
         print('Logged on as', self.user)
-        game = Game("Schreib' mir ..")
-        await self.change_presence(status=Status.idle, activity=game)
+        activity = Activity(type=ActivityType.watching, name="fuchss.org/projects")
+        await self.change_presence(status=Status.online, activity=activity)
 
     async def on_message(self, message: Message) -> None:
         """Handle a new message.

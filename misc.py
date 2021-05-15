@@ -88,7 +88,6 @@ class BotBase(Client):
     async def shutdown(self) -> None:
         """Shutdown the bot"""
         await self.close()
-        await self.logout()
 
 
 async def send(respondee: User, channel: Union[DMChannel, TextChannel], bot: BotBase, message: Any,
