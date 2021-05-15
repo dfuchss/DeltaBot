@@ -1,15 +1,22 @@
 from asyncio import iscoroutine
-from typing import Union, Callable, Awaitable, Optional
+from typing import Union, Callable, Awaitable, Optional, List
 
-from discord import Message, VoiceChannel
+from discord import Message, VoiceChannel, User, TextChannel, Role
 
-from misc import delete, send, BotBase
+from misc import delete, send, BotBase, send_help_message
 
 from random import randint, shuffle
 
 HandlingFunction = Union[Callable[[], None], Callable[[], Awaitable[None]]]
 
 USER_COMMAND_SYMBOL = "/"
+
+
+def __crop_command(raw_message: str):
+    msg = raw_message.split(" ", 1)
+    if len(msg) == 1:
+        return ""
+    return msg[1].strip()
 
 
 async def __handling_template(self: BotBase, cmd: str, message: Message, func: HandlingFunction):
@@ -45,7 +52,32 @@ async def __roll(message, self):
     await send(message.author, message.channel, self, f"{rnd}")
 
 
-async def __teams(message, self):
+async def __summon(message: Message, self: BotBase):
+    if len(message.role_mentions) == 0:
+        await send(message.author, message.channel, self, f"Ich habe keine Gruppen gefunden ..")
+        return
+
+    user: User = message.author
+    time: str = __crop_command(message.clean_content)
+    roles: List[Role] = message.role_mentions
+
+    for role in roles:
+        time = time.replace(f"@{role}", "")
+    time = time.strip()
+
+    response = f"Von {user.mention}: Wer wäre {'zur gewohnten Zeit' if len(time) == 0 else time} dabei? "
+    for role in roles:
+        response = f"{response} {role.mention}"
+
+    channel: TextChannel = message.channel
+    resp_message: Message = await channel.send(response)
+    for react in ['\N{Thumbs Up Sign}', '\N{Black Question Mark Ornament}', '\N{Thumbs Down Sign}']:
+        await resp_message.add_reaction(react)
+
+    await delete(message, self, True)
+
+
+async def __teams(message: Message, self: BotBase):
     text: str = message.content
     num = __read_number_param(text, 2)
 
@@ -85,7 +117,13 @@ async def handle_user(self: BotBase, message: Message) -> bool:
                                  ):
         return True
 
+    if await __handling_template(self, "help", message, lambda: send_help_message(message, self)):
+        return True
+
     if await __handling_template(self, "teams", message, lambda: __teams(message, self)):
+        return True
+
+    if await __handling_template(self, "summon", message, lambda: __summon(message, self)):
         return True
 
     if await __handling_template(self, "", message,

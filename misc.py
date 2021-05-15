@@ -1,3 +1,5 @@
+from json import loads
+from random import choice
 from re import sub, findall
 from typing import List, Optional, TypeVar, Union, Any, Tuple
 
@@ -106,6 +108,7 @@ async def send(respondee: User, channel: Union[DMChannel, TextChannel], bot: Bot
         msg = await channel.send(message)
     if not channel.type == ChannelType.private:
         await delete(msg, bot, delay=bot.config.ttl)
+        return None
 
 
 async def delete(message: Message, bot: BotBase, try_force: bool = False, delay=None) -> None:
@@ -172,3 +175,11 @@ def flatten(inlist: List[List[T]]) -> List[T]:
     :return the new list
     """
     return [item for sublist in inlist for item in sublist]
+
+
+async def send_help_message(message: Message, self: BotBase):
+    responses = open("QnA/Tasks.json", "r", encoding="utf-8-sig")
+    response = loads(responses.read().strip())
+    responses.close()
+    response = choice(response)
+    await send(message.author, message.channel, self, response)
