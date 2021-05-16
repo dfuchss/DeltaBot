@@ -1,0 +1,188 @@
+version: "2.0"
+nlu:
+- intent: clock
+  examples: |
+    - kannst du mir sagen wieviel uhr es ist?
+    - wann haben wir in der zeit?
+    - was ist die aktuelle uhrzeit
+    - was ist die aktuelle zeit?
+    - was ist unsere aktuelle zeit
+    - was zeigt die uhr
+    - wieviel uhr haben wir es?
+    - wieviel uhr ist es
+    - wieviel uhr ist es?
+    - wiviel uhr ist es?
+    - zeig mir die zeit
+- intent: debug
+  examples: |
+    - debug
+    - debug aktivieren
+    - debug modus wechseln
+    - debug wechseln
+    - zeig mir mehr
+    - zeig mir weniger
+- intent: news
+  examples: |
+    - bitte ein kurzes briefing
+    - briefe mich
+    - briefe mich bitte
+    - ein briefing
+    - gib mir bitte ein kurzes briefing
+    - gib mir ein briefing
+    - gib mir ein kurzes briefing
+    - gib mir mein briefing
+    - kannst du mir sagen was auf der welt passiert ist
+    - liefere mir news von gestern
+    - news
+    - was für nachrichten gibt es?
+    - was gib es für news
+    - was gibt er neues
+    - was gibt es aktuell
+    - was gibt es für news
+    - was gibt es neues
+    - was gibt es neues?
+    - was gibts neues
+    - was hast du für news?
+    - was ist denn heute alles passiert
+    - was ist heute alles passiert
+    - was ist heute in der welt passiert
+    - was ist heute passiert
+    - was sind die aktuellen news
+    - was sind die news
+    - zeig mir die aktuellen news
+    - zeig mir die news
+    - zeige mir aktuelle entwicklungen
+    - zeige mir die news
+- intent: QnA-Creator
+  examples: |
+    - wer hat dich erschaffen
+    - wer hat dich gebaut
+    - wer hat dich geschrieben
+    - wer ist dein schöpfer
+- intent: QnA-Greeting
+  examples: |
+    - hallo
+    - hallo bot
+    - hey
+    - hi
+    - sei gegrüßt
+    - sei gegrüßt bot
+    - sei gegrüßt deltabot
+- intent: QnA-Joke
+  examples: |
+    - bist du lustig
+    - bist du lustig?
+    - bist du witzig?
+    - erzähl einen witz
+    - erzähl mal einen witz
+    - erzähl mir den witz
+    - erzähl mir einen bösen witz
+    - erzähl mir einen witz
+    - erzähl nen witz
+    - erzähl rafas witz
+    - erzähle mir den sandkorn-witz
+    - erzähle mir den witz
+    - erzähle mir einen witz
+    - hau einen raus
+    - joke
+    - kennst du einen witz
+    - kennst du sandkörner
+    - sag einen witz
+    - sag mir einen witz
+    - tell me a joke
+    - was weißt du über sandkörner
+    - witz
+    - bring mich zum lachen
+    - sei bitte lustig
+    - ich will lachen
+- intent: QnA-State
+  examples: |
+    - wie geht es dir
+    - wie ist dein zustand
+    - wie ist deine verfassung
+    - alles ok soweit
+    - wie gehts denn so
+    - wie geht's denn so
+    - wie geht es denn so
+- intent: QnA-Tasks
+  examples: |
+    - help
+    - was kannst du alles
+    - was kannst du denn alles
+    - was kannst du denn alles machen
+    - was kannst du für mich tun
+    - was kannst du nochmal alles
+    - was sind deine fähigkeiten
+    - what can you do for me
+    - was kannst du
+    - was kannst du?
+- intent: QnA-WhoAreYou
+  examples: |
+    - wer bist Du
+    - wie heißt Du
+    - hast Du einen Namen
+    - wie soll ich Dich nennen
+- intent: shutdown
+  examples: |
+    - ausschalten
+    - beende dich
+    - beenden
+    - bitte beenden
+    - bitte schalte dich aus
+    - du kannst dich beenden
+    - shutdown
+- intent: cleanup
+  examples: |
+    - bitte den channel aufräumen
+    - lösche alle nachrichten von mir
+    - räume meine nachrichten auf
+    - cleanup
+- intent: yes
+  examples: |
+    - ja
+    - jep
+    - jup
+    - yes
+- intent: no
+  examples: |
+    - nein
+    - no
+    - nope
+- intent: answer
+  examples: |
+    - ich möchte eine neue antwort eingeben
+    - neue antwort
+    - neuen witz
+    - neuen qna
+    - neues qna
+- intent: QnA-Good
+  examples: |
+    - mir geht es gut
+    - dann ists ja gut
+    - das ist schön
+    - das freut mich
+- intent: QnA-Bad
+  examples: |
+    - mir geht es nicht gut
+    - mir geht es schlecht
+    - das ist blöd
+    - das macht mich traurig
+- intent: QnA-Thanks
+  examples: |
+    - danke dir
+    - vielen lieben dank
+    - gut
+    - das hast du toll gemacht
+    - danke
+    - ich bin zufrienden mit dir
+    - das war genial
+    - das hat funktioniert
+- intent: choose
+  examples: |
+    - bitte verteile die leute
+    - zufällige auswahl
+    - ich brauche wieder eine zuordnung
+    - mach mal nen bisschen was random
+    - zufall
+    - ordne die teams zu
+    - ich brauch teams
