@@ -23,7 +23,7 @@ async def __handling_template(self: BotBase, cmd: str, message: Message, func_dm
 
         return True
 
-    if not self.is_admin(message.author):
+    if not self.config.is_admin(message.author):
         run = func_not_admin()
         if iscoroutine(run):
             await run
@@ -39,21 +39,31 @@ async def __handling_template(self: BotBase, cmd: str, message: Message, func_dm
     return True
 
 
+async def __to_users(bot: BotBase, uids):
+    users = []
+    for uid in uids:
+        user = await bot.fetch_user(uid)
+        users.append(user)
+    return users
+
+
 async def __state(user, channel, bot: BotBase):
+    users = await __to_users(bot, bot.config.get_admins())
+
     msg = "Aktueller Zustand:\n"
     msg += f"NLU-Threshold: {bot.config.nlu_threshold}\n"
     msg += f"Entities: {bot.config.entity_file}\n"
     msg += f"TTL: {bot.config.ttl}\n"
-    msg += f"Channels: {', '.join(map(str, bot.channels))}\n"
-    msg += f"Admins: {', '.join(map(str, bot.admins))}\n"
-    msg += f"Debug: {bot.config.debug_indicator}\n"
-    msg += f"Respond-All: {bot.config.respond_all}\n"
-    msg += f"Keep-Messages: {bot.config.keep_messages}"
+    msg += f"Channels: {', '.join(map(str, bot.config.get_channels()))}\n"
+    msg += f"Admins: {', '.join(map(lambda uid: uid.mention, users))}\n"
+    msg += f"Debug: {bot.config.is_debug()}\n"
+    msg += f"Respond-All: {bot.config.is_respond_all()}\n"
+    msg += f"Keep-Messages: {bot.config.is_keep_messages()}"
     await send(user, channel, bot, msg)
 
 
 async def __listen(user, channel, bot: BotBase):
-    bot.channels.append(channel.id)
+    bot.config.add_channel(channel.id)
     await send(user, channel, bot, f"Bitte vom Admin folgende ID eintragen lassen: {channel.id}")
 
 
@@ -87,7 +97,7 @@ async def handle_system(self: BotBase, message: Message) -> bool:
                                  lambda: send(message.author, message.channel, self,
                                               "Das geht nicht im Privaten channel!"),
                                  lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
-                                 lambda: self.add_admins(message)
+                                 lambda: self.config.add_admins(message)
                                  ):
         return True
 

@@ -1,3 +1,4 @@
+from os import environ
 from threading import Lock
 from typing import Dict
 
@@ -92,12 +93,6 @@ class DeltaBot(BotBase):
         self._user_to_instance = {}
         self._user_to_instance_lock = Lock()
 
-        for channel in self.config.channels:
-            self.channels.append(channel)
-
-        for admin in self.config.admins:
-            self.admins.append((admin[0], admin[1]))
-
     async def on_ready(self) -> None:
         """ Will be executed on ready event. """
         print('Logged on as', self.user)
@@ -124,7 +119,7 @@ class DeltaBot(BotBase):
 
         handle_message: bool = False
         handle_message |= is_direct(message)
-        handle_message |= (self.user in message.mentions or self.config.respond_all) and ch_id in self.channels
+        handle_message |= (self.user in message.mentions or self.config.is_respond_all()) and ch_id in self.config.get_channels()
         handle_message |= instance.has_active_dialog()
 
         if not handle_message:
@@ -145,7 +140,6 @@ class DeltaBot(BotBase):
 
         channel: TextChannel = await self.fetch_channel(pl.channel_id)
         message: Message = await channel.fetch_message(pl.message_id)
-        user: User = await self.fetch_user(pl.user_id)
 
         if message.author != self.user:
             return
@@ -155,6 +149,7 @@ class DeltaBot(BotBase):
         if not restricted:
             return
 
+        user: User = await self.fetch_user(pl.user_id)
         for reaction in message.reactions:
             if not reaction.me:
                 await reaction.remove(user)
@@ -171,7 +166,7 @@ class DeltaBot(BotBase):
 def main() -> None:
     """The main method of the system."""
     discord = DeltaBot()
-    discord.run(discord.config.token)
+    discord.run(environ["DiscordToken"])
 
 
 if __name__ == "__main__":

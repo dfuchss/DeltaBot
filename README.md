@@ -20,13 +20,6 @@ docker run -d \
 deltabot
  ```
 
-Optionally you can already specify group channels for listening or the default admin users:
-```
-docker run -d \
-    --env DiscordToken="Your Discord Token" \
-    --env Channels="ID1;ID2" \
-    --env Admins="Dominik,0292;UserName2,Dsc2" \
-deltabot
- ```
+You might also want to access / store the configuration. Therefore, you can use the `--env CONF_FILE=/path/you/want -v MachinePath/VolumePath`
 
 

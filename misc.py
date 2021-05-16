@@ -1,7 +1,7 @@
 from json import loads
 from random import choice
 from re import sub, findall
-from typing import List, Optional, TypeVar, Union, Any, Tuple
+from typing import List, Optional, TypeVar, Union, Any
 
 from discord import ChannelType, Message, User, DMChannel, TextChannel, NotFound, Client
 
@@ -11,13 +11,10 @@ from datetime import datetime
 
 
 class BotBase(Client):
-    channels: List[int] = []
-    admins: List[Tuple[str, str]] = []
-
     def __init__(self):
         super().__init__()
-        self.config = Configuration()
-        self.nlu = NLUService(self.config)
+        self.config: Configuration = Configuration()
+        self.nlu: NLUService = NLUService(self.config)
 
     @staticmethod
     def log(message: Message):
@@ -33,7 +30,7 @@ class BotBase(Client):
         :param intents the intent result
         :param entities the found entities
         """
-        if not self.config.debug_indicator:
+        if not self.config.is_debug():
             return
 
         result: str = "------------\n"
@@ -66,27 +63,6 @@ class BotBase(Client):
         """
         return self.user
 
-    def is_admin(self, user: User) -> bool:
-        """
-        Check for Admin.
-        :param user: the actual user object
-        :return: indicator for administrative privileges
-        """
-        if len(self.admins) == 0:
-            return True
-
-        for (name, dsc) in self.admins:
-            if user.name == name and user.discriminator == dsc:
-                return True
-        return False
-
-    def add_admins(self, message: Message):
-        if not self.is_admin(message.author):
-            return
-
-        for user in message.mentions:
-            self.admins.append((user.name, user.discriminator))
-
     async def shutdown(self) -> None:
         """Shutdown the bot"""
         await self.close()
@@ -118,7 +94,7 @@ async def delete(message: Message, bot: BotBase, try_force: bool = False, delay=
     :param try_force indicates whether the bot shall try to delete even iff debug is activated
     :param delay some delay
     """
-    if (bot.config.debug_indicator or bot.config.keep_messages) and not try_force:
+    if (bot.config.is_debug() or bot.config.is_keep_messages()) and not try_force:
         return
 
     if is_direct(message):

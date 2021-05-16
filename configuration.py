@@ -1,45 +1,114 @@
 """The configuration of the DeltaBot"""
-from os import getenv, environ
+from json import loads, dumps
+from os import getenv
+from os.path import exists
+
+from discord import Message, User
+
+from json_objects import convert_to_dict
 
 
 class Configuration:
     def __init__(self):
-        # NLU
-        self.nlu_dir = getenv("NLUDir", "rasa/models")
-        self.nlu_name = getenv("NLUName", "nlu")
+        self.version = 1
+        self._path = getenv("CONF_FILE", "./config.json")
+
+        self.nlu_dir = "rasa/models"
+        self.nlu_name = "nlu"
         self.nlu_threshold = 0.7
-        self.nlu_not_classified = getenv("NLUNC", "rasa/training-nc.md")
+        self.nlu_not_classified = "rasa/training-nc.md"
+        self.entity_file = "rasa/training-entities.json"
 
-        # Entities
-        self.entity_file = getenv("EntityFile", "rasa/training-entities.json")
-
-        # Discord
         self.ttl = 10.0
-        self.token = environ["DiscordToken"]
+        self._channels = []
+        self._admins = []
 
-        # Load accepted channels
-        env_channels_str = getenv("Channels", "")
-        env_channels = env_channels_str.split(';')
-        self.channels = map(int, filter(None, env_channels))
+        self._debug_indicator = False
+        self._respond_all_indicator = False
+        self._keep_messages_indicator = True
 
-        # Load admin users
-        env_admin_str = getenv("Admins", "")
-        env_admins = env_admin_str.split(';')
-        self.admins = map(lambda name: name.split(','), filter(None, env_admins))
+        self._load()
 
-        # Indicators
-        self.debug_indicator = False
-        self.respond_all = False
-        self.keep_messages = True
+    def is_admin(self, user: User) -> bool:
+        """
+        Check for Admin.
+        :param user: the actual user object
+        :return: indicator for administrative privileges
+        """
+        if len(self._admins) == 0:
+            return True
+
+        for uid in self._admins:
+            if user.id == uid:
+                return True
+        return False
+
+    def is_debug(self) -> bool:
+        return self._debug_indicator
+
+    def is_keep_messages(self) -> bool:
+        return self._keep_messages_indicator
+
+    def is_respond_all(self) -> bool:
+        return self._respond_all_indicator
+
+    def get_channels(self):
+        return self._channels
+
+    def get_admins(self):
+        return self._admins
+
+    def add_admins(self, message: Message):
+        if not self.is_admin(message.author):
+            return
+
+        for user in message.mentions:
+            self._admins.append(user.id)
+
+        self._store()
+
+    def add_channel(self, channel_id):
+        self._channels.append(channel_id)
+        self._store()
 
     def toggle_debug(self):
-        self.debug_indicator = not self.debug_indicator
-        return self.debug_indicator
+        self._debug_indicator = not self._debug_indicator
+        self._store()
+        return self._debug_indicator
 
     def toggle_respond_all(self):
-        self.respond_all = not self.respond_all
-        return self.respond_all
+        self._respond_all_indicator = not self._respond_all_indicator
+        self._store()
+        return self._respond_all_indicator
 
     def toggle_keep_messages(self):
-        self.keep_messages = not self.keep_messages
-        return self.keep_messages
+        self._keep_messages_indicator = not self._keep_messages_indicator
+        self._store()
+        return self._keep_messages_indicator
+
+    def _store(self):
+        with open(self._path, "w", encoding="utf-8-sig") as outfile:
+            outfile.write(dumps(self, default=convert_to_dict, indent=4))
+
+    def _load(self):
+        if not exists(self._path):
+            self._store()
+            return
+        try:
+            with open(self._path, encoding="utf-8-sig") as jsonfile:
+                loaded = loads(jsonfile.read())
+
+                if loaded["version"] == self.version:
+                    for attr in loaded.keys():
+                        if not attr.startswith("__") and hasattr(self, attr):
+                            setattr(self, attr, loaded[attr])
+                else:
+                    self.__migrate(loaded)
+        except Exception:
+            print("State could not be loaded!")
+
+    def __migrate(self, loaded):
+        if loaded["version"] is None:
+            print("Migration not possible. No version found.")
+
+        print("Migration not possible. No migration profile available")

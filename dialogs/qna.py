@@ -49,7 +49,7 @@ class QnAAnswer(Dialog):
         self.add_step(self._find_qna)
 
     async def _find_qna(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
-        if not self._bot.is_admin(message.author):
+        if not self._bot.config.is_admin(message.author):
             await send(message.author, message.channel, self._bot, f"Dazu hast Du keine Berechtigung")
             return DialogResult.NEXT
 

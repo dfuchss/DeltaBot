@@ -18,7 +18,7 @@ class Shutdown(Dialog):
         self.add_step(self._shutdown_step)
 
     async def _shutdown_step(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
-        if not self._bot.is_admin(message.author):
+        if not self._bot.config.is_admin(message.author):
             await send(message.author, message.channel, self._bot, "Du bist nicht berechtigt, mich zu deaktivieren!")
             return
 
@@ -55,7 +55,7 @@ class Cleanup(Dialog):
         return DialogResult.NEXT
 
     async def _cleanup_step(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
-        if not self._bot.is_admin(message.author) or is_direct(self.__channel_user_msg):
+        if not self._bot.config.is_admin(message.author) or is_direct(self.__channel_user_msg):
             await send(message.author, message.channel, self._bot, f"Das kann ich leider nicht tun!")
             return
 
