@@ -180,3 +180,10 @@
 - zufall
 - ordne die teams zu
 - ich brauch teams
+
+## intent:QnA-ImGood
+- wie geht es Dir
+- alles ok 
+- wie gehts denn so
+- wie geht's denn so
+- wie geht es denn so

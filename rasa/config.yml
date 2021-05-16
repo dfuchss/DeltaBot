@@ -12,7 +12,9 @@ pipeline:
     hidden_layers_sizes:
       text: [256, 128]
     number_of_transformer_layers: 2
-    weight_sparsity: 0.8
+    connection_density: 0.8
+    model_confidence: linear_norm
+    constrain_similarities: True
     intent_classification: True
     entity_recognition: False
     use_masked_language_model: False
