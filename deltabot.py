@@ -1,7 +1,7 @@
 from threading import Lock
 from typing import Dict
 
-from discord import Status, User, Activity, ActivityType, Reaction
+from discord import Status, User, Activity, ActivityType, RawReactionActionEvent, TextChannel
 
 from dialogs.generic_dialogs import *
 from dialogs.misc_dialogs import *
@@ -135,15 +135,29 @@ class DeltaBot(BotBase):
 
         await instance.handle(message)
 
-    async def on_reaction_add(self, reaction: Reaction, user: User):
-        if reaction.message.author != self.user:
+    async def on_raw_reaction_add(self, payload):
+        if not type(payload) is RawReactionActionEvent:
             return
 
-        if user == self.user or reaction.me:
+        pl: RawReactionActionEvent = payload
+        if pl.event_type != "REACTION_ADD" or pl.user_id == self.user.id:
             return
 
-        # Reaction was not from me and was not a reaction that I've already allowed to my messages .. delete it ..
-        await reaction.remove(user)
+        channel: TextChannel = await self.fetch_channel(pl.channel_id)
+        message: Message = await channel.fetch_message(pl.message_id)
+        user: User = await self.fetch_user(pl.user_id)
+
+        if message.author != self.user:
+            return
+
+        # Check whether the reactions a restricted by me ..
+        restricted = any(map(lambda r: r.me, message.reactions))
+        if not restricted:
+            return
+
+        for reaction in message.reactions:
+            if not reaction.me:
+                await reaction.remove(user)
 
     def __get_bot_instance(self, author: User) -> BotInstance:
         with self._user_to_instance_lock:
