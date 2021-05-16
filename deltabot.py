@@ -1,7 +1,7 @@
 from threading import Lock
 from typing import Dict
 
-from discord import Status, User, Activity, ActivityType
+from discord import Status, User, Activity, ActivityType, Reaction
 
 from dialogs.generic_dialogs import *
 from dialogs.misc_dialogs import *
@@ -120,15 +120,30 @@ class DeltaBot(BotBase):
             return
 
         instance = self.__get_bot_instance(message.author)
+        ch_id = message.channel.id
 
-        if not (is_direct(message) or ((
-                                               self.user in message.mentions or self.config.respond_all) and message.channel.id in self.channels) or instance.has_active_dialog()):
+        handle_message: bool = False
+        handle_message |= is_direct(message)
+        handle_message |= (self.user in message.mentions or self.config.respond_all) and ch_id in self.channels
+        handle_message |= instance.has_active_dialog()
+
+        if not handle_message:
             return
 
         await delete(message, self)
         self.log(message)
 
         await instance.handle(message)
+
+    async def on_reaction_add(self, reaction: Reaction, user: User):
+        if reaction.message.author != self.user:
+            return
+
+        if user == self.user or reaction.me:
+            return
+
+        # Reaction was not from me and was not a reaction that I've already allowed to my messages .. delete it ..
+        await reaction.remove(user)
 
     def __get_bot_instance(self, author: User) -> BotInstance:
         with self._user_to_instance_lock:
