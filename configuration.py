@@ -105,7 +105,8 @@ class Configuration:
                 else:
                     self.__migrate(loaded)
         except Exception:
-            print("State could not be loaded!")
+            print("State could not be loaded .. reinitialize")
+            self._store()
 
     def __migrate(self, loaded):
         if loaded["version"] is None:
