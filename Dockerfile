@@ -1,8 +1,6 @@
 FROM python:3.8
 
 ENV DiscordToken "The_Discord_Token"
-ENV Channels ""
-ENV Admins ""
 
 # WORKDIR /usr/src/
 
