@@ -12,7 +12,7 @@ from dialogs.qna import *
 from dialogs.choose_dialog import Choose
 from misc import delete, is_direct, cleanup, BotBase
 from system_commands import handle_system
-from user_commands import handle_user
+from user_commands import handle_user, handle_user_reaction
 
 
 class BotInstance:
@@ -142,6 +142,9 @@ class DeltaBot(BotBase):
         message: Message = await channel.fetch_message(pl.message_id)
 
         if message.author != self.user:
+            return
+
+        if await handle_user_reaction(self, pl, message, channel):
             return
 
         # Check whether the reactions a restricted by me ..
