@@ -108,7 +108,7 @@ async def __handling_reaction_summon(self: BotBase, payload: RawReactionActionEv
         return False
 
     text = message.content
-    is_summon = re.match(r"^Von <@\d+>: Wer wäre", text) is not None
+    is_summon = re.match(r"^Von <@!?\d+>: Wer wäre", text) is not None
 
     if not is_summon:
         return False
