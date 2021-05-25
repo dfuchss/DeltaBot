@@ -55,12 +55,12 @@ async def __roll(message, self):
 
 __summon_reactions = ['\N{Thumbs Up Sign}', '\N{Black Question Mark Ornament}', '\N{Thumbs Down Sign}']
 
-__summon_msg = [f"Von ###USER###: Wer wäre ###TIME### dabei? ###MENTION###",  #
+__summon_msg = [f"###USER###: Wer wäre ###TIME### dabei? ###MENTION###",  #
                 f"Wer hätte ###TIME### Lust ###MENTION### (###USER###)",  #
-                f"Jemand ###TIME### Bock auf ###MENTION### (###USER###)"
+                f"Jemand ###TIME### Bock auf ###MENTION### (###USER###)",  #
+                f"Finden sich ###TIME### Leute ###MENTION### (###USER###)"
                 ]
-__summon_rgx = [r"^Von <@!?\d+>: Wer wäre",  #
-                r"\(<@!?\d+>\)$",  #
+__summon_rgx = [r"^<@!?\d+>: Wer wäre",  #
                 r"\(<@!?\d+>\)$"
                 ]
 
