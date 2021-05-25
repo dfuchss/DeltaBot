@@ -1,3 +1,12 @@
+FROM python:3.8 as builder
+
+WORKDIR /usr/src/app
+COPY ./requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY ./rasa/ ./
+RUN rasa telemetry disable
+RUN rasa train nlu --nlu ./training.yml
+
 FROM python:3.8
 
 ENV DiscordToken "The_Discord_Token"
@@ -18,12 +27,9 @@ WORKDIR /usr/src/app
 
 COPY ./requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-
-WORKDIR /usr/src/app/rasa
-COPY ./rasa/ ./
 RUN rasa telemetry disable
-RUN rasa train nlu --nlu ./training.yml
 
-WORKDIR /usr/src/app
 COPY ./ ./
+COPY --from=builder /usr/src/app/models ./rasa/models
+
 CMD ["python", "./deltabot.py"]

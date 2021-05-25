@@ -116,6 +116,9 @@ nlu:
     - what can you do for me
     - was kannst du
     - was kannst du?
+    - hilfe bitte
+    - zeig mir die hilfe
+    - hilfe was kannst du
 - intent: QnA-WhoAreYou
   examples: |
     - wer bist Du
