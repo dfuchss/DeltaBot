@@ -1,4 +1,4 @@
-FROM python:3.8 as builder
+FROM python:3.8-slim as builder
 
 WORKDIR /usr/src/app
 COPY ./requirements.txt .
@@ -7,7 +7,7 @@ COPY ./rasa/ ./
 RUN rasa telemetry disable
 RUN rasa train nlu --nlu ./training.yml
 
-FROM python:3.8
+FROM python:3.8-slim
 
 ENV DiscordToken "The_Discord_Token"
 
