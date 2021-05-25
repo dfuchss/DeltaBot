@@ -6,7 +6,7 @@ from discord import Message, VoiceChannel, User, TextChannel, Role, RawReactionA
 
 from misc import delete, send, BotBase, send_help_message
 
-from random import randint, shuffle
+from random import randint, shuffle, choice
 
 HandlingFunction = Union[Callable[[], None], Callable[[], Awaitable[None]]]
 
@@ -55,6 +55,15 @@ async def __roll(message, self):
 
 __summon_reactions = ['\N{Thumbs Up Sign}', '\N{Black Question Mark Ornament}', '\N{Thumbs Down Sign}']
 
+__summon_msg = [f"Von ###USER###: Wer wäre ###TIME### dabei? ###MENTION###",  #
+                f"Wer hätte ###TIME### Lust ###MENTION### (###USER###)",  #
+                f"Jemand ###TIME### Bock auf ###MENTION### (###USER###)"
+                ]
+__summon_rgx = [r"^Von <@!?\d+>: Wer wäre",  #
+                r"\(<@!?\d+>\)$",  #
+                r"\(<@!?\d+>\)$"
+                ]
+
 
 async def __summon(message: Message, self: BotBase):
     if len(message.role_mentions) == 0:
@@ -68,9 +77,10 @@ async def __summon(message: Message, self: BotBase):
     time = re.sub(r"<@&?\d+>", "", time)
     time = time.strip()
 
-    response = f"Von {user.mention}: Wer wäre {'zur gewohnten Zeit' if len(time) == 0 else time} dabei? "
-    for role in roles:
-        response = f"{response} {role.mention}"
+    response = choice(__summon_msg)
+    response = response.replace("###USER###", user.mention)
+    response = response.replace("###MENTION###", " ".join([r.mention for r in roles]))
+    response = response.replace("###TIME###", 'zur gewohnten Zeit' if len(time) == 0 else time)
 
     response += "\n\nBitte Reactions zum Abstimmen benutzen:"
 
@@ -108,7 +118,7 @@ async def __handling_reaction_summon(self: BotBase, payload: RawReactionActionEv
         return False
 
     text = message.content
-    is_summon = re.match(r"^Von <@!?\d+>: Wer wäre", text) is not None
+    is_summon = any([re.search(rgx, text.split("\n")[0].strip()) is not None for rgx in __summon_rgx])
 
     if not is_summon:
         return False
@@ -121,14 +131,14 @@ async def __handling_reaction_summon(self: BotBase, payload: RawReactionActionEv
         await message.remove_reaction(payload.emoji, user)
         return True
 
-    reactions: Dict[str, List[str]] = __read_reactions(__summon_reactions, message.content)
+    reactions: Dict[str, List[str]] = __read_reactions(__summon_reactions, text)
 
     if user.mention in reactions[react]:
         reactions[react].remove(user.mention)
     else:
         reactions[react].append(user.mention)
 
-    result_msg = message.content.split("\n")[0].strip()
+    result_msg = text.split("\n")[0].strip()
     summary = ""
 
     for reaction in reactions.keys():
