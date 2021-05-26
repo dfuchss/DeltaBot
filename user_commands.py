@@ -101,13 +101,16 @@ def __read_reactions(reactions: List[str], message_content: str):
         if line is None or len(line.strip()) == 0:
             continue
         split = line.split(":", 1)
-        if len(split) < 2 or split[0].strip() not in reactions:
+
+        mention_type = line[0]
+
+        if len(split) < 2 or mention_type not in reactions:
             continue
 
         new_mentions = [m.strip() for m in split[1].split(",")]
         for m in new_mentions:
             if len(m) != 0:
-                result[split[0]].append(m)
+                result[mention_type].append(m)
 
     return result
 
@@ -145,7 +148,7 @@ async def __handling_reaction_summon(self: BotBase, payload: RawReactionActionEv
         users = reactions[reaction]
         if len(users) == 0:
             continue
-        summary = f"{summary}\n{reaction}: {str.join(',', users)}"
+        summary = f"{summary}\n{reaction} `({len(users)})`: {str.join(',', users)}"
 
     if len(summary) != 0:
         result_msg = f"{result_msg}\n\nAktuell:\n{summary.strip()}"
