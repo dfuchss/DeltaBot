@@ -2,6 +2,7 @@
 from json import loads, dumps
 from os import getenv
 from os.path import exists
+from typing import List
 
 from discord import Message, User
 
@@ -52,13 +53,13 @@ class Configuration:
     def is_respond_all(self) -> bool:
         return self._respond_all_indicator
 
-    def get_channels(self):
+    def get_channels(self) -> List[int]:
         return self._channels
 
-    def get_admins(self):
+    def get_admins(self) -> List[int]:
         return self._admins
 
-    def add_admins(self, message: Message):
+    def add_admins(self, message: Message) -> None:
         if not self.is_admin(message.author):
             return
 
@@ -67,30 +68,30 @@ class Configuration:
 
         self._store()
 
-    def add_channel(self, channel_id):
+    def add_channel(self, channel_id) -> None:
         self._channels.append(channel_id)
         self._store()
 
-    def toggle_debug(self):
+    def toggle_debug(self) -> bool:
         self._debug_indicator = not self._debug_indicator
         self._store()
         return self._debug_indicator
 
-    def toggle_respond_all(self):
+    def toggle_respond_all(self) -> bool:
         self._respond_all_indicator = not self._respond_all_indicator
         self._store()
         return self._respond_all_indicator
 
-    def toggle_keep_messages(self):
+    def toggle_keep_messages(self) -> bool:
         self._keep_messages_indicator = not self._keep_messages_indicator
         self._store()
         return self._keep_messages_indicator
 
-    def _store(self):
+    def _store(self) -> None:
         with open(self._path, "w", encoding="utf-8-sig") as outfile:
             outfile.write(dumps(self, default=convert_to_dict, indent=4))
 
-    def _load(self):
+    def _load(self) -> None:
         if not exists(self._path):
             self._store()
             return
@@ -108,8 +109,11 @@ class Configuration:
             print("State could not be loaded .. reinitialize")
             self._store()
 
-    def __migrate(self, loaded):
+    def __migrate(self, loaded) -> None:
+        print(f"Config is at version {self.version}")
+
         if loaded["version"] is None:
             print("Migration not possible. No version found.")
+            return
 
         print("Migration not possible. No migration profile available")

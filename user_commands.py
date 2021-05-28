@@ -8,8 +8,6 @@ from misc import delete, send, BotBase, send_help_message
 
 from random import randint, shuffle, choice
 
-HandlingFunction = Union[Callable[[], None], Callable[[], Awaitable[None]]]
-
 USER_COMMAND_SYMBOL = "/"
 
 
@@ -18,19 +16,6 @@ def __crop_command(raw_message: str):
     if len(msg) == 1:
         return ""
     return msg[1].strip()
-
-
-async def __handling_template(self: BotBase, cmd: str, message: Message, func: HandlingFunction):
-    cmd = f"{USER_COMMAND_SYMBOL}{cmd}"
-    if not message.content.startswith(cmd):
-        return False
-
-    run = func()
-    if iscoroutine(run):
-        await run
-
-    await delete(message, self)
-    return True
 
 
 def __read_number_param(text, default):
@@ -194,23 +179,43 @@ async def __teams(message: Message, self: BotBase):
     await send(message.author, message.channel, self, f"Zuordnung:\n{teams.strip()}", False)
 
 
+def __unknown(message: Message, self: BotBase):
+    return send(message.author, message.channel, self, "Unbekannter Befehl")
+
+
+HandlingFunction = Union[  #
+    Callable[[Message, BotBase], None],  #
+    Callable[[Message, BotBase], Awaitable[None]]  #
+]
+
+
+async def __handling_template(self: BotBase, cmd: str, message: Message, func: HandlingFunction):
+    cmd = f"{USER_COMMAND_SYMBOL}{cmd}"
+    if not message.content.startswith(cmd):
+        return False
+
+    run = func(message, self)
+    if iscoroutine(run):
+        await run
+
+    await delete(message, self)
+    return True
+
+
 async def handle_user(self: BotBase, message: Message) -> bool:
-    if await __handling_template(self, "roll", message,
-                                 lambda: __roll(message, self),
-                                 ):
+    if await __handling_template(self, "roll", message, __roll):
         return True
 
-    if await __handling_template(self, "help", message, lambda: send_help_message(message, self)):
+    if await __handling_template(self, "help", message, send_help_message):
         return True
 
-    if await __handling_template(self, "teams", message, lambda: __teams(message, self)):
+    if await __handling_template(self, "teams", message, __teams):
         return True
 
-    if await __handling_template(self, "summon", message, lambda: __summon(message, self)):
+    if await __handling_template(self, "summon", message, __summon):
         return True
 
-    if await __handling_template(self, "", message,
-                                 lambda: send(message.author, message.channel, self, "Unbekannter Befehl")):
+    if await __handling_template(self, "", message, __unknown):
         return True
 
     return False

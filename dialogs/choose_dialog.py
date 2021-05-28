@@ -21,7 +21,8 @@ class Choose(Dialog):
     def _load_initial_steps(self):
         self.add_step(self._check_state)
 
-    async def _check_state(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
+    async def _check_state(self, message: Message, intents: List[IntentResult],
+                           entities: List[EntityResult]) -> DialogResult:
         if len(self._elements) != 0:
             self.add_step(self._ask_for_use_old_elements)
         else:
@@ -30,14 +31,14 @@ class Choose(Dialog):
         return DialogResult.NEXT
 
     async def _ask_for_use_old_elements(self, message: Message, intents: List[IntentResult],
-                                        entities: List[EntityResult]):
+                                        entities: List[EntityResult]) -> DialogResult:
         await send(message.author, message.channel, self._bot,
                    f"Soll ich die alten Werte nochmal neu zuordnen? : {self._elements}")
         self.add_step(self._check_ask_for_use_old_elements)
         return DialogResult.WAIT_FOR_INPUT
 
     async def _check_ask_for_use_old_elements(self, message: Message, intents: List[IntentResult],
-                                              entities: List[EntityResult]):
+                                              entities: List[EntityResult]) -> DialogResult:
         if len(intents) == 0 or intents[0].name != "yes":
             self.add_step(self._ask_for_new_elements)
         else:
@@ -45,12 +46,14 @@ class Choose(Dialog):
 
         return DialogResult.NEXT
 
-    async def _ask_for_new_elements(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
+    async def _ask_for_new_elements(self, message: Message, intents: List[IntentResult],
+                                    entities: List[EntityResult]) -> DialogResult:
         await send(message.author, message.channel, self._bot, f"Bitte gib die Werte an, die zur Auswahl stehen ..")
         self.add_step(self._update_elements)
         return DialogResult.WAIT_FOR_INPUT
 
-    async def _update_elements(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
+    async def _update_elements(self, message: Message, intents: List[IntentResult],
+                               entities: List[EntityResult]) -> DialogResult:
         text: str = cleanup(message.content, self._bot)
         splits = split("\\s+", text)
         splits = list(filter(lambda x: len(x.strip()) != 0, splits))
@@ -61,14 +64,15 @@ class Choose(Dialog):
         self.add_step(self._ask_for_groups)
         return DialogResult.NEXT
 
-    async def _ask_for_groups(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
+    async def _ask_for_groups(self, message: Message, intents: List[IntentResult],
+                              entities: List[EntityResult]) -> DialogResult:
         await send(message.author, message.channel, self._bot,
                    f"Bitte gib an, in wieviele Gruppen ich die Menge teilen muss")
         self.add_step(self._check_ask_for_groups)
         return DialogResult.WAIT_FOR_INPUT
 
     async def _check_ask_for_groups(self, message: Message, intents: List[IntentResult],
-                                    entities: List[EntityResult]):
+                                    entities: List[EntityResult]) -> DialogResult:
         text: str = cleanup(message.content, self._bot)
         text = text.strip()
         value = -1
@@ -86,7 +90,8 @@ class Choose(Dialog):
         self.add_step(self._generate)
         return DialogResult.NEXT
 
-    async def _generate(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
+    async def _generate(self, message: Message, intents: List[IntentResult],
+                        entities: List[EntityResult]) -> DialogResult:
         shuffle(self._elements)
 
         groups = {}

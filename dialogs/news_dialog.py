@@ -47,7 +47,8 @@ class News(Dialog):
     def _load_initial_steps(self):
         self.add_step(self._select_news)
 
-    async def _select_news(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
+    async def _select_news(self, message: Message, intents: List[IntentResult],
+                           entities: List[EntityResult]) -> DialogResult:
         entities = filter(lambda e: e.group == "news", entities)
         categories = list(map(lambda e: e.name, entities))
         if len(categories) != 0:
@@ -59,7 +60,8 @@ class News(Dialog):
         self.add_step(self._news_step)
         return DialogResult.WAIT_FOR_INPUT
 
-    async def _news_step(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
+    async def _news_step(self, message: Message, intents: List[IntentResult],
+                         entities: List[EntityResult]) -> DialogResult:
         entities = filter(lambda e: e.group == "news", entities)
         categories = list(map(lambda e: e.name, entities))
         if not categories:

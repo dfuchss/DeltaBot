@@ -1,3 +1,5 @@
+from os import listdir
+
 from json import loads, dumps
 from random import choice
 
@@ -20,7 +22,8 @@ class QnA(Dialog):
     def _load_initial_steps(self):
         self.add_step(self._qna_step)
 
-    async def _qna_step(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
+    async def _qna_step(self, message: Message, intents: List[IntentResult],
+                        entities: List[EntityResult]) -> DialogResult:
         intent = intents[0].name[4:]
         name = f"QnA/{intent}.json"
         if not exists(name):
@@ -48,17 +51,24 @@ class QnAAnswer(Dialog):
     def _load_initial_steps(self):
         self.add_step(self._find_qna)
 
-    async def _find_qna(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
+    async def _find_qna(self, message: Message, intents: List[IntentResult],
+                        entities: List[EntityResult]) -> DialogResult:
         if not self._bot.config.is_admin(message.author):
             await send(message.author, message.channel, self._bot, f"Dazu hast Du keine Berechtigung")
             return DialogResult.NEXT
 
-        await send(message.author, message.channel, self._bot,
-                   f"Für welches QnA soll ein neuer Text gespeichert werden?")
+        qna_names = sorted(map(lambda f: f.replace(".json", ""), listdir("QnA")))
+        resp = "Für welches QnA soll ein neuer Text gespeichert werden?\n```\n"
+        for qna in qna_names:
+            resp += f"* {qna}\n"
+        resp += "```"
+
+        await send(message.author, message.channel, self._bot, resp)
         self.add_step(self._store_qna_ask_text)
         return DialogResult.WAIT_FOR_INPUT
 
-    async def _store_qna_ask_text(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
+    async def _store_qna_ask_text(self, message: Message, intents: List[IntentResult],
+                                  entities: List[EntityResult]) -> DialogResult:
         name = f"QnA/{message.content}.json"
         if not exists(name):
             await send(message.author, message.channel, self._bot, f"Ich finde keinen Eintrag für {name}")
@@ -70,14 +80,15 @@ class QnAAnswer(Dialog):
         return DialogResult.WAIT_FOR_INPUT
 
     async def _store_text_ask_confirmation(self, message: Message, intents: List[IntentResult],
-                                           entities: List[EntityResult]):
+                                           entities: List[EntityResult]) -> DialogResult:
         self._text = message.content
         await send(message.author, message.channel, self._bot,
                    f"Soll ich in {self._qna} '{self._text}' speichern? (Y/N)")
         self.add_step(self._qna_step)
         return DialogResult.WAIT_FOR_INPUT
 
-    async def _qna_step(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
+    async def _qna_step(self, message: Message, intents: List[IntentResult],
+                        entities: List[EntityResult]) -> DialogResult:
         if len(intents) == 0 or intents[0].name != "yes":
             await send(message.author, message.channel, self._bot, f"OK. Keine Änderung vorgenommen!")
             return DialogResult.NEXT

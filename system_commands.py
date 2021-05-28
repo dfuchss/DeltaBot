@@ -1,42 +1,18 @@
 from asyncio import iscoroutine
+from enum import Enum
 from typing import Union, Callable, Awaitable
 
-from discord import Message
+from discord import Message, TextChannel
 
 from misc import is_direct, delete, send, BotBase
-
-HandlingFunction = Union[Callable[[], None], Callable[[], Awaitable[None]]]
 
 SYSTEM_COMMAND_SYMBOL = "\\"
 
 
-async def __handling_template(self: BotBase, cmd: str, message: Message, func_dm: HandlingFunction,
-                              func_not_admin: HandlingFunction, func: HandlingFunction):
-    cmd = f"{SYSTEM_COMMAND_SYMBOL}{cmd}"
-    if not message.content.startswith(cmd):
-        return False
-
-    if is_direct(message):
-        run = func_dm()
-        if iscoroutine(run):
-            await run
-
-        return True
-
-    if not self.config.is_admin(message.author):
-        run = func_not_admin()
-        if iscoroutine(run):
-            await run
-
-        await delete(message, self)
-        return True
-
-    run = func()
-    if iscoroutine(run):
-        await run
-
-    await delete(message, self)
-    return True
+class SystemCommandCallState(Enum):
+    DIRECT_MESSAGE = 0
+    NO_ADMIN = 1
+    VALID = 2
 
 
 async def __to_users(bot: BotBase, uids):
@@ -47,79 +23,212 @@ async def __to_users(bot: BotBase, uids):
     return users
 
 
-async def __state(user, channel, bot: BotBase):
-    users = await __to_users(bot, bot.config.get_admins())
-
-    msg = "Aktueller Zustand:\n"
-    msg += f"NLU-Threshold: {bot.config.nlu_threshold}\n"
-    msg += f"Entities: {bot.config.entity_file}\n"
-    msg += f"TTL: {bot.config.ttl}\n"
-    msg += f"Channels: {', '.join(map(str, bot.config.get_channels()))}\n"
-    msg += f"Admins: {', '.join(map(lambda uid: uid.mention, users))}\n"
-    msg += f"Debug: {bot.config.is_debug()}\n"
-    msg += f"Respond-All: {bot.config.is_respond_all()}\n"
-    msg += f"Keep-Messages: {bot.config.is_keep_messages()}"
-    await send(user, channel, bot, msg)
+def __not_authorized(self: BotBase, message: Message):
+    return send(message.author, message.channel, self, "Du bist nicht authorisiert!")
 
 
-async def __listen(user, channel, bot: BotBase):
-    bot.config.add_channel(channel.id)
-    await send(user, channel, bot, f"Bitte vom Admin folgende ID eintragen lassen: {channel.id}")
+def __respond_all(state: SystemCommandCallState, bot_base: BotBase, message: Message):
+    if state == SystemCommandCallState.NO_ADMIN:
+        return __not_authorized(bot_base, message)
+
+    if state == SystemCommandCallState.DIRECT_MESSAGE or state == SystemCommandCallState.VALID:
+        return send(message.author, message.channel, bot_base,
+                    f"Immer Antworten-Modus ist jetzt {'an' if (bot_base.config.toggle_respond_all()) else 'aus'}"  #
+                    )
+
+    raise Exception(f"Impossible system command call state: {state}")
+
+
+def __listen(state: SystemCommandCallState, bot_base: BotBase, message: Message):
+    if state == SystemCommandCallState.NO_ADMIN:
+        return __not_authorized(bot_base, message)
+
+    if state == SystemCommandCallState.DIRECT_MESSAGE:
+        return send(message.author, message.channel, bot_base, "Ich höre Dich schon!")
+
+    if state == SystemCommandCallState.VALID:
+        channel: TextChannel = message.channel
+        bot_base.config.add_channel(channel.id)
+        return send(message.author, channel, bot_base, f"Ich höre jetzt auf {channel.mention}")
+
+    raise Exception(f"Impossible system command call state: {state}")
+
+
+def __keep(state: SystemCommandCallState, bot_base: BotBase, message: Message):
+    if state == SystemCommandCallState.NO_ADMIN:
+        return __not_authorized(bot_base, message)
+
+    if state == SystemCommandCallState.DIRECT_MESSAGE or state == SystemCommandCallState.VALID:
+        return send(message.author, message.channel, bot_base,
+                    f"Nachrichten löschen ist jetzt {'aus' if (bot_base.config.toggle_keep_messages()) else 'an'}"  #
+                    )
+
+    raise Exception(f"Impossible system command call state: {state}")
+
+
+async def __admin(state: SystemCommandCallState, bot_base: BotBase, message: Message):
+    if state == SystemCommandCallState.NO_ADMIN:
+        await __not_authorized(bot_base, message)
+        return
+
+    if state == SystemCommandCallState.DIRECT_MESSAGE or state == SystemCommandCallState.VALID:
+        bot_base.config.add_admins(message)
+        users = await __to_users(bot_base, bot_base.config.get_admins())
+        await send(message.author, message.channel, bot_base,
+                   f"Admins: {', '.join(map(lambda uid: uid.mention, users))}")
+        return
+
+    raise Exception(f"Impossible system command call state: {state}")
+
+
+def __echo(state: SystemCommandCallState, bot_base: BotBase, message: Message):
+    if state == SystemCommandCallState.NO_ADMIN:
+        return __not_authorized(bot_base, message)
+
+    if state == SystemCommandCallState.DIRECT_MESSAGE or state == SystemCommandCallState.VALID:
+        return message.channel.send(message.content.replace("<", "").replace(">", ""))
+
+    raise Exception(f"Impossible system command call state: {state}")
+
+
+async def __state(state: SystemCommandCallState, bot_base: BotBase, message: Message):
+    if state == SystemCommandCallState.NO_ADMIN:
+        await __not_authorized(bot_base, message)
+        return
+
+    if state == SystemCommandCallState.DIRECT_MESSAGE or state == SystemCommandCallState.VALID:
+        users = await __to_users(bot_base, bot_base.config.get_admins())
+
+        msg = "Aktueller Zustand:\n"
+        msg += f"NLU-Threshold: {bot_base.config.nlu_threshold}\n"
+        msg += f"Entities: {bot_base.config.entity_file}\n"
+        msg += f"TTL: {bot_base.config.ttl}\n"
+        msg += f"Channels: {', '.join(map(str, bot_base.config.get_channels()))}\n"
+        msg += f"Admins: {', '.join(map(lambda uid: uid.mention, users))}\n"
+        msg += f"Debug: {bot_base.config.is_debug()}\n"
+        msg += f"Respond-All: {bot_base.config.is_respond_all()}\n"
+        msg += f"Keep-Messages: {bot_base.config.is_keep_messages()}"
+        await send(message.author, message.channel, bot_base, msg)
+        return
+
+    raise Exception(f"Impossible system command call state: {state}")
+
+
+async def __shutdown(state: SystemCommandCallState, bot_base: BotBase, message: Message):
+    if state == SystemCommandCallState.NO_ADMIN:
+        await __not_authorized(bot_base, message)
+        return
+
+    if state == SystemCommandCallState.DIRECT_MESSAGE or state == SystemCommandCallState.VALID:
+        if bot_base.config.is_keep_messages():
+            await delete(message, bot_base, try_force=True)
+        await bot_base.shutdown()
+        return
+
+    raise Exception(f"Impossible system command call state: {state}")
+
+
+async def __erase(state: SystemCommandCallState, bot_base: BotBase, message: Message):
+    if state == SystemCommandCallState.NO_ADMIN:
+        await __not_authorized(bot_base, message)
+        return
+
+    if state == SystemCommandCallState.DIRECT_MESSAGE:
+        await send(message.author, message.channel, bot_base, "Das ist bei DMs unmöglich.")
+        return
+
+    if state == SystemCommandCallState.VALID:
+        async for m in message.channel.history():
+            if m.id != message.id:
+                await delete(m, bot_base, try_force=True)
+
+        if bot_base.config.is_keep_messages():
+            await delete(message, bot_base, try_force=True)
+
+        return
+
+    raise Exception(f"Impossible system command call state: {state}")
+
+
+def __debug(state: SystemCommandCallState, bot_base: BotBase, message: Message):
+    if state == SystemCommandCallState.NO_ADMIN:
+        return __not_authorized(bot_base, message)
+
+    if state == SystemCommandCallState.DIRECT_MESSAGE or state == SystemCommandCallState.VALID:
+        return send(message.author, message.channel, bot_base,
+                    f"Entwicklermodus ist jetzt: {bot_base.config.toggle_debug()}"  #
+                    )
+
+    raise Exception(f"Impossible system command call state: {state}")
+
+
+def __unknown(state: SystemCommandCallState, bot_base: BotBase, message: Message):
+    return send(message.author, message.channel, bot_base, "Unbekannter Befehl")
+
+
+HandlingFunction = Union[  #
+    Callable[[SystemCommandCallState, BotBase, Message], None],  #
+    Callable[[SystemCommandCallState, BotBase, Message], Awaitable[None]]  #
+]
+
+
+async def __handling_template(self: BotBase, cmd: str, message: Message, handler: HandlingFunction):
+    cmd = f"{SYSTEM_COMMAND_SYMBOL}{cmd}"
+    if not message.content.startswith(cmd):
+        return False
+
+    if not self.config.is_admin(message.author):
+        run = handler(SystemCommandCallState.NO_ADMIN, self, message)
+        if iscoroutine(run):
+            await run
+
+        await delete(message, self)
+        return True
+
+    if is_direct(message):
+        run = handler(SystemCommandCallState.DIRECT_MESSAGE, self, message)
+        if iscoroutine(run):
+            await run
+
+        return True
+
+    run = handler(SystemCommandCallState.VALID, self, message)
+    if iscoroutine(run):
+        await run
+
+    await delete(message, self)
+    return True
 
 
 async def handle_system(self: BotBase, message: Message) -> bool:
-    if await __handling_template(self, "respond-all", message,
-                                 lambda: send(message.author, message.channel, self,
-                                              f"Immer Antworten-Modus ist jetzt {'an' if (self.config.toggle_respond_all()) else 'aus'}"),
-                                 lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
-                                 lambda: send(message.author, message.channel, self,
-                                              f"Immer Antworten-Modus ist jetzt {'an' if (self.config.toggle_respond_all()) else 'aus'}")
-                                 ):
+    if await __handling_template(self, "respond-all", message, __respond_all):
         return True
 
-    if await __handling_template(self, "listen", message,
-                                 lambda: send(message.author, message.channel, self, "Ich höre Dich schon!"),
-                                 lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
-                                 lambda: __listen(message.author, message.channel, self)
-                                 ):
+    if await __handling_template(self, "listen", message, __listen):
         return True
 
-    if await __handling_template(self, "keep", message,
-                                 lambda: send(message.author, message.channel, self,
-                                              f"Nachrichten löschen ist jetzt {'aus' if (self.config.toggle_keep_messages()) else 'an'}"),
-                                 lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
-                                 lambda: send(message.author, message.channel, self,
-                                              f"Nachrichten löschen ist jetzt {'aus' if (self.config.toggle_keep_messages()) else 'an'}")
-                                 ):
+    if await __handling_template(self, "keep", message, __keep):
         return True
 
-    if await __handling_template(self, "admin", message,
-                                 lambda: send(message.author, message.channel, self,
-                                              "Das geht nicht im Privaten channel!"),
-                                 lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
-                                 lambda: self.config.add_admins(message)
-                                 ):
+    if await __handling_template(self, "admin", message, __admin):
         return True
 
-    if await __handling_template(self, "echo", message,
-                                 lambda: message.channel.send(message.content.replace("<", "").replace(">", "")),
-                                 lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
-                                 lambda: message.channel.send(message.content.replace("<", "").replace(">", ""))
-                                 ):
+    if await __handling_template(self, "echo", message, __echo):
         return True
 
-    if await __handling_template(self, "state", message,
-                                 lambda: __state(message.author, message.channel, self),
-                                 lambda: send(message.author, message.channel, self, "Du bist nicht authorisiert!"),
-                                 lambda: __state(message.author, message.channel, self)
-                                 ):
+    if await __handling_template(self, "state", message, __state):
         return True
 
-    if await __handling_template(self, "", message,
-                                 lambda: send(message.author, message.channel, self, "Unbekannter Befehl"),
-                                 lambda: send(message.author, message.channel, self, "Unbekannter Befehl"),
-                                 lambda: send(message.author, message.channel, self, "Unbekannter Befehl"),
-                                 ):
+    if await __handling_template(self, "shutdown", message, __shutdown):
+        return True
+
+    if await __handling_template(self, "erase", message, __erase):
+        return True
+
+    if await __handling_template(self, "debug", message, __debug):
+        return True
+
+    if await __handling_template(self, "", message, __unknown):
         return True
 
     return False

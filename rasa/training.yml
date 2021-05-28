@@ -13,14 +13,6 @@ nlu:
     - wieviel uhr ist es?
     - wiviel uhr ist es?
     - zeig mir die zeit
-- intent: debug
-  examples: |
-    - debug
-    - debug aktivieren
-    - debug modus wechseln
-    - debug wechseln
-    - zeig mir mehr
-    - zeig mir weniger
 - intent: news
   examples: |
     - bitte ein kurzes briefing
@@ -125,21 +117,13 @@ nlu:
     - wie heißt Du
     - hast Du einen Namen
     - wie soll ich Dich nennen
-- intent: shutdown
-  examples: |
-    - ausschalten
-    - beende dich
-    - beenden
-    - bitte beenden
-    - bitte schalte dich aus
-    - du kannst dich beenden
-    - shutdown
 - intent: cleanup
   examples: |
     - bitte den channel aufräumen
     - lösche alle nachrichten von mir
     - räume meine nachrichten auf
     - cleanup
+    - aufräumen
 - intent: yes
   examples: |
     - ja

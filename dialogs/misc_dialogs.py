@@ -18,6 +18,7 @@ class Clock(Dialog):
     def _load_initial_steps(self):
         self.add_step(self._time_step)
 
-    async def _time_step(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
+    async def _time_step(self, message: Message, intents: List[IntentResult],
+                         entities: List[EntityResult]) -> DialogResult:
         await send(message.author, message.channel, self._bot, f"{datetime.now()}")
         return DialogResult.NEXT

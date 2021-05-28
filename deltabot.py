@@ -29,9 +29,7 @@ class BotInstance:
             NotUnderstanding(self._bot),
             QnA(self._bot),
             Clock(self._bot),
-            Debug(self._bot),
             News(self._bot),
-            Shutdown(self._bot),
             Cleanup(self._bot),
             QnAAnswer(self._bot),
             Choose(self._bot)
@@ -41,9 +39,7 @@ class BotInstance:
             "None".lower(): NotUnderstanding.ID,
             "QnA".lower(): QnA.ID,
             "Clock".lower(): Clock.ID,
-            "Debug".lower(): Debug.ID,
             "News".lower(): News.ID,
-            "Shutdown".lower(): Shutdown.ID,
             "Cleanup".lower(): Cleanup.ID,
             "Answer".lower(): QnAAnswer.ID,
             "Choose".lower(): Choose.ID
@@ -119,7 +115,8 @@ class DeltaBot(BotBase):
 
         handle_message: bool = False
         handle_message |= is_direct(message)
-        handle_message |= (self.user in message.mentions or self.config.is_respond_all()) and ch_id in self.config.get_channels()
+        handle_message |= (self.user in message.mentions or self.config.is_respond_all()) \
+                          and ch_id in self.config.get_channels()
         handle_message |= instance.has_active_dialog()
 
         if not handle_message:

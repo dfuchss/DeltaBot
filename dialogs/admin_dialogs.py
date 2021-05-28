@@ -8,23 +8,6 @@ from dialog_management import Dialog, DialogResult
 from misc import send, is_direct, delete
 
 
-class Shutdown(Dialog):
-    ID = "Shutdown"
-
-    def __init__(self, bot: BotBase):
-        super().__init__(bot, Shutdown.ID)
-
-    def _load_initial_steps(self):
-        self.add_step(self._shutdown_step)
-
-    async def _shutdown_step(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
-        if not self._bot.config.is_admin(message.author):
-            await send(message.author, message.channel, self._bot, "Du bist nicht berechtigt, mich zu deaktivieren!")
-            return
-
-        await self._bot.shutdown()
-
-
 class Cleanup(Dialog):
     ID = "Cleanup"
 
@@ -40,13 +23,15 @@ class Cleanup(Dialog):
         super().reset()
         self.__channel_user_msg = None
 
-    async def _ask_cleanup(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
+    async def _ask_cleanup(self, message: Message, intents: List[IntentResult],
+                           entities: List[EntityResult]) -> DialogResult:
         await send(message.author, message.channel, self._bot,
                    f"Soll ich alle Nachrichten von {str(message.author)} aus {str(message.channel)} und meine Nachrichten löschen? (Yes/No)?")
         self.__channel_user_msg = message
         return DialogResult.WAIT_FOR_INPUT
 
-    async def _vfy_cleanup(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
+    async def _vfy_cleanup(self, message: Message, intents: List[IntentResult],
+                           entities: List[EntityResult]) -> DialogResult:
         if len(intents) != 0 and intents[0].name == "yes":
             self.add_step(self._cleanup_step)
         else:
@@ -54,15 +39,18 @@ class Cleanup(Dialog):
 
         return DialogResult.NEXT
 
-    async def _cleanup_step(self, message: Message, intents: List[IntentResult], entities: List[EntityResult]):
+    async def _cleanup_step(self, message: Message, intents: List[IntentResult],
+                            entities: List[EntityResult]) -> DialogResult:
         if not self._bot.config.is_admin(message.author) or is_direct(self.__channel_user_msg):
             await send(message.author, message.channel, self._bot, f"Das kann ich leider nicht tun!")
-            return
+            return DialogResult.NEXT
 
         author = self.__channel_user_msg.author
         async for m in self.__channel_user_msg.channel.history():
-            if (
-                    author == m.author or m.author == self._bot.get_bot_user()) and m.id != self.__channel_user_msg.id and m.id != message.id:
+            if m.id == message.id or m.id == self.__channel_user_msg.id:
+                continue
+
+            if author == m.author or m.author == self._bot.get_bot_user():
                 await delete(m, self._bot, try_force=True)
 
         return DialogResult.NEXT
