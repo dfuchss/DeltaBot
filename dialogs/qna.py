@@ -28,7 +28,7 @@ class QnA(Dialog):
         name = f"QnA/{intent}.json"
         if not exists(name):
             await send(message.author, message.channel, self._bot, f"Ich finde keinen Eintrag für {intent}")
-            return
+            return DialogResult.NEXT
 
         qna_file = open(name, "r", encoding="utf-8-sig")
         response = loads(qna_file.read().strip())
