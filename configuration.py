@@ -11,14 +11,14 @@ from json_objects import convert_to_dict
 
 class Configuration:
     def __init__(self):
-        self.version = 1
+        self.version = 2
         self._path = getenv("CONF_FILE", "./config.json")
 
         self.nlu_dir = "rasa/models"
         self.nlu_name = "nlu"
         self.nlu_threshold = 0.7
         self.nlu_not_classified = "rasa/training-nc.md"
-        self.entity_file = "rasa/training-entities.json"
+        self.entity_file = "rasa/entities.json"
 
         self.ttl = 10.0
         self._channels = []
@@ -96,8 +96,8 @@ class Configuration:
             self._store()
             return
         try:
-            with open(self._path, encoding="utf-8-sig") as jsonfile:
-                loaded = loads(jsonfile.read())
+            with open(self._path, encoding="utf-8-sig") as json_file:
+                loaded = loads(json_file.read())
 
                 if loaded["version"] == self.version:
                     for attr in loaded.keys():
@@ -114,6 +114,17 @@ class Configuration:
 
         if loaded["version"] is None:
             print("Migration not possible. No version found.")
+            return
+
+        if loaded["version"] == 1:
+            # Push to V2
+            for attr in loaded.keys():
+                if not attr.startswith("__") and hasattr(self, attr):
+                    setattr(self, attr, loaded[attr])
+            self.version = 2
+            self.entity_file = "rasa/entities.json"
+            self._store()
+            print("Configuration: version changed from 1 to 2")
             return
 
         print("Migration not possible. No migration profile available")

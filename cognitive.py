@@ -6,7 +6,6 @@ from rasa.model import get_model
 from rasa.nlu.model import Interpreter
 
 from configuration import Configuration
-from json_objects import dict_to_obj
 
 
 class Entity:
@@ -24,7 +23,7 @@ class Entity:
 class EntityGroup:
     """ Defines a group of entities. """
 
-    def __init__(self, name: str, entities=None) -> None:
+    def __init__(self, name: str, entities: List[Entity] = None) -> None:
         """ Initialize group of entities.
         :param name the name of the group
         :param entities the initial set of entities
@@ -94,7 +93,7 @@ class NLUService:
         model = f"{get_model(self._config.nlu_dir)}/{self._config.nlu_name}"
         self.interpreter = Interpreter.load(model)
         with open(config.entity_file, encoding="utf-8-sig") as ef:
-            self.entity_model = loads(ef.read(), object_hook=dict_to_obj)
+            self.entity_model = self._load_entities_from_json(loads(ef.read()))
 
     def recognize(self, content: str) -> (List[IntentResult], List[EntityResult]):
         """ Interpret input.
@@ -139,3 +138,16 @@ class NLUService:
                         break
 
         return result
+
+    @staticmethod
+    def _load_entities_from_json(data: dict):
+        groups = []
+        for group in data["groups"]:
+            group_name = group["name"]
+            group_entities = []
+            for entity in group["entities"]:
+                entity_name = entity["name"]
+                entity_vals = entity["values"]
+                group_entities.append(Entity(entity_name, entity_vals))
+            groups.append(EntityGroup(group_name, group_entities))
+        return EntityModel(groups)

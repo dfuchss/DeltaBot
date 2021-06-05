@@ -1,6 +1,5 @@
 from json import loads
 from random import choice
-from re import sub, findall
 from typing import List, Optional, TypeVar, Union, Any
 
 from discord import ChannelType, Message, User, DMChannel, TextChannel, NotFound, Client
@@ -69,22 +68,26 @@ class BotBase(Client):
 
 
 async def send(respondee: User, channel: Union[DMChannel, TextChannel], bot: BotBase, message: Any,
-               mention: bool = True):
+               mention: bool = True, try_delete: bool = True) -> Optional[Message]:
     """ Send a message to a channel.
     :param respondee: the user which has started the conversation
     :param channel: the target channel for sending the message
     :param bot: the bot itself
     :param message: the message to send
     :param mention: indicator for mentioning the respondee
+    :param try_delete: try to delete message after ttl (if activated)
+    :return Message if not deleted
     """
 
     if mention:
         msg = await channel.send(f"{respondee.mention} {message}")
     else:
         msg = await channel.send(message)
-    if not channel.type == ChannelType.private:
+    if not channel.type == ChannelType.private and try_delete:
         await delete(msg, bot, delay=bot.config.ttl)
         return None
+
+    return msg
 
 
 async def delete(message: Message, bot: BotBase, try_force: bool = False, delay=None) -> None:
@@ -114,43 +117,15 @@ def is_direct(message: Message) -> bool:
     return message.channel.type == ChannelType.private
 
 
-def cleanup(message: str, bot: BotBase) -> str:
-    """ Cleanups a message. E.g. replaces the ids of users by their names.
-    :param message the message
-    :param bot the bot
-    :return the new message
-    """
-
-    self_ref = f"<@!{bot.user.id}>"
-    if self_ref in message:
-        message = message.replace(self_ref, "")
-
-    refs = findall("<@[0-9]+>", message)
-    if not refs:
-        return message
-
-    for ref in refs:
-        user = int(ref[2:len(ref) - 1])
-        username = bot.lookup_user(user)
-        if username is None:
-            username = "Unbekannt"
-        else:
-            username = sub(r"[^a-zA-Z0-9ÄÖÜäöüß -]", "", username.name)
-
-        message = sub(ref, username, message)
-
-    return message
-
-
 T = TypeVar('T')
 
 
-def flatten(inlist: List[List[T]]) -> List[T]:
+def flatten(in_list: List[List[T]]) -> List[T]:
     """ Flatten a List of Lists.
-    :param inlist the list of lists
+    :param in_list the list of lists
     :return the new list
     """
-    return [item for sublist in inlist for item in sublist]
+    return [item for sublist in in_list for item in sublist]
 
 
 async def send_help_message(message: Message, self: BotBase):

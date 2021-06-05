@@ -31,6 +31,10 @@ def __read_number_param(text, default):
     return val
 
 
+async def __help(message, self):
+    return await send_help_message(message, self)
+
+
 async def __roll(message, self):
     text: str = message.content
     dice = __read_number_param(text, 6)
@@ -176,7 +180,7 @@ async def __teams(message: Message, self: BotBase):
     for t in groups.keys():
         teams = teams + f"{t + 1}: {groups[t]}\n"
 
-    await send(message.author, message.channel, self, f"Zuordnung:\n{teams.strip()}", False)
+    await send(message.author, message.channel, self, f"Zuordnung:\n{teams.strip()}", mention=False)
 
 
 def __unknown(message: Message, self: BotBase):
@@ -202,23 +206,21 @@ async def __handling_template(self: BotBase, cmd: str, message: Message, func: H
     return True
 
 
+commands = [__help, __roll, __teams, __summon]
+commands.sort(key=lambda m: len(m.__name__), reverse=True)
+
+
 async def handle_user(self: BotBase, message: Message) -> bool:
-    if await __handling_template(self, "roll", message, __roll):
-        return True
+    if not message.clean_content.strip().startswith(USER_COMMAND_SYMBOL):
+        return False
 
-    if await __handling_template(self, "help", message, send_help_message):
-        return True
+    for command in commands:
+        name = command.__name__[2:].replace("_", "-")
+        if await __handling_template(self, name, message, command):
+            return True
 
-    if await __handling_template(self, "teams", message, __teams):
-        return True
-
-    if await __handling_template(self, "summon", message, __summon):
-        return True
-
-    if await __handling_template(self, "", message, __unknown):
-        return True
-
-    return False
+    await __handling_template(self, "", message, __unknown)
+    return True
 
 
 async def handle_user_reaction(self: BotBase, payload: RawReactionActionEvent, message: Message, channel: TextChannel):

@@ -200,35 +200,18 @@ async def __handling_template(self: BotBase, cmd: str, message: Message, handler
     return True
 
 
+commands = [__respond_all, __listen, __keep, __admin, __echo, __state, __shutdown, __erase, __debug]
+commands.sort(key=lambda m: len(m.__name__), reverse=True)
+
+
 async def handle_system(self: BotBase, message: Message) -> bool:
-    if await __handling_template(self, "respond-all", message, __respond_all):
-        return True
+    if not message.clean_content.strip().startswith(SYSTEM_COMMAND_SYMBOL):
+        return False
 
-    if await __handling_template(self, "listen", message, __listen):
-        return True
+    for command in commands:
+        name = command.__name__[2:].replace("_", "-")
+        if await __handling_template(self, name, message, command):
+            return True
 
-    if await __handling_template(self, "keep", message, __keep):
-        return True
-
-    if await __handling_template(self, "admin", message, __admin):
-        return True
-
-    if await __handling_template(self, "echo", message, __echo):
-        return True
-
-    if await __handling_template(self, "state", message, __state):
-        return True
-
-    if await __handling_template(self, "shutdown", message, __shutdown):
-        return True
-
-    if await __handling_template(self, "erase", message, __erase):
-        return True
-
-    if await __handling_template(self, "debug", message, __debug):
-        return True
-
-    if await __handling_template(self, "", message, __unknown):
-        return True
-
-    return False
+    await __handling_template(self, "", message, __unknown)
+    return True

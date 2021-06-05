@@ -5,7 +5,7 @@ from discord import Message
 from cognitive import IntentResult, EntityResult
 from misc import BotBase
 from dialog_management import Dialog, DialogResult
-from misc import send, cleanup
+from misc import send
 from random import shuffle
 from re import split
 
@@ -54,7 +54,7 @@ class Choose(Dialog):
 
     async def _update_elements(self, message: Message, intents: List[IntentResult],
                                entities: List[EntityResult]) -> DialogResult:
-        text: str = cleanup(message.content, self._bot)
+        text: str = str(message.clean_content)
         splits = split("\\s+", text)
         splits = list(filter(lambda x: len(x.strip()) != 0, splits))
         self._elements.clear()
@@ -67,13 +67,13 @@ class Choose(Dialog):
     async def _ask_for_groups(self, message: Message, intents: List[IntentResult],
                               entities: List[EntityResult]) -> DialogResult:
         await send(message.author, message.channel, self._bot,
-                   f"Bitte gib an, in wieviele Gruppen ich die Menge teilen muss")
+                   f"Bitte gib an, in wie viele Gruppen ich die Menge teilen muss")
         self.add_step(self._check_ask_for_groups)
         return DialogResult.WAIT_FOR_INPUT
 
     async def _check_ask_for_groups(self, message: Message, intents: List[IntentResult],
                                     entities: List[EntityResult]) -> DialogResult:
-        text: str = cleanup(message.content, self._bot)
+        text: str = str(message.clean_content)
         text = text.strip()
         value = -1
         try:

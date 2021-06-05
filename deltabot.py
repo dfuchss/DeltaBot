@@ -10,7 +10,7 @@ from dialogs.admin_dialogs import *
 from dialogs.news_dialog import News
 from dialogs.qna import *
 from dialogs.choose_dialog import Choose
-from misc import delete, is_direct, cleanup, BotBase
+from misc import delete, is_direct, BotBase
 from system_commands import handle_system
 from user_commands import handle_user, handle_user_reaction
 
@@ -49,7 +49,7 @@ class BotInstance:
         return next((d for d in self._dialogs if d.dialog_id == dialog_id), None)
 
     async def handle(self, message: Message):
-        (intents, entities) = self._bot.nlu.recognize(cleanup(message.content, self._bot))
+        (intents, entities) = self._bot.nlu.recognize(message.clean_content)
 
         await self._bot.print_intents_entities(message, intents, entities)
 
@@ -69,7 +69,7 @@ class BotInstance:
 
         dialog = self.__lookup_dialog(dialog)
         if dialog is None:
-            await send(message.author, message.channel, self._bot, "Dialog nicht gefunden. Bitte an Botadmin wenden!")
+            await send(message.author, message.channel, self._bot, "Dialog nicht gefunden. Bitte an Bot-Admin wenden!")
             return
 
         result = await dialog.proceed(message, intents, entities)
