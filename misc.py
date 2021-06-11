@@ -8,12 +8,15 @@ from cognitive import NLUService, IntentResult, EntityResult
 from configuration import Configuration
 from datetime import datetime
 
+from scheduler import BotScheduler
+
 
 class BotBase(Client):
     def __init__(self):
         super().__init__()
         self.config: Configuration = Configuration()
         self.nlu: NLUService = NLUService(self.config)
+        self.scheduler = BotScheduler(self.loop)
 
     @staticmethod
     def log(message: Message):
@@ -85,7 +88,6 @@ async def send(respondee: User, channel: Union[DMChannel, TextChannel], bot: Bot
         msg = await channel.send(message)
     if not channel.type == ChannelType.private and try_delete:
         await delete(msg, bot, delay=bot.config.ttl)
-        return None
 
     return msg
 

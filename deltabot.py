@@ -12,7 +12,7 @@ from dialogs.qna import *
 from dialogs.choose_dialog import Choose
 from misc import delete, is_direct, BotBase
 from system_commands import handle_system
-from user_commands import handle_user, handle_user_reaction
+from user_commands import handle_user, handle_user_reaction, init_user_commands
 
 
 class BotInstance:
@@ -88,12 +88,16 @@ class DeltaBot(BotBase):
         super().__init__()
         self._user_to_instance = {}
         self._user_to_instance_lock = Lock()
+        init_user_commands(self)
 
     async def on_ready(self) -> None:
         """ Will be executed on ready event. """
         print('Logged on as', self.user)
         activity = Activity(type=ActivityType.watching, name="fuchss.org/L/DeltaBot")
         await self.change_presence(status=Status.online, activity=activity)
+
+        print('Starting scheduler ..')
+        self.scheduler.start_scheduler()
 
     async def on_message(self, message: Message) -> None:
         """Handle a new message.

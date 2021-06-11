@@ -2,3 +2,4 @@ discord.py==1.7.2
 feedparser==6.0.2
 rasa==2.6.1
 requests==2.25.1
+datefinder==0.7.1

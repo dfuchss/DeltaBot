@@ -1,18 +1,14 @@
 """The configuration of the DeltaBot"""
-from json import loads, dumps
 from os import getenv
-from os.path import exists
 from typing import List
-
 from discord import Message, User
 
-from json_objects import convert_to_dict
+from loadable import Loadable
 
 
-class Configuration:
+class Configuration(Loadable):
     def __init__(self):
-        self.version = 2
-        self._path = getenv("CONF_FILE", "./config.json")
+        super().__init__(getenv("CONF_FILE", "./config.json"), version=2)
 
         self.nlu_dir = "rasa/models"
         self.nlu_name = "nlu"
@@ -87,29 +83,7 @@ class Configuration:
         self._store()
         return self._keep_messages_indicator
 
-    def _store(self) -> None:
-        with open(self._path, "w", encoding="utf-8-sig") as outfile:
-            outfile.write(dumps(self, default=convert_to_dict, indent=4))
-
-    def _load(self) -> None:
-        if not exists(self._path):
-            self._store()
-            return
-        try:
-            with open(self._path, encoding="utf-8-sig") as json_file:
-                loaded = loads(json_file.read())
-
-                if loaded["version"] == self.version:
-                    for attr in loaded.keys():
-                        if not attr.startswith("__") and hasattr(self, attr):
-                            setattr(self, attr, loaded[attr])
-                else:
-                    self.__migrate(loaded)
-        except Exception:
-            print("State could not be loaded .. reinitialize")
-            self._store()
-
-    def __migrate(self, loaded) -> None:
+    def _migrate(self, loaded) -> None:
         print(f"Config is at version {self.version}")
 
         if loaded["version"] is None:

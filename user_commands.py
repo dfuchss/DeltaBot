@@ -1,10 +1,13 @@
 import re
 from asyncio import iscoroutine
-from typing import Union, Callable, Awaitable, Optional, List, Dict
+from typing import Union, Callable, Awaitable, Optional, List, Dict, Tuple
 
+from datefinder import DateFinder
+from datetime import datetime
 from discord import Message, VoiceChannel, User, TextChannel, Role, RawReactionActionEvent
 
-from misc import delete, send, BotBase, send_help_message
+from loadable import Loadable
+from misc import delete, send, BotBase, send_help_message, is_direct
 
 from random import randint, shuffle, choice
 
@@ -183,6 +186,86 @@ async def __teams(message: Message, self: BotBase):
     await send(message.author, message.channel, self, f"Zuordnung:\n{teams.strip()}", mention=False)
 
 
+class ReminderState(Loadable):
+    def __init__(self):
+        super().__init__(path="./reminder_state.json", version=1)
+        self._reminders = []
+        self._load()
+
+    def add_reminder(self, reminder):
+        self._reminders.append(reminder)
+        self._store()
+
+    def remove_reminder(self, reminder):
+        self._reminders.remove(reminder)
+        self._store()
+
+    def reminders(self):
+        return self._reminders
+
+
+__reminder_state = ReminderState()
+
+
+def __find_time(message: Message):
+    df: DateFinder = DateFinder()
+
+    clean_msg = message.clean_content[len("/reminder"):].replace("@", "").strip()
+    dt = [d for d in df.find_dates(clean_msg)]
+
+    if len(dt) != 1:
+        return None, None
+
+    strs = [d for d in df.extract_date_strings(clean_msg)]
+    assert len(strs) == len(dt)
+
+    clean_msg = message.content[len("/reminder"):].replace(strs[0][0], "").strip()
+    return dt[0], clean_msg
+
+
+async def __execute_reminder(data, self: BotBase):
+    message = data["msg"]
+    channel: TextChannel = None if data["cid"] is None else await self.fetch_channel(data["cid"])
+    user = await self.fetch_user(data["target_id"])
+
+    if channel is None:
+        await user.send(message)
+    else:
+        await send(user, channel, self, message, try_delete=False)
+
+    __reminder_state.remove_reminder(data)
+
+
+async def __reminder(message: Message, self: BotBase):
+    (dt, cleanup_message) = __find_time(message)
+    target_id = message.author.id
+    cid = None if is_direct(message) else message.channel.id
+
+    if dt is None:
+        await send(message.author, message.channel, self, "Ich konnte kein Datum oder Zeitpunkt finden.")
+        return
+
+    data = {
+        "ts": dt.timestamp(),
+        "target_id": target_id,
+        "cid": cid,
+        "msg": cleanup_message
+    }
+
+    __reminder_state.add_reminder(data)
+
+    self.scheduler.queue(__execute_reminder(data, self), dt.timestamp())
+    resp = await send(message.author, message.channel, self, f"Ich erinnere Dich daran: {dt}")
+
+    await message.delete()
+    await resp.delete(delay=15)
+
+
+def _init_reminders(self: BotBase):
+    for reminder in __reminder_state.reminders():
+        self.scheduler.queue(__execute_reminder(reminder, self), reminder["ts"])
+
+
 def __unknown(message: Message, self: BotBase):
     return send(message.author, message.channel, self, "Unbekannter Befehl")
 
@@ -206,8 +289,12 @@ async def __handling_template(self: BotBase, cmd: str, message: Message, func: H
     return True
 
 
-commands = [__help, __roll, __teams, __summon]
+commands = [__help, __roll, __teams, __summon, __reminder]
 commands.sort(key=lambda m: len(m.__name__), reverse=True)
+
+
+def init_user_commands(self: BotBase):
+    _init_reminders(self)
 
 
 async def handle_user(self: BotBase, message: Message) -> bool:
