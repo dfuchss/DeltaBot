@@ -1,6 +1,6 @@
 import asyncio
 from asyncio import iscoroutine
-from threading import Thread, Lock
+from threading import Thread, RLock
 from time import sleep, time
 
 
@@ -12,7 +12,7 @@ class BotScheduler:
         self._thread = None
 
         self._tasks = []
-        self._lock = Lock()
+        self._lock = RLock()
 
     def queue(self, coroutine_or_func, at_timestamp=None):
         with self._lock:
@@ -42,17 +42,20 @@ class BotScheduler:
 
     def __run_tasks(self):
         with self._lock:
-            current_time = time()
-            completed = []
+            copy = list(self._tasks)
 
-            try:
-                for (func, ts) in self._tasks:
-                    if ts is not None and current_time < ts:
-                        continue
-                    self.__await(func) if iscoroutine(func) else func()
-                    completed.append((func, ts))
-            except Exception as e:
-                print(e)
+        current_time = time()
+        completed = []
 
+        try:
+            for (func, ts) in copy:
+                if ts is not None and current_time < ts:
+                    continue
+                self.__await(func) if iscoroutine(func) else func()
+                completed.append((func, ts))
+        except Exception as e:
+            print(e)
+
+        with self._lock:
             for completed_task in completed:
                 self._tasks.remove(completed_task)

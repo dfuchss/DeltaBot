@@ -265,4 +265,4 @@ rasa/models/
 *.env
 
 config.json
-reminder_state.json
+states

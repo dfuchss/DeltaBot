@@ -1,5 +1,7 @@
+import os.path
 from json import dumps, loads
 from os.path import exists
+import pathlib
 
 from json_objects import convert_to_dict
 
@@ -10,6 +12,8 @@ class Loadable:
         self.version = version
 
     def _store(self) -> None:
+        pathlib.Path(os.path.dirname(self._path)).mkdir(parents=True, exist_ok=True)
+
         with open(self._path, "w", encoding="utf-8-sig") as outfile:
             outfile.write(dumps(self, default=convert_to_dict, indent=4))
 

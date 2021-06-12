@@ -24,4 +24,6 @@ ghcr.io/dfuchss/deltabot
 
 You might also want to access / store the configuration. Therefore, you can use the `--env CONF_FILE=/path/you/want -v MachinePath/VolumePath`
 
+If you want to persist states, you have to map `-v MachinePath:/usr/src/app/states`
+
 
