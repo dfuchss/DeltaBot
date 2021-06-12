@@ -43,7 +43,7 @@ __summon_rgx = [r"^<@!?\d+>: Wer wäre",  #
 
 
 def __add_to_scheduler(self: BotBase, resp_message: Message, offset: int, day: str):
-    if offset == 0:
+    if offset <= -1:
         return
 
     next_time = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(days=1)
@@ -71,14 +71,11 @@ async def __execute_summon_update(u: dict, self: BotBase):
     msg: Message = await ch.fetch_message(mid)
 
     new_day_offset = day_offset - 1
-    _, _, new_day_value = days[new_day_offset]
+    _, _, new_day_value = (None, None, "'damals (am)'") if new_day_offset < 0 else days[new_day_offset]
     new_day_value = f"**{new_day_value}**"
 
     new_content = msg.content.replace(day_value, new_day_value)
     await msg.edit(content=new_content)
-
-    if new_day_offset == 0:
-        return
 
     # Schedule new change ..
     __add_to_scheduler(self, msg, new_day_offset, new_day_value)
