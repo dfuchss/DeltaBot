@@ -8,7 +8,7 @@ RUN rasa telemetry disable
 RUN rasa train nlu --nlu ./training.yml
 
 FROM python:3.8-slim
-
+ENV TZ=Europe/Berlin
 ENV DiscordToken "The_Discord_Token"
 
 # WORKDIR /usr/src/

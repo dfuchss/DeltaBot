@@ -167,11 +167,12 @@ class DeltaBot(BotBase):
         return instance
 
 
-def main() -> None:
+def start() -> None:
     """The main method of the system."""
     discord = DeltaBot()
     discord.run(environ["DiscordToken"])
 
 
 if __name__ == "__main__":
-    main()
+    # Start the Bot
+    start()
