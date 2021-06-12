@@ -46,8 +46,7 @@ def __add_to_scheduler(self: BotBase, resp_message: Message, offset: int, day: s
     if offset == 0:
         return
 
-    next_time = datetime.datetime.now() + datetime.timedelta(
-        seconds=10)  # .replace(hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(days=1)
+    next_time = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(days=1)
 
     data = {
         "ts": next_time.timestamp(),
