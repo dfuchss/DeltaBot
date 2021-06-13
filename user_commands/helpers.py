@@ -4,6 +4,8 @@ import re
 from datefinder import DateFinder
 from discord import Message
 
+from constants import DAYS
+
 
 def __crop_command(raw_message: str):
     msg = raw_message.split(" ", 1)
@@ -38,15 +40,8 @@ def find_date_by_finder(clean_msg: str):
     return dt[0], end_idx
 
 
-days = [
-    (r"\bheute\b", 0, "heute"),
-    (r"(\bmorgen\b|\bin einem tag\b|\bin 1 tag\b)", 1, "morgen"),
-    (r"(\bübermorgen\b|\bin zwei tagen\b|\bin 2 tagen\b)", 2, "übermorgen")
-]
-
-
 def find_day_by_special_key(clean_msg):
-    for (rgx, offset, default) in days:
+    for (rgx, offset, default) in DAYS:
         matches = [g for g in re.finditer(rgx, clean_msg, re.IGNORECASE)]
         if len(matches) == 0:
             continue

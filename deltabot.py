@@ -10,7 +10,7 @@ from dialogs.admin_dialogs import *
 from dialogs.news_dialog import News
 from dialogs.qna import *
 from dialogs.choose_dialog import Choose
-from misc import delete, is_direct, BotBase
+from misc import delete, is_direct, BotBase, send_help_message
 from system_commands import handle_system
 from user_commands.commands import handle_user, handle_user_reaction, init_user_commands
 
@@ -64,6 +64,10 @@ class BotInstance:
 
             if score <= self._bot.config.nlu_threshold:
                 dialog = NotUnderstanding.ID
+            elif intent == "QnA-Tasks":
+                # Send Help Message for Tasks intent ..
+                await send_help_message(message, self._bot)
+                return
             elif intent.startswith("QnA"):
                 dialog = QnA.ID
 

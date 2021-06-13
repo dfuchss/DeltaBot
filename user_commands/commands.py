@@ -3,7 +3,8 @@ from typing import Union, Callable, Awaitable, Optional
 
 from discord import Message, VoiceChannel, TextChannel, RawReactionActionEvent
 
-from misc import delete, send, BotBase, send_help_message
+from constants import USER_COMMAND_SYMBOL
+from misc import delete, send, BotBase, send_help_message, command_meta
 
 from random import randint, shuffle
 
@@ -11,13 +12,13 @@ from .helpers import __read_number_param
 from .reminder import _init_reminders, __reminder
 from .summon import __summon, __handling_reaction_summon, _init_summon_updates
 
-USER_COMMAND_SYMBOL = "/"
 
-
+@command_meta(help_msg="Zeigt diese Hilfe an :)")
 async def __help(message, self):
     return await send_help_message(message, self)
 
 
+@command_meta(help_msg="Würfelt eine Zahl zwischen 1 und N (wenn N fehlt, verwende ich 6)", params=["N"])
 async def __roll(message, self):
     text: str = message.content
     dice = __read_number_param(text, 6)
@@ -25,6 +26,8 @@ async def __roll(message, self):
     await send(message.author, message.channel, self, f"{rnd}")
 
 
+@command_meta(help_msg="Ordnet die Leute in Deinem Voice Channel in N Teams (wenn N fehlt, verwende ich 2)",
+              params=["N"])
 async def __teams(message: Message, self: BotBase):
     text: str = message.content
     num = __read_number_param(text, 2)

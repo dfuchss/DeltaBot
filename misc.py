@@ -1,6 +1,5 @@
-from json import loads
-from random import choice
-from typing import List, Optional, TypeVar, Union, Any
+import functools
+from typing import List, Optional, Union, Any, Tuple, Dict
 
 from discord import ChannelType, Message, User, DMChannel, TextChannel, NotFound, Client
 
@@ -8,7 +7,33 @@ from cognitive import NLUService, IntentResult, EntityResult
 from configuration import Configuration
 from datetime import datetime
 
+from constants import SYSTEM_COMMAND_SYMBOL, USER_COMMAND_SYMBOL
 from scheduler import BotScheduler
+
+__registered_commands: Dict[Tuple[str, bool], str] = {}
+
+
+def __register_command(method, help_msg: str, is_system_command: bool, name: str, params: List[str]):
+    if name is None:
+        assert method.__name__.startswith("__")
+        name = method.__name__[2:].replace("_", "-")
+    if params is None:
+        params = []
+    __registered_commands[(f"{name} {' '.join(params)}".strip(), is_system_command)] = help_msg
+
+
+def command_meta(help_msg: str = None, is_system_command: bool = False, name: str = None, params: List[str] = None):
+    def decorator(func):
+        if help_msg is not None:
+            __register_command(func, help_msg, is_system_command, name, params)
+
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
 
 
 class BotBase(Client):
@@ -16,10 +41,10 @@ class BotBase(Client):
         super().__init__()
         self.config: Configuration = Configuration()
         self.nlu: NLUService = NLUService(self.config)
-        self.scheduler = BotScheduler(self.loop)
+        self.scheduler: BotScheduler = BotScheduler(self.loop)
 
     @staticmethod
-    def log(message: Message):
+    def log(message: Message) -> None:
         """ Log a message to std out.
         :param message the actual message
         """
@@ -48,16 +73,6 @@ class BotBase(Client):
         result += "------------"
 
         await send(message.author, message.channel, self, result, mention=False)
-
-    def lookup_user(self, user_id: int) -> Optional[User]:
-        """Find user by id
-        :param user_id: the id of the user
-        :return the found user object or None
-        """
-        users = list(filter(lambda u: u.id == user_id, self.users))
-        if len(users) != 1:
-            return None
-        return users[0]
 
     def get_bot_user(self) -> Client:
         """ Get the Discord User of the Bot.
@@ -119,20 +134,31 @@ def is_direct(message: Message) -> bool:
     return message.channel.type == ChannelType.private
 
 
-T = TypeVar('T')
-
-
-def flatten(in_list: List[List[T]]) -> List[T]:
-    """ Flatten a List of Lists.
-    :param in_list the list of lists
-    :return the new list
-    """
-    return [item for sublist in in_list for item in sublist]
-
-
 async def send_help_message(message: Message, self: BotBase):
-    responses = open("QnA/Tasks.json", "r", encoding="utf-8-sig")
-    response = loads(responses.read().strip())
-    responses.close()
-    response = choice(response)
-    await send(message.author, message.channel, self, response)
+    response = f"""
+Ich kann verschiedene Aufgaben erledigen:\n
+* Ich kann grüßen
+* Ich kann Dir sagen was ich kann :)
+* Ich kann Witze erzählen
+* Ich kann Nachrichten (News) liefern
+* Ich kann Dir die Uhrzeit sagen
+* Ich kann Dinge (Gruppen z.B.) zufällig verteilen
+
+* Du kannst mich den Channel aufräumen lassen
+* Du kannst neue Antworten einfügen, die ich dann kenne
+"""
+
+    # User Commands:
+    response += "\n*Folgende User-Befehle unterstütze ich:*\n"
+    for (name, sys_command) in sorted(__registered_commands.keys(), key=lambda nXt: nXt[0]):
+        if not sys_command:
+            response += f"**{USER_COMMAND_SYMBOL}{name}**: " + __registered_commands[(name, sys_command)] + "\n"
+
+    if self.config.is_admin(message.author):
+        response += "\n\n*Folgende System-Befehle unterstütze ich:*\n"
+        for (name, sys_command) in sorted(__registered_commands.keys(), key=lambda nXt: nXt[0]):
+            if sys_command:
+                response += f"**{SYSTEM_COMMAND_SYMBOL}{name}**: " + __registered_commands[(name, sys_command)] + "\n"
+
+    response_msg = await send(message.author, message.channel, self, response.strip())
+    await delete(response_msg, self, delay=self.config.ttl, try_force=True)

@@ -5,9 +5,10 @@ from typing import List, Dict
 
 from discord import Message, User, Role, TextChannel, RawReactionActionEvent
 
+from constants import DAYS
 from loadable import Loadable
-from misc import BotBase, send, delete, is_direct
-from .helpers import __crop_command, find_day_by_special_key, days
+from misc import BotBase, send, delete, is_direct, command_meta
+from .helpers import __crop_command, find_day_by_special_key
 
 
 class SummonState(Loadable):
@@ -71,7 +72,7 @@ async def __execute_summon_update(u: dict, self: BotBase):
     msg: Message = await ch.fetch_message(mid)
 
     new_day_offset = day_offset - 1
-    _, _, new_day_value = (None, None, "'damals (am)'") if new_day_offset < 0 else days[new_day_offset]
+    _, _, new_day_value = (None, None, "'damals (am/um)'") if new_day_offset < 0 else DAYS[new_day_offset]
     new_day_value = f"**{new_day_value}**"
 
     new_content = msg.content.replace(day_value, new_day_value)
@@ -81,9 +82,11 @@ async def __execute_summon_update(u: dict, self: BotBase):
     __add_to_scheduler(self, msg, new_day_offset, new_day_value)
 
 
+@command_meta(help_msg="Erzeugt eine Umfrage an alle @Mentions für eine optionale Zeit.",
+              params=["@Mentions", "[Zeit]"])
 async def __summon(message: Message, self: BotBase):
     if is_direct(message):
-        await send(message.author, message.channel, self, "Summon funktioniert nur in Text-Channeln")
+        await send(message.author, message.channel, self, "/summon funktioniert nicht in DM channels")
         return
 
     if len(message.role_mentions) == 0:

@@ -1,7 +1,7 @@
 from loadable import Loadable
 from discord import Message, TextChannel
 
-from misc import BotBase, send, is_direct, delete
+from misc import BotBase, send, is_direct, delete, command_meta
 from .helpers import find_time
 
 
@@ -39,6 +39,9 @@ async def __execute_reminder(data, self: BotBase):
         await send(user, channel, self, message, try_delete=False)
 
 
+@command_meta(
+    help_msg="Erzeugt eine Erinnerung zu einer gegebenen Zeit (wenn kein Datum angegeben wurde, wird heute verwendet).",
+    params=["Zeit", "Text"])
 async def __reminder(message: Message, self: BotBase):
     (dt, cleanup_message) = find_time(message)
 

@@ -4,9 +4,8 @@ from typing import Union, Callable, Awaitable
 
 from discord import Message, TextChannel
 
-from misc import is_direct, delete, send, BotBase
-
-SYSTEM_COMMAND_SYMBOL = "\\"
+from constants import SYSTEM_COMMAND_SYMBOL
+from misc import is_direct, delete, send, BotBase, command_meta
 
 
 class SystemCommandCallState(Enum):
@@ -27,6 +26,7 @@ def __not_authorized(self: BotBase, message: Message):
     return send(message.author, message.channel, self, "Du bist nicht authorisiert!")
 
 
+@command_meta(is_system_command=True, help_msg="Schaltet die Notwendigkeit von Mentions ab/an")
 def __respond_all(state: SystemCommandCallState, bot_base: BotBase, message: Message):
     if state == SystemCommandCallState.NO_ADMIN:
         return __not_authorized(bot_base, message)
@@ -39,6 +39,7 @@ def __respond_all(state: SystemCommandCallState, bot_base: BotBase, message: Mes
     raise Exception(f"Impossible system command call state: {state}")
 
 
+@command_meta(is_system_command=True, help_msg="Aktiviert mein Zuhören in einem Text-Channel")
 def __listen(state: SystemCommandCallState, bot_base: BotBase, message: Message):
     if state == SystemCommandCallState.NO_ADMIN:
         return __not_authorized(bot_base, message)
@@ -54,6 +55,7 @@ def __listen(state: SystemCommandCallState, bot_base: BotBase, message: Message)
     raise Exception(f"Impossible system command call state: {state}")
 
 
+@command_meta(is_system_command=True, help_msg="Toggle für das Löschen von Nachrichten")
 def __keep(state: SystemCommandCallState, bot_base: BotBase, message: Message):
     if state == SystemCommandCallState.NO_ADMIN:
         return __not_authorized(bot_base, message)
@@ -66,6 +68,7 @@ def __keep(state: SystemCommandCallState, bot_base: BotBase, message: Message):
     raise Exception(f"Impossible system command call state: {state}")
 
 
+@command_meta(is_system_command=True, help_msg="Macht jeden genannten Benutzer zum Admin", params=["@Mentions"])
 async def __admin(state: SystemCommandCallState, bot_base: BotBase, message: Message):
     if state == SystemCommandCallState.NO_ADMIN:
         await __not_authorized(bot_base, message)
@@ -81,6 +84,7 @@ async def __admin(state: SystemCommandCallState, bot_base: BotBase, message: Mes
     raise Exception(f"Impossible system command call state: {state}")
 
 
+@command_meta(is_system_command=True, help_msg="Liefert den folgenden Text mit allen IDs")
 def __echo(state: SystemCommandCallState, bot_base: BotBase, message: Message):
     if state == SystemCommandCallState.NO_ADMIN:
         return __not_authorized(bot_base, message)
@@ -91,6 +95,7 @@ def __echo(state: SystemCommandCallState, bot_base: BotBase, message: Message):
     raise Exception(f"Impossible system command call state: {state}")
 
 
+@command_meta(is_system_command=True, help_msg="Zeigt den Zustand des Bots an")
 async def __state(state: SystemCommandCallState, bot_base: BotBase, message: Message):
     if state == SystemCommandCallState.NO_ADMIN:
         await __not_authorized(bot_base, message)
@@ -114,6 +119,7 @@ async def __state(state: SystemCommandCallState, bot_base: BotBase, message: Mes
     raise Exception(f"Impossible system command call state: {state}")
 
 
+@command_meta(is_system_command=True, help_msg="Fährt den Bot herunter")
 async def __shutdown(state: SystemCommandCallState, bot_base: BotBase, message: Message):
     if state == SystemCommandCallState.NO_ADMIN:
         await __not_authorized(bot_base, message)
@@ -128,6 +134,7 @@ async def __shutdown(state: SystemCommandCallState, bot_base: BotBase, message: 
     raise Exception(f"Impossible system command call state: {state}")
 
 
+@command_meta(is_system_command=True, help_msg="Löscht alle Nachrichten eine Kanals")
 async def __erase(state: SystemCommandCallState, bot_base: BotBase, message: Message):
     if state == SystemCommandCallState.NO_ADMIN:
         await __not_authorized(bot_base, message)
@@ -150,6 +157,7 @@ async def __erase(state: SystemCommandCallState, bot_base: BotBase, message: Mes
     raise Exception(f"Impossible system command call state: {state}")
 
 
+@command_meta(is_system_command=True, help_msg="Toggle für den Debug-Modus")
 def __debug(state: SystemCommandCallState, bot_base: BotBase, message: Message):
     if state == SystemCommandCallState.NO_ADMIN:
         return __not_authorized(bot_base, message)
