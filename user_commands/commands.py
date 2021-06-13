@@ -7,9 +7,9 @@ from misc import delete, send, BotBase, send_help_message
 
 from random import randint, shuffle
 
-from user_command_helpers import __read_number_param
-from user_command_reminder import _init_reminders, __reminder
-from user_command_summon import __summon, __handling_reaction_summon, _init_summon_updates
+from .helpers import __read_number_param
+from .reminder import _init_reminders, __reminder
+from .summon import __summon, __handling_reaction_summon, _init_summon_updates
 
 USER_COMMAND_SYMBOL = "/"
 

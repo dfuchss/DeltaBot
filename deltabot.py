@@ -12,7 +12,7 @@ from dialogs.qna import *
 from dialogs.choose_dialog import Choose
 from misc import delete, is_direct, BotBase
 from system_commands import handle_system
-from user_commands import handle_user, handle_user_reaction, init_user_commands
+from user_commands.commands import handle_user, handle_user_reaction, init_user_commands
 
 
 class BotInstance:

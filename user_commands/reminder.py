@@ -2,12 +2,12 @@ from loadable import Loadable
 from discord import Message, TextChannel
 
 from misc import BotBase, send, is_direct, delete
-from user_command_helpers import find_time
+from .helpers import find_time
 
 
 class ReminderState(Loadable):
     def __init__(self):
-        super().__init__(path="./states/reminder_state.json", version=1)
+        super().__init__(path="../states/reminder_state.json", version=1)
         self._reminders = []
         self._load()
 
@@ -27,6 +27,8 @@ __reminder_state = ReminderState()
 
 
 async def __execute_reminder(data, self: BotBase):
+    __reminder_state.remove_reminder(data)
+
     message = data["msg"]
     channel: TextChannel = None if data["cid"] is None else await self.fetch_channel(data["cid"])
     user = await self.fetch_user(data["target_id"])
@@ -36,17 +38,20 @@ async def __execute_reminder(data, self: BotBase):
     else:
         await send(user, channel, self, message, try_delete=False)
 
-    __reminder_state.remove_reminder(data)
-
 
 async def __reminder(message: Message, self: BotBase):
     (dt, cleanup_message) = find_time(message)
-    target_id = message.author.id
-    cid = None if is_direct(message) else message.channel.id
 
     if dt is None:
-        await send(message.author, message.channel, self, "Ich konnte kein Datum oder Zeitpunkt finden.")
+        await send(message.author, message.channel, self, "Ich konnte weder Datum noch Zeitpunkt finden.")
         return
+
+    if len(cleanup_message) == 0:
+        await send(message.author, message.channel, self, "Ich konnte keine Nachricht finden.")
+        return
+
+    target_id = message.author.id
+    cid = None if is_direct(message) else message.channel.id
 
     data = {
         "ts": dt.timestamp(),
@@ -58,7 +63,7 @@ async def __reminder(message: Message, self: BotBase):
     __reminder_state.add_reminder(data)
 
     self.scheduler.queue(__execute_reminder(data, self), dt.timestamp())
-    resp = await send(message.author, message.channel, self, f"Ich erinnere Dich daran: {dt}")
+    resp = await send(message.author, message.channel, self, f"Ich erinnere Dich am {dt} an **{cleanup_message}**")
 
     await delete(message, self, try_force=True)
     await resp.delete(delay=15)

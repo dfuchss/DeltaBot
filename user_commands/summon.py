@@ -7,12 +7,12 @@ from discord import Message, User, Role, TextChannel, RawReactionActionEvent
 
 from loadable import Loadable
 from misc import BotBase, send, delete, is_direct
-from user_command_helpers import __crop_command, find_day_by_special_key, days
+from .helpers import __crop_command, find_day_by_special_key, days
 
 
 class SummonState(Loadable):
     def __init__(self):
-        super().__init__(path="./states/summon_state.json", version=1)
+        super().__init__(path="../states/summon_state.json", version=1)
         self._updates = []
         self._load()
 
