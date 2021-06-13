@@ -7,7 +7,7 @@ from .helpers import find_time
 
 class ReminderState(Loadable):
     def __init__(self):
-        super().__init__(path="../states/reminder_state.json", version=1)
+        super().__init__(path="./states/reminder_state.json", version=1)
         self._reminders = []
         self._load()
 
