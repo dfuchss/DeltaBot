@@ -1,7 +1,7 @@
 import os.path
+import pathlib
 from json import dumps, loads
 from os.path import exists
-import pathlib
 
 from json_objects import convert_to_dict
 

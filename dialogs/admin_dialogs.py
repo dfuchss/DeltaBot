@@ -2,10 +2,9 @@ from typing import List, Optional
 
 from discord import Message
 
+from bot_base import BotBase, send, is_direct, delete
 from cognitive import IntentResult, EntityResult
-from bot_base import BotBase
 from dialog_management import Dialog, DialogResult
-from bot_base import send, is_direct, delete
 
 
 class Cleanup(Dialog):

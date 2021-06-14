@@ -1,14 +1,13 @@
 from calendar import timegm
+from datetime import datetime
 from typing import List, Dict
 
 from discord import Message
 from feedparser import parse
 
+from bot_base import BotBase, send
 from cognitive import IntentResult, EntityResult
-from bot_base import BotBase
 from dialog_management import Dialog, DialogResult
-from bot_base import send
-from datetime import datetime
 
 
 class NewsProvider:

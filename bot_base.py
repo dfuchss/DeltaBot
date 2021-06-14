@@ -1,18 +1,17 @@
 import functools
+from datetime import datetime
 from typing import List, Union, Any, Tuple, Dict, Callable
 
 from discord import ChannelType, Message, User, DMChannel, TextChannel, NotFound, Client
 
 from cognitive import NLUService
 from configuration import Configuration
-from datetime import datetime
-
 from constants import SYSTEM_COMMAND_SYMBOL, USER_COMMAND_SYMBOL
 from scheduler import BotScheduler
 
 __registered_commands: Dict[Tuple[str, bool], str] = {}
 """All registered commands with its documentation as (cmd_name, is_system_command) -> help_msg"""
-
+ 
 
 def __register_command(method: Callable, help_msg: str, is_system_command: bool, name: str, params: List[str]) -> None:
     """

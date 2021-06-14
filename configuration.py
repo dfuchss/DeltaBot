@@ -1,5 +1,6 @@
 from os import getenv
 from typing import List
+
 from discord import Message, User
 
 from loadable import Loadable

@@ -1,13 +1,12 @@
+from random import shuffle
+from re import split
 from typing import List
 
 from discord import Message
 
+from bot_base import BotBase, send
 from cognitive import IntentResult, EntityResult
-from bot_base import BotBase
 from dialog_management import Dialog, DialogResult
-from bot_base import send
-from random import shuffle
-from re import split
 
 
 class Choose(Dialog):

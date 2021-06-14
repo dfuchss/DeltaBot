@@ -4,8 +4,8 @@ from typing import List, Callable
 
 from discord import Message
 
-from cognitive import IntentResult, EntityResult
 from bot_base import is_direct, BotBase
+from cognitive import IntentResult, EntityResult
 
 
 class DialogResult(Enum):
@@ -67,7 +67,7 @@ class Dialog:
 
         self.reset()
         return DialogResult.NEXT
-
+ 
     def add_step(self, step: StepType) -> None:
         """
         Add a new step to the dialog's step queue.

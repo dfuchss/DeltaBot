@@ -1,16 +1,14 @@
-from os import listdir
-
 from json import loads, dumps
+from os import listdir
+from os.path import exists
 from random import choice
-
 from typing import List
+
 from discord import Message
 
+from bot_base import BotBase, send
 from cognitive import IntentResult, EntityResult
-from bot_base import BotBase
 from dialog_management import Dialog, DialogResult
-from bot_base import send
-from genericpath import exists
 
 
 class QnA(Dialog):

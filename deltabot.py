@@ -1,16 +1,18 @@
 from os import environ
 from threading import Lock
-from typing import Dict
+from typing import Dict, List, Optional
 
-from discord import Status, User, Activity, ActivityType, RawReactionActionEvent, TextChannel
+from discord import Status, User, Activity, ActivityType, RawReactionActionEvent, TextChannel, Message
 
-from dialogs.generic_dialogs import *
-from dialogs.misc_dialogs import *
-from dialogs.admin_dialogs import *
-from dialogs.news_dialog import News
-from dialogs.qna import *
+from bot_base import BotBase, send_help_message, send, is_direct, delete
+from cognitive import IntentResult, EntityResult
+from dialog_management import Dialog, DialogResult
+from dialogs.admin_dialogs import Cleanup
 from dialogs.choose_dialog import Choose
-from bot_base import delete, is_direct, BotBase, send_help_message
+from dialogs.generic_dialogs import NotUnderstanding
+from dialogs.misc_dialogs import Clock
+from dialogs.news_dialog import News
+from dialogs.qna import QnA, QnAAnswer
 from system_commands import handle_system
 from user_commands.commands import handle_user, handle_user_reaction, init_user_commands
 

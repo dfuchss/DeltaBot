@@ -1,13 +1,11 @@
 from asyncio import iscoroutine
+from random import randint, shuffle
 from typing import Union, Callable, Awaitable, Optional
 
 from discord import Message, VoiceChannel, RawReactionActionEvent
 
-from constants import USER_COMMAND_SYMBOL
 from bot_base import delete, send, BotBase, send_help_message, command_meta
-
-from random import randint, shuffle
-
+from constants import USER_COMMAND_SYMBOL
 from .helpers import __read_number_param
 from .reminder import _init_reminders, __reminder
 from .summon import __summon, __handling_reaction_summon, _init_summon_updates

@@ -1,9 +1,9 @@
 from typing import List
 
-from loadable import Loadable
 from discord import Message, TextChannel
 
 from bot_base import BotBase, send, is_direct, delete, command_meta
+from loadable import Loadable
 from .helpers import find_time
 
 

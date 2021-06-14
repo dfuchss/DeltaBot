@@ -22,7 +22,7 @@ def convert_to_dict(obj: object) -> dict:
     obj_dict.update(obj.__dict__)
 
     return obj_dict
-
+ 
 
 def dict_to_obj(dictionary: dict) -> object:
     """
