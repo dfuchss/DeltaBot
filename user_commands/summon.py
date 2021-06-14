@@ -3,12 +3,12 @@ import re
 from random import choice
 from typing import List, Dict
 
-from discord import Message, User, Role, TextChannel, RawReactionActionEvent
+from discord import Message, User, Role, TextChannel, RawReactionActionEvent, NotFound
 
 from constants import DAYS
 from loadable import Loadable
 from misc import BotBase, send, delete, is_direct, command_meta
-from .helpers import __crop_command, find_day_by_special_key
+from .helpers import __crop_command, find_day_by_special_rgx
 
 
 class SummonState(Loadable):
@@ -68,8 +68,15 @@ async def __execute_summon_update(u: dict, self: BotBase):
     day_value = u["day_value"]
     day_offset = u["day_offset"]
 
-    ch: TextChannel = await self.fetch_channel(cid)
-    msg: Message = await ch.fetch_message(mid)
+    try:
+        ch: TextChannel = await self.fetch_channel(cid)
+    except NotFound:
+        return
+
+    try:
+        msg: Message = await ch.fetch_message(mid)
+    except NotFound:
+        return
 
     new_day_offset = day_offset - 1
     _, _, new_day_value = (None, None, "'damals (am/um)'") if new_day_offset < 0 else DAYS[new_day_offset]
@@ -100,12 +107,12 @@ async def __summon(message: Message, self: BotBase):
     spec = re.sub(r"<@&?\d+>", "", spec).strip()
 
     # Calc Day Offset ..
-    offset, match, default_val = find_day_by_special_key(spec)
-    if offset is None or offset == 0:
+    offset, match_start, match_end, default_val = find_day_by_special_rgx(spec)
+    if offset is None:
         day = "**heute**"
         offset = 0
     else:
-        spec = spec.replace(match, "")
+        spec = spec[:match_start] + spec[(match_end + 1):]
         day = f"**{default_val}**"
 
     spec = re.sub(r"\s+", spec, " ").strip()

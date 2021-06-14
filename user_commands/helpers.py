@@ -1,5 +1,6 @@
 import datetime
 import re
+from typing import Tuple
 
 from datefinder import DateFinder
 from discord import Message
@@ -40,14 +41,17 @@ def find_date_by_finder(clean_msg: str):
     return dt[0], end_idx
 
 
-def find_day_by_special_key(clean_msg):
+def find_day_by_special_rgx(clean_msg) -> Tuple[int, int, int, str]:
     for (rgx, offset, default) in DAYS:
         matches = [g for g in re.finditer(rgx, clean_msg, re.IGNORECASE)]
         if len(matches) == 0:
             continue
-        return offset, max([end for (start, end) in [match.regs[0] for match in matches]]), default
 
-    return None, None, None
+        min_idx = min([start for (start, end) in [match.regs[0] for match in matches]])
+        max_idx = max([end for (start, end) in [match.regs[0] for match in matches]])
+        return offset, min_idx, max_idx, default
+
+    return None, None, None, None
 
 
 def find_time(message: Message):
@@ -55,7 +59,7 @@ def find_time(message: Message):
     clean_msg = ("" if len(split) < 2 else split[1]).replace("@", "0").strip()
 
     dt_regex, dt_regex_match_idx = find_date_by_finder(clean_msg)
-    dt_special_offset, dt_special_match_idx, _ = find_day_by_special_key(clean_msg)
+    dt_special_offset, _, dt_special_match_idx, _ = find_day_by_special_rgx(clean_msg)
 
     if dt_regex is None and dt_special_offset is None:
         return None, None
