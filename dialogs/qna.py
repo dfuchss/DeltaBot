@@ -6,11 +6,16 @@ from typing import List
 
 from discord import Message
 
-from bot_base import BotBase, send
+from bot_base import BotBase, send, dialog_meta
 from cognitive import IntentResult, EntityResult
 from dialog_management import Dialog, DialogResult
 
 
+@dialog_meta(dialog_info=[
+    "Ich kann Witze erzählen",
+    "Ich kann grüßen",
+    "Ich kann Dir sagen was ich kann :)",
+])
 class QnA(Dialog):
     """This dialog handles all QuestionAndAnswers form Json Files"""
 
@@ -41,6 +46,7 @@ class QnA(Dialog):
         return DialogResult.NEXT
 
 
+@dialog_meta(dialog_info="Du kannst neue Antworten einfügen, die ich dann kenne")
 class QnAAnswer(Dialog):
     ID = "QnAAnswer"
 

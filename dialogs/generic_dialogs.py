@@ -4,11 +4,12 @@ from typing import List
 
 from discord import Message
 
-from bot_base import BotBase, send
+from bot_base import BotBase, send, dialog_meta
 from cognitive import IntentResult, EntityResult
 from dialog_management import Dialog, DialogResult
 
 
+@dialog_meta(dialog_info="Ich kann Dir sagen, dass ich Dich nicht verstehe :)")
 class NotUnderstanding(Dialog):
     """This dialog handles all inputs that have not been understood by the bot."""
 

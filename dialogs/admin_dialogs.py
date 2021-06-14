@@ -2,11 +2,12 @@ from typing import List, Optional
 
 from discord import Message
 
-from bot_base import BotBase, send, is_direct, delete
+from bot_base import BotBase, send, is_direct, delete, dialog_meta
 from cognitive import IntentResult, EntityResult
 from dialog_management import Dialog, DialogResult
 
 
+@dialog_meta(dialog_info="Du kannst mich den Channel aufräumen lassen")
 class Cleanup(Dialog):
     """This dialog cleans the authors and the bots messages from a channel"""
 

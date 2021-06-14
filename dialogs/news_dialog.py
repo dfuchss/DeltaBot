@@ -5,11 +5,12 @@ from typing import List, Dict
 from discord import Message
 from feedparser import parse
 
-from bot_base import BotBase, send
+from bot_base import BotBase, send, dialog_meta
 from cognitive import IntentResult, EntityResult
 from dialog_management import Dialog, DialogResult
 
 
+@dialog_meta(dialog_info="Ich kann Nachrichten (News) liefern")
 class NewsProvider:
     """ Defines a simple provider (rss) for news. """
 

@@ -4,11 +4,12 @@ from typing import List
 
 from discord import Message
 
-from bot_base import BotBase, send
+from bot_base import BotBase, send, dialog_meta
 from cognitive import IntentResult, EntityResult
 from dialog_management import Dialog, DialogResult
 
 
+@dialog_meta(dialog_info="Ich kann Dinge (Gruppen z.B.) zufällig verteilen")
 class Choose(Dialog):
     """This dialog orders values into groups."""
 

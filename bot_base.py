@@ -11,7 +11,7 @@ from scheduler import BotScheduler
 
 __registered_commands: Dict[Tuple[str, bool], str] = {}
 """All registered commands with its documentation as (cmd_name, is_system_command) -> help_msg"""
- 
+
 
 def __register_command(method: Callable, help_msg: str, is_system_command: bool, name: str, params: List[str]) -> None:
     """
@@ -28,7 +28,7 @@ def __register_command(method: Callable, help_msg: str, is_system_command: bool,
         name = method.__name__[2:].replace("_", "-")
     if params is None:
         params = []
-    __registered_commands[(f"{name} {' '.join(params)}".strip(), is_system_command)] = help_msg
+    __registered_commands[(f"{name} {' '.join(params)}".strip(), is_system_command)] = help_msg.strip()
 
 
 def command_meta(help_msg: str = None, is_system_command: bool = False, name: str = None,
@@ -50,6 +50,50 @@ def command_meta(help_msg: str = None, is_system_command: bool = False, name: st
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
+
+
+__registered_dialogs: Dict[str, List[str]] = {}
+"""All registered dialogs with its documentation as dialog_name -> dialog_info"""
+
+
+def __register_dialog(cls, dialog_info: List[str], name: str) -> None:
+    """
+    Register a dialog with its documentation.
+
+    :param cls: the class
+    :param dialog_info: the dialog information (multiple strings possible)
+    :param name: the name of the command (if none it will be extracted from the cls)
+    """
+
+    if isinstance(dialog_info, str):
+        dialog_info = [dialog_info]
+
+    if name is None:
+        name = cls.__name__
+
+    __registered_dialogs[name] = [s.strip() for s in dialog_info]
+
+
+def dialog_meta(dialog_info: Union[str, List[str]] = None, name: str = None):
+    """
+    Wrapper that decorates an existing dialog class and registers it to the documentation.
+
+    :param dialog_info: the (mandatory) help message for the command
+    :param name: overrides a computed name for the command
+    :return: the decorated class (same behavior as before)
+    """
+
+    def decorator(cls):
+        if dialog_info is not None:
+            __register_dialog(cls, dialog_info, name)
+
+        @functools.wraps(cls)
+        def wrapper(*args, **kwargs):
+            return cls(*args, **kwargs)
 
         return wrapper
 
@@ -141,27 +185,23 @@ async def send_help_message(message: Message, bot: BotBase) -> None:
     :param bot: the bot itself
     """
 
-    response = f"""
-Ich kann verschiedene Aufgaben erledigen:\n
-* Ich kann grüßen
-* Ich kann Dir sagen was ich kann :)
-* Ich kann Witze erzählen
-* Ich kann Nachrichten (News) liefern
-* Ich kann Dir die Uhrzeit sagen
-* Ich kann Dinge (Gruppen z.B.) zufällig verteilen
+    response = f"Ich kann verschiedene Aufgaben erledigen:\n\n"
+    # Dialogs
+    dialog_infos: List[str] = [item for sublist in
+                               ([__registered_dialogs[name] for name in __registered_dialogs.keys()]) for item in
+                               sublist]
 
-* Du kannst mich den Channel aufräumen lassen
-* Du kannst neue Antworten einfügen, die ich dann kenne
-"""
+    for task in sorted(dialog_infos):
+        response += f"* {task}\n"
 
     # User Commands:
-    response += "\n*Folgende User-Befehle unterstütze ich:*\n"
+    response += "\n\n*Folgende User-Befehle unterstütze ich:*\n\n"
     for (name, sys_command) in sorted(__registered_commands.keys(), key=lambda nXt: nXt[0]):
         if not sys_command:
             response += f"**{USER_COMMAND_SYMBOL}{name}**: " + __registered_commands[(name, sys_command)] + "\n"
 
     if bot.config.is_admin(message.author):
-        response += "\n\n*Folgende System-Befehle unterstütze ich:*\n"
+        response += "\n\n*Folgende System-Befehle unterstütze ich:*\n\n"
         for (name, sys_command) in sorted(__registered_commands.keys(), key=lambda nXt: nXt[0]):
             if sys_command:
                 response += f"**{SYSTEM_COMMAND_SYMBOL}{name}**: " + __registered_commands[(name, sys_command)] + "\n"
