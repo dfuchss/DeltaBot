@@ -7,14 +7,17 @@ from typing import List
 from discord import Message
 
 from cognitive import IntentResult, EntityResult
-from misc import BotBase
+from bot_base import BotBase
 from dialog_management import Dialog, DialogResult
-from misc import send
+from bot_base import send
 from genericpath import exists
 
 
 class QnA(Dialog):
+    """This dialog handles all QuestionAndAnswers form Json Files"""
+
     ID = "QnA"
+    """The ID of the Dialog"""
 
     def __init__(self, bot: BotBase):
         super().__init__(bot, QnA.ID)

@@ -7,43 +7,75 @@ from discord import Message, User, Role, TextChannel, RawReactionActionEvent, No
 
 from constants import DAYS
 from loadable import Loadable
-from misc import BotBase, send, delete, is_direct, command_meta
+from bot_base import BotBase, send, delete, is_direct, command_meta
 from .helpers import __crop_command, find_day_by_special_rgx
 
 
 class SummonState(Loadable):
+    """
+    This state contains the updates to summon messages from the bot (e.g. "tomorrow" -> "today" at midnight)
+    """
+
     def __init__(self):
         super().__init__(path="./states/summon_state.json", version=1)
         self._updates = []
         self._load()
 
-    def add_update(self, reminder):
-        self._updates.append(reminder)
+    def add_update(self, update: dict) -> None:
+        """
+        Add a new update.
+
+        :param update: the data as dictionary (see __summon)
+        """
+        self._updates.append(update)
         self._store()
 
-    def remove_update(self, reminder):
-        self._updates.remove(reminder)
+    def remove_update(self, update: dict) -> None:
+        """
+        Remove an update.
+
+        :param update: the data as dictionary (see __summon)
+        """
+        self._updates.remove(update)
         self._store()
 
-    def updates(self):
+    def updates(self) -> List[dict]:
+        """
+        Return all updates as list of dictionaries
+
+        :return: all updates
+        """
         return self._updates
 
 
 __summon_state = SummonState()
+"""The one and only summon state"""
 
 __summon_reactions = ['\N{Thumbs Up Sign}', '\N{Black Question Mark Ornament}', '\N{Thumbs Down Sign}']
+"""All allowed reactions to a summon message from the bot"""
 
 __summon_msg = [f"###USER###: Wer wäre ###DAY### ###TIME### dabei? ###MENTION###",  #
                 f"Wer hätte ###DAY### ###TIME### Lust ###MENTION### (###USER###)",  #
                 f"Jemand ###DAY### ###TIME### Bock auf ###MENTION### (###USER###)",  #
                 f"Finden sich ###DAY### ###TIME### Leute ###MENTION### (###USER###)"
                 ]
+"""All Templates for summon messages"""
+
 __summon_rgx = [r"^<@!?\d+>: Wer wäre",  #
                 r"\(<@!?\d+>\)$"
                 ]
+"""All regexes to match __summon_msg"""
 
 
-def __add_to_scheduler(self: BotBase, resp_message: Message, offset: int, day: str):
+def __add_to_scheduler(bot: BotBase, resp_message: Message, offset: int, day: str) -> None:
+    """
+    Add a summon day update to the scheduler.
+
+    :param bot: the bot itself
+    :param resp_message: the message to be changed in the future
+    :param offset: the current day_offset
+    :param day: the current representation of the day
+    """
     if offset <= -1:
         return
 
@@ -57,10 +89,16 @@ def __add_to_scheduler(self: BotBase, resp_message: Message, offset: int, day: s
         "day_offset": offset
     }
     __summon_state.add_update(data)
-    self.scheduler.queue(__execute_summon_update(data, self), data["ts"])
+    bot.scheduler.queue(__execute_summon_update(data, bot), data["ts"])
 
 
-async def __execute_summon_update(u: dict, self: BotBase):
+async def __execute_summon_update(u: dict, bot: BotBase) -> None:
+    """
+    Execute the update of a summon text from the bot.
+
+    :param u: the data for the update as dictionary
+    :param bot: the bot itself
+    """
     __summon_state.remove_update(u)
 
     cid = u["cid"]
@@ -69,7 +107,7 @@ async def __execute_summon_update(u: dict, self: BotBase):
     day_offset = u["day_offset"]
 
     try:
-        ch: TextChannel = await self.fetch_channel(cid)
+        ch: TextChannel = await bot.fetch_channel(cid)
     except NotFound:
         return
 
@@ -86,18 +124,24 @@ async def __execute_summon_update(u: dict, self: BotBase):
     await msg.edit(content=new_content)
 
     # Schedule new change ..
-    __add_to_scheduler(self, msg, new_day_offset, new_day_value)
+    __add_to_scheduler(bot, msg, new_day_offset, new_day_value)
 
 
 @command_meta(help_msg="Erzeugt eine Umfrage an alle @Mentions für eine optionale Zeit.",
               params=["@Mentions", "[Zeit]"])
-async def __summon(message: Message, self: BotBase):
+async def __summon(message: Message, bot: BotBase) -> None:
+    """
+    Create a poll to gather mentioned groups a a certain time.
+
+    :param message: the message from the user
+    :param bot: the bot itself
+    """
     if is_direct(message):
-        await send(message.author, message.channel, self, "/summon funktioniert nicht in DM channels")
+        await send(message.author, message.channel, bot, "/summon funktioniert nicht in DM channels")
         return
 
     if len(message.role_mentions) == 0:
-        await send(message.author, message.channel, self, f"Ich habe keine Gruppen gefunden ..")
+        await send(message.author, message.channel, bot, f"Ich habe keine Gruppen gefunden ..")
         return
 
     user: User = message.author
@@ -129,12 +173,19 @@ async def __summon(message: Message, self: BotBase):
     for react in __summon_reactions:
         await resp_message.add_reaction(react)
 
-    await delete(message, self, True)
+    await delete(message, bot, True)
 
-    __add_to_scheduler(self, resp_message, offset, day)
+    __add_to_scheduler(bot, resp_message, offset, day)
 
 
-def __read_reactions(reactions: List[str], message_content: str):
+def __read_reactions(reactions: List[str], message_content: str) -> Dict[str, List[str]]:
+    """
+    Read reactions from a message (reactions are stored in the message text)
+
+    :param reactions: the allowed reactions
+    :param message_content: the content of the message
+    :return: a dictionary reaction->[user mentions]
+    """
     result = {}
     for reaction in reactions:
         result[reaction] = []
@@ -157,9 +208,16 @@ def __read_reactions(reactions: List[str], message_content: str):
     return result
 
 
-async def __handling_reaction_summon(self: BotBase, payload: RawReactionActionEvent, message: Message,
-                                     channel: TextChannel):
-    if message.author != self.user:
+async def __handling_reaction_summon(bot: BotBase, payload: RawReactionActionEvent, message: Message) -> bool:
+    """
+    Handle the reactions to a summon response from the bot
+
+    :param bot: the bot itself
+    :param payload: the raw payload of the reaction add operation
+    :param message: the message the user responds to
+    :return: indicator whether the reaction has been handled
+    """
+    if message.author != bot.user:
         return False
 
     text = message.content
@@ -168,7 +226,7 @@ async def __handling_reaction_summon(self: BotBase, payload: RawReactionActionEv
     if not is_summon:
         return False
 
-    user: User = await self.fetch_user(payload.user_id)
+    user: User = await bot.fetch_user(payload.user_id)
 
     react = payload.emoji.name
 
@@ -202,6 +260,11 @@ async def __handling_reaction_summon(self: BotBase, payload: RawReactionActionEv
     return True
 
 
-def _init_summon_updates(self: BotBase):
+def _init_summon_updates(bot: BotBase) -> None:
+    """
+    Initialize the bot's scheduler with summon updates.
+
+    :param bot: the bot itself
+    """
     for u in __summon_state.updates():
-        self.scheduler.queue(__execute_summon_update(u, self), u["ts"])
+        bot.scheduler.queue(__execute_summon_update(u, bot), u["ts"])

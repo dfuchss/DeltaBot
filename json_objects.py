@@ -7,6 +7,7 @@ def convert_to_dict(obj: object) -> dict:
     """
     A function takes in a custom object and returns a dictionary representation of the object.
     This dict representation includes meta data such as the object's module and class names.
+
     :param obj the object to be serialized
     :return the object as dictionary
     """
@@ -28,6 +29,7 @@ def dict_to_obj(dictionary: dict) -> object:
     Function that takes in a dict and returns a custom object associated with the dict.
     This function makes use of the "__module__" and "__class__" metadata in the dictionary
     to know which object type to create.
+
     :param dictionary the dictionary which represents the object
     :return the object 
     """

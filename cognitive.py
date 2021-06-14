@@ -13,6 +13,7 @@ class Entity:
 
     def __init__(self, name: str, values: List[str]) -> None:
         """ Initialize Entity.
+
         :param name the name of the entity
         :param values the values / synonyms of the entity
         """
@@ -24,7 +25,9 @@ class EntityGroup:
     """ Defines a group of entities. """
 
     def __init__(self, name: str, entities: List[Entity] = None) -> None:
-        """ Initialize group of entities.
+        """
+        Initialize group of entities.
+
         :param name the name of the group
         :param entities the initial set of entities
         """
@@ -34,7 +37,9 @@ class EntityGroup:
         self.name = name
 
     def add_entity(self, entity: Entity) -> None:
-        """ Add an entity to group.
+        """
+        Add an entity to group.
+
         :param entity the entity
         """
         self.entities.append(entity)
@@ -44,7 +49,9 @@ class EntityModel:
     """ Defines a serializable Entity Model. """
 
     def __init__(self, groups: List[EntityGroup]):
-        """ Create a new Entity Model.
+        """
+        Create a new Entity Model.
+
         :param groups the groups in the model.
         """
         self.groups = groups
@@ -54,7 +61,9 @@ class IntentResult:
     """ Defines a result of intents from NLU. """
 
     def __init__(self, name: str, score: float) -> None:
-        """ Create a new Intent Result.
+        """
+        Create a new Intent Result.
+
         :param name the name of the intent
         :param score the probability of the intent.
         """
@@ -69,7 +78,9 @@ class EntityResult:
     """ Defines a result of entities from NLU. """
 
     def __init__(self, name: str, group: str, value: str) -> None:
-        """ Create the new Entity Result.
+        """
+        Create the new Entity Result.
+
         :param name the name of the entity
         :param group the group of the entity
         :param value the actual value of the entity
@@ -86,7 +97,9 @@ class NLUService:
     """ Defines a enhanced RASA NLU Service. """
 
     def __init__(self, config: Configuration) -> None:
-        """ Create service by config.
+        """
+        Create service by config.
+
         :param config the bot configuration
         """
         self._config = config
@@ -96,7 +109,9 @@ class NLUService:
             self.entity_model = self._load_entities_from_json(loads(ef.read()))
 
     def recognize(self, content: str) -> (List[IntentResult], List[EntityResult]):
-        """ Interpret input.
+        """
+        Interpret input.
+
         :param content the text input
         :return a tuple which contains a list of intent results and a list of entity results
         """
@@ -119,6 +134,12 @@ class NLUService:
 
     @staticmethod
     def _to_intents(intents: List[dict]) -> List[IntentResult]:
+        """
+        Convert intents from RASA to a list of intent results.
+
+        :param intents: the output from RASA
+        :return: the wrapped intent results
+        """
         result = []
         for intent in intents:
             ir = IntentResult(intent["name"], intent["confidence"])
@@ -126,6 +147,12 @@ class NLUService:
         return result
 
     def _recognize_entities(self, content: str) -> List[EntityResult]:
+        """
+        Identify mentioned entities in a string.
+
+        :param content: the string that shall be searched for entities
+        :return: a list of entity results
+        """
         result = []
         content = content.lower()
 
@@ -140,7 +167,13 @@ class NLUService:
         return result
 
     @staticmethod
-    def _load_entities_from_json(data: dict):
+    def _load_entities_from_json(data: dict) -> EntityModel:
+        """
+        Load a entity model from a dictionary.
+
+        :param data: the input dictionary
+        :return: the entity model
+        """
         groups = []
         for group in data["groups"]:
             group_name = group["name"]

@@ -10,7 +10,7 @@ from dialogs.admin_dialogs import *
 from dialogs.news_dialog import News
 from dialogs.qna import *
 from dialogs.choose_dialog import Choose
-from misc import delete, is_direct, BotBase, send_help_message
+from bot_base import delete, is_direct, BotBase, send_help_message
 from system_commands import handle_system
 from user_commands.commands import handle_user, handle_user_reaction, init_user_commands
 
@@ -18,13 +18,23 @@ from user_commands.commands import handle_user, handle_user_reaction, init_user_
 class BotInstance:
     def __init__(self, bot):
         self._bot = bot
+        """The bot itself"""
+
         self._dialogs: List[Dialog] = []
+        """A list of all dialogs"""
+
         self._intent_to_dialog: Dict[str, str] = {}
+        """A mapping from intent id to dialog id"""
+
         self._load_dialogs()
 
         self.__active_dialog_stack = []
+        """A stack of active (not finished) dialogs."""
 
-    def _load_dialogs(self):
+    def _load_dialogs(self) -> None:
+        """
+        Load all dialogs of the bot.
+        """
         self._dialogs = [
             NotUnderstanding(self._bot),
             QnA(self._bot),
@@ -45,13 +55,24 @@ class BotInstance:
             "Choose".lower(): Choose.ID
         }
 
-    def __lookup_dialog(self, dialog_id: str):
+    def __lookup_dialog(self, dialog_id: str) -> Optional[Dialog]:
+        """
+        Lookup a dialog by dialog id.
+
+        :param dialog_id: the dialog id
+        :return: the dialog iff found
+        """
         return next((d for d in self._dialogs if d.dialog_id == dialog_id), None)
 
-    async def handle(self, message: Message):
+    async def handle(self, message: Message) -> None:
+        """
+        Handle a message by the dialog system.
+
+        :param message: the message
+        """
         (intents, entities) = self._bot.nlu.recognize(message.clean_content)
 
-        await self._bot.print_intents_entities(message, intents, entities)
+        await self._send_debug(message, intents, entities)
 
         if len(self.__active_dialog_stack) != 0:
             dialog = self.__active_dialog_stack.pop(0)
@@ -80,8 +101,39 @@ class BotInstance:
         if result == DialogResult.WAIT_FOR_INPUT:
             self.__active_dialog_stack.insert(0, dialog.dialog_id)
 
-    def has_active_dialog(self):
+    def has_active_dialog(self) -> bool:
+        """
+        Get the indicator whether a dialog is unfinished (active)
+
+        :return: the indicator for an active dialog
+        """
         return len(self.__active_dialog_stack) != 0
+
+    async def _send_debug(self, message: Message, intents: List[IntentResult],
+                          entities: List[EntityResult]) -> None:
+        """
+        Send debug information iff debug flag is enabled.
+
+        :param message: the message to react to
+        :param intents: the found intents
+        :param entities: the found entities
+        """
+        if not self._bot.config.is_debug():
+            return
+
+        result: str = "------------\n"
+        result += f"Intents({len(intents)}):\n"
+
+        for intent in intents:
+            result += f"{intent}\n"
+
+        result += f"\nEntities({len(entities)}):\n"
+        for entity in entities:
+            result += f"{entity}\n"
+
+        result += "------------"
+
+        await send(message.author, message.channel, self._bot, result, mention=False)
 
 
 class DeltaBot(BotBase):
@@ -104,8 +156,10 @@ class DeltaBot(BotBase):
         self.scheduler.start_scheduler()
 
     async def on_message(self, message: Message) -> None:
-        """Handle a new message.
-        :param message: the discord.Message
+        """
+        Handle a new message.
+
+        :param message: the message to handle
         """
 
         # don't respond to ourselves
@@ -135,7 +189,12 @@ class DeltaBot(BotBase):
 
         await instance.handle(message)
 
-    async def on_raw_reaction_add(self, payload):
+    async def on_raw_reaction_add(self, payload: RawReactionActionEvent) -> None:
+        """
+        Handle a newly added reaction.
+
+        :param payload: the raw data of the event
+        """
         if not type(payload) is RawReactionActionEvent:
             return
 
@@ -149,7 +208,7 @@ class DeltaBot(BotBase):
         if message.author != self.user:
             return
 
-        if await handle_user_reaction(self, pl, message, channel):
+        if await handle_user_reaction(self, pl, message):
             return
 
         # Check whether the reactions a restricted by me ..
@@ -163,6 +222,12 @@ class DeltaBot(BotBase):
                 await reaction.remove(user)
 
     def __get_bot_instance(self, author: User) -> BotInstance:
+        """
+        Get the user's bot instance
+
+        :param author: the user
+        :return: the bot instance of the user
+        """
         with self._user_to_instance_lock:
             instance = self._user_to_instance.get(author.id)
             if instance is None:

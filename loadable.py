@@ -7,17 +7,26 @@ from json_objects import convert_to_dict
 
 
 class Loadable:
-    def __init__(self, path, version):
+    """Defines a loadable / storable class"""
+
+    def __init__(self, path: str, version: int):
         self._path = path
+        """The path to the loadable file"""
+
         self.version = version
+        """The version of the loadable"""
 
     def _store(self) -> None:
+        """Store the loadable to the specified file"""
+
         pathlib.Path(os.path.dirname(self._path)).mkdir(parents=True, exist_ok=True)
 
         with open(self._path, "w", encoding="utf-8-sig") as outfile:
             outfile.write(dumps(self, default=convert_to_dict, indent=4))
 
     def _load(self) -> None:
+        """Load the loadable from the specified file"""
+
         if not exists(self._path):
             self._store()
             return
@@ -35,5 +44,10 @@ class Loadable:
             print("State could not be loaded .. reinitialize")
             self._store()
 
-    def _migrate(self, loaded):
+    def _migrate(self, loaded: dict):
+        """
+        Will be invoked iff versions of loaded file and this loadable differ.
+
+        :param loaded: the loaded data from the file (needs manually applied to the loadable)
+        """
         pass

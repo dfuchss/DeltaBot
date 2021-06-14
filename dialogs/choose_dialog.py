@@ -3,15 +3,18 @@ from typing import List
 from discord import Message
 
 from cognitive import IntentResult, EntityResult
-from misc import BotBase
+from bot_base import BotBase
 from dialog_management import Dialog, DialogResult
-from misc import send
+from bot_base import send
 from random import shuffle
 from re import split
 
 
 class Choose(Dialog):
+    """This dialog orders values into groups."""
+
     ID = "Choose"
+    """The ID of the Dialog"""
 
     def __init__(self, bot: BotBase):
         super().__init__(bot, Choose.ID)

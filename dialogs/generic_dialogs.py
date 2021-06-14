@@ -5,13 +5,16 @@ from typing import List
 from discord import Message
 
 from cognitive import IntentResult, EntityResult
-from misc import BotBase
+from bot_base import BotBase
 from dialog_management import Dialog, DialogResult
-from misc import send
+from bot_base import send
 
 
 class NotUnderstanding(Dialog):
+    """This dialog handles all inputs that have not been understood by the bot."""
+
     ID = "NotUnderstanding"
+    """The ID of the Dialog"""
 
     def __init__(self, bot: BotBase):
         super().__init__(bot, NotUnderstanding.ID)

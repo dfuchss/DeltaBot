@@ -3,14 +3,17 @@ from typing import List
 from discord import Message
 
 from cognitive import IntentResult, EntityResult
-from misc import BotBase
+from bot_base import BotBase
 from dialog_management import Dialog, DialogResult
-from misc import send
+from bot_base import send
 from datetime import datetime
 
 
 class Clock(Dialog):
+    """This dialog simply sends the time"""
+
     ID = "Clock"
+    """The ID of the Dialog"""
 
     def __init__(self, bot: BotBase):
         super().__init__(bot, Clock.ID)

@@ -3,13 +3,16 @@ from typing import List, Optional
 from discord import Message
 
 from cognitive import IntentResult, EntityResult
-from misc import BotBase
+from bot_base import BotBase
 from dialog_management import Dialog, DialogResult
-from misc import send, is_direct, delete
+from bot_base import send, is_direct, delete
 
 
 class Cleanup(Dialog):
+    """This dialog cleans the authors and the bots messages from a channel"""
+
     ID = "Cleanup"
+    """The ID of the Dialog"""
 
     def __init__(self, bot: BotBase):
         super().__init__(bot, Cleanup.ID)
@@ -50,7 +53,7 @@ class Cleanup(Dialog):
             if m.id == message.id or m.id == self.__channel_user_msg.id:
                 continue
 
-            if author == m.author or m.author == self._bot.get_bot_user():
+            if author == m.author or m.author == self._bot.user:
                 await delete(m, self._bot, try_force=True)
 
         return DialogResult.NEXT

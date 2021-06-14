@@ -1,4 +1,3 @@
-"""The configuration of the DeltaBot"""
 from os import getenv
 from typing import List
 from discord import Message, User
@@ -7,28 +6,50 @@ from loadable import Loadable
 
 
 class Configuration(Loadable):
+    """The configuration of the DeltaBot"""
+
     def __init__(self):
         super().__init__(getenv("CONF_FILE", "./config.json"), version=2)
 
         self.nlu_dir = "rasa/models"
+        """The directory of the RASA models"""
+
         self.nlu_name = "nlu"
+        """The name of the RASA NLU"""
+
         self.nlu_threshold = 0.7
+        """The RASA classification threshold for intents"""
+
         self.nlu_not_classified = "rasa/training-nc.md"
+        """The file to store not classified sentences"""
+
         self.entity_file = "rasa/entities.json"
+        """The file that contains the entity definitions"""
 
         self.ttl = 10.0
+        """The time to live for a message that gonna be deleted"""
+
         self._channels = []
+        """All text channel ids with enabled dialog system"""
+
         self._admins = []
+        """All admin user ids"""
 
         self._debug_indicator = False
+        """Indicator whether debug mode is enabled or not"""
+
         self._respond_all_indicator = False
+        """Indicator whether the bot shall interpret all messages originates from _channels or only iff mentioned"""
+
         self._keep_messages_indicator = True
+        """Indicator whether the bot shall not delete its messages by default"""
 
         self._load()
 
     def is_admin(self, user: User) -> bool:
         """
         Check for Admin.
+
         :param user: the actual user object
         :return: indicator for administrative privileges
         """
@@ -41,12 +62,27 @@ class Configuration(Loadable):
         return False
 
     def is_debug(self) -> bool:
+        """
+        Check whether debug is on.
+
+        :return: the indicator
+        """
         return self._debug_indicator
 
     def is_keep_messages(self) -> bool:
+        """
+        Check whether keep messages is on.
+
+        :return: the indicator
+        """
         return self._keep_messages_indicator
 
     def is_respond_all(self) -> bool:
+        """
+        Check whether respond all is on.
+
+        :return: the indicator
+        """
         return self._respond_all_indicator
 
     def get_channels(self) -> List[int]:
@@ -69,16 +105,31 @@ class Configuration(Loadable):
         self._store()
 
     def toggle_debug(self) -> bool:
+        """
+        Toggle the debug flag
+
+        :return: the new value of the flag
+        """
         self._debug_indicator = not self._debug_indicator
         self._store()
         return self._debug_indicator
 
     def toggle_respond_all(self) -> bool:
+        """
+        Toggle the respond all flag
+
+        :return: the new value of the flag
+        """
         self._respond_all_indicator = not self._respond_all_indicator
         self._store()
         return self._respond_all_indicator
 
     def toggle_keep_messages(self) -> bool:
+        """
+        Toggle the keep messages flag
+
+        :return: the new value of the flag
+        """
         self._keep_messages_indicator = not self._keep_messages_indicator
         self._store()
         return self._keep_messages_indicator

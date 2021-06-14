@@ -5,9 +5,9 @@ from discord import Message
 from feedparser import parse
 
 from cognitive import IntentResult, EntityResult
-from misc import BotBase
+from bot_base import BotBase
 from dialog_management import Dialog, DialogResult
-from misc import send
+from bot_base import send
 from datetime import datetime
 
 
@@ -32,7 +32,10 @@ Providers: Dict[str, List[NewsProvider]] = {
 
 
 class News(Dialog):
+    """This dialog provides news from RSS feeds"""
+
     ID = "News"
+    """The ID of the Dialog"""
 
     @staticmethod
     def to_date(time_tuple):
