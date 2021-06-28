@@ -3,7 +3,7 @@ import re
 from random import choice
 from typing import List, Dict
 
-from discord import Message, User, Role, TextChannel, RawReactionActionEvent, NotFound
+from discord import Message, User, TextChannel, RawReactionActionEvent, NotFound, PartialEmoji
 
 from bot_base import BotBase, send, delete, is_direct, command_meta
 from constants import DAYS
@@ -54,6 +54,14 @@ __summon_state = SummonState()
 __summon_reactions = ['\N{Thumbs Up Sign}', '\N{Black Question Mark Ornament}', '\N{Thumbs Down Sign}']
 """All allowed reactions to a summon message from the bot"""
 
+__cancel_reaction = '\N{Wastebasket}'
+"""Reaction to cancel a summon command"""
+
+__poll_request = "Bitte Reactions zum Abstimmen benutzen:"
+"""Message used to indicate a poll for the users"""
+__poll_finished = "*Umfrage beendet .. keine Abstimmung mehr möglich :)*"
+"""Message used to indicate a finished poll for the users"""
+
 __summon_msg = [f"###USER###: Wer wäre ###DAY### ###TIME### dabei? ###MENTION###",  #
                 f"Wer hätte ###DAY### ###TIME### Lust ###MENTION### (###USER###)",  #
                 f"Jemand ###DAY### ###TIME### Bock auf ###MENTION### (###USER###)",  #
@@ -61,17 +69,13 @@ __summon_msg = [f"###USER###: Wer wäre ###DAY### ###TIME### dabei? ###MENTION##
                 ]
 """All Templates for summon messages"""
 
-__summon_rgx = [r"^<@!?\d+>: Wer wäre",  #
-                r"\(<@!?\d+>\)$"
-                ]
-"""All regexes to match __summon_msg"""
 
-
-def __add_to_scheduler(bot: BotBase, resp_message: Message, offset: int, day: str) -> None:
+def __add_to_scheduler(bot: BotBase, user_id: int, resp_message: Message, offset: int, day: str) -> None:
     """
     Add a summon day update to the scheduler.
 
     :param bot: the bot itself
+    :param user_id the user that opened the poll
     :param resp_message: the message to be changed in the future
     :param offset: the current day_offset
     :param day: the current representation of the day
@@ -80,16 +84,30 @@ def __add_to_scheduler(bot: BotBase, resp_message: Message, offset: int, day: st
         return
 
     next_time = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(days=1)
+    # For testing:
+    # next_time = datetime.datetime.now() + datetime.timedelta(seconds=5)
 
     data = {
         "ts": next_time.timestamp(),
         "cid": resp_message.channel.id,
         "mid": resp_message.id,
+        "uid": user_id,
         "day_value": day,
         "day_offset": offset
     }
     __summon_state.add_update(data)
     bot.scheduler.queue(__execute_summon_update(data, bot), data["ts"])
+
+
+async def __terminate_summon_poll(msg: Message):
+    """
+    Terminates / Finalizes a summon poll
+    :param msg: the message associated with the poll
+    """
+    await msg.clear_reactions()
+    new_content = msg.content
+    new_content = new_content.replace(__poll_request, __poll_finished)
+    await msg.edit(content=new_content)
 
 
 async def __execute_summon_update(u: dict, bot: BotBase) -> None:
@@ -117,14 +135,19 @@ async def __execute_summon_update(u: dict, bot: BotBase) -> None:
         return
 
     new_day_offset = day_offset - 1
-    _, _, new_day_value = (None, None, "'damals (am/um)'") if new_day_offset < 0 else DAYS[new_day_offset]
+
+    if new_day_offset < 0:
+        await __terminate_summon_poll(msg)
+        return
+
+    _, _, new_day_value = DAYS[new_day_offset]
     new_day_value = f"**{new_day_value}**"
 
     new_content = msg.content.replace(day_value, new_day_value)
     await msg.edit(content=new_content)
 
     # Schedule new change ..
-    __add_to_scheduler(bot, msg, new_day_offset, new_day_value)
+    __add_to_scheduler(bot, u["uid"], msg, new_day_offset, new_day_value)
 
 
 @command_meta(help_msg="Erzeugt eine Umfrage an alle @Mentions für eine optionale Zeit.",
@@ -140,15 +163,24 @@ async def __summon(message: Message, bot: BotBase) -> None:
         await send(message.author, message.channel, bot, "/summon funktioniert nicht in DM channels")
         return
 
-    if len(message.role_mentions) == 0:
-        await send(message.author, message.channel, bot, f"Ich habe keine Gruppen gefunden ..")
-        return
-
     user: User = message.author
     spec: str = __crop_command(message.content)
-    roles: List[Role] = message.role_mentions
 
-    spec = re.sub(r"<@&?\d+>", "", spec).strip()
+    if len(message.role_mentions) != 0:
+        # Try to search "@Game" for non mentionable games ..
+        roles: List[str] = [r.mention for r in message.role_mentions]
+        for r in roles:
+            spec = spec.replace(r, "")
+
+    elif re.search(r"@[A-Za-z0-9-_]+", message.content) is not None:
+        roles: List[str] = re.findall(r"@[A-Za-z0-9-_]+", message.content)
+        for r in roles:
+            spec = spec.replace(r, "")
+
+        roles = list(map(lambda r: f"**{r}**", roles))
+    else:
+        await send(user, message.channel, bot, f"Ich habe keine Gruppen gefunden ..")
+        return
 
     # Calc Day Offset ..
     offset, match_start, match_end, default_val = find_day_by_special_rgx(spec)
@@ -162,20 +194,21 @@ async def __summon(message: Message, bot: BotBase) -> None:
     spec = re.sub(r"\s+", spec, " ").strip()
     response = choice(__summon_msg)
     response = response.replace("###USER###", user.mention)
-    response = response.replace("###MENTION###", " ".join([r.mention for r in roles]))
+    response = response.replace("###MENTION###", " ".join(roles))
     response = response.replace("###TIME###", 'zur gewohnten Zeit' if len(spec) == 0 else spec)
     response = response.replace("###DAY###", day)
 
-    response += "\n\nBitte Reactions zum Abstimmen benutzen:"
+    response += f"\n\n{__poll_request}"
 
     channel: TextChannel = message.channel
     resp_message: Message = await channel.send(response)
     for react in __summon_reactions:
         await resp_message.add_reaction(react)
 
+    await resp_message.add_reaction(__cancel_reaction)
     await delete(message, bot, True)
 
-    __add_to_scheduler(bot, resp_message, offset, day)
+    __add_to_scheduler(bot, message.author.id, resp_message, offset, day)
 
 
 def __read_reactions(reactions: List[str], message_content: str) -> Dict[str, List[str]]:
@@ -208,31 +241,38 @@ def __read_reactions(reactions: List[str], message_content: str) -> Dict[str, Li
     return result
 
 
-async def __handling_reaction_summon(bot: BotBase, payload: RawReactionActionEvent, message: Message) -> bool:
+async def __check_cancel(emoji: PartialEmoji, message: Message, update: dict, user: User, bot: BotBase) -> bool:
     """
-    Handle the reactions to a summon response from the bot
-
+    Check whether a user wants to cancel the /summon poll.
+    :param emoji: the emoji that has been used
+    :param message: the message a user reacts
+    :param update: the associated update object
+    :param user: the user
     :param bot: the bot itself
-    :param payload: the raw payload of the reaction add operation
-    :param message: the message the user responds to
-    :return: indicator whether the reaction has been handled
+    :return: indicator whether someone requested a cancel
     """
-    if message.author != bot.user:
+    if emoji.name != __cancel_reaction:
         return False
 
+    await message.remove_reaction(emoji, user)
+
+    if user.id != update["uid"]:
+        await send(user, message.channel, bot, "You are not the author of the /summon poll")
+    else:
+        __summon_state.remove_update(update)
+        await message.delete()
+    return True
+
+
+async def __update_message(user: User, emoji: PartialEmoji, message: Message):
+    """
+    Update a message according to the reactions.
+    :param user: the user that reacted
+    :param emoji: the emoji the user has used
+    :param message: the message to change
+    """
     text = message.content
-    is_summon = any([re.search(rgx, text.split("\n")[0].strip()) is not None for rgx in __summon_rgx])
-
-    if not is_summon:
-        return False
-
-    user: User = await bot.fetch_user(payload.user_id)
-
-    react = payload.emoji.name
-
-    if react not in __summon_reactions:
-        await message.remove_reaction(payload.emoji, user)
-        return True
+    react = emoji.name
 
     reactions: Dict[str, List[str]] = __read_reactions(__summon_reactions, text)
 
@@ -253,10 +293,42 @@ async def __handling_reaction_summon(bot: BotBase, payload: RawReactionActionEve
     if len(summary) != 0:
         result_msg = f"{result_msg}\n\nAktuell:\n{summary.strip()}"
 
-    result_msg += "\n\nBitte Reactions zum Abstimmen benutzen:"
+    result_msg += f"\n\n{__poll_request}"
 
-    await message.remove_reaction(payload.emoji, user)
+    await message.remove_reaction(emoji, user)
     await message.edit(content=result_msg)
+
+
+async def __handling_reaction_summon(bot: BotBase, payload: RawReactionActionEvent, message: Message) -> bool:
+    """
+    Handle the reactions to a summon response from the bot
+
+    :param bot: the bot itself
+    :param payload: the raw payload of the reaction add operation
+    :param message: the message the user responds to
+    :return: indicator whether the reaction has been handled
+    """
+    if message.author != bot.user:
+        return False
+
+    update = list(filter(lambda m: m["mid"] == message.id and m["cid"] == message.channel.id, __summon_state.updates()))
+
+    if len(update) == 0:
+        return False
+
+    update = update[0]
+    user: User = await bot.fetch_user(payload.user_id)
+
+    react = payload.emoji.name
+
+    if await __check_cancel(payload.emoji, message, update, user, bot):
+        return True
+
+    if react not in __summon_reactions:
+        await message.remove_reaction(payload.emoji, user)
+        return True
+
+    await __update_message(user, payload.emoji, message)
     return True
 
 
