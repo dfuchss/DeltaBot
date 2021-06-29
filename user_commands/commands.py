@@ -8,6 +8,7 @@ from bot_base import delete, send, BotBase, send_help_message, command_meta
 from constants import USER_COMMAND_SYMBOL
 from .helpers import __read_number_param
 from .reminder import _init_reminders, __reminder
+from .roles import __roles, __guild_manager, __handle_role_reaction
 from .summon import __summon, __handling_reaction_summon, _init_summon_updates
 
 
@@ -118,7 +119,7 @@ async def __handling_template(bot: BotBase, cmd: str, message: Message, func: Ha
     return True
 
 
-commands = [__help, __roll, __teams, __summon, __reminder]
+commands = [__help, __roll, __teams, __summon, __reminder, __roles, __guild_manager]
 """
 All Registered Commands
 """
@@ -165,6 +166,9 @@ async def handle_user_reaction(bot: BotBase, payload: RawReactionActionEvent, me
     :return: indicator whether the reaction was handled by the user command handlers
     """
     if await __handling_reaction_summon(bot, payload, message):
+        return True
+
+    if await __handle_role_reaction(bot, payload, message):
         return True
 
     return False
