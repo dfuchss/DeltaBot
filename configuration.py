@@ -42,9 +42,6 @@ class Configuration(Loadable):
         self._respond_all_indicator = False
         """Indicator whether the bot shall interpret all messages originates from _channels or only iff mentioned"""
 
-        self._keep_messages_indicator = True
-        """Indicator whether the bot shall not delete its messages by default"""
-
         self._load()
 
     def is_admin(self, user: User) -> bool:
@@ -69,14 +66,6 @@ class Configuration(Loadable):
         :return: the indicator
         """
         return self._debug_indicator
-
-    def is_keep_messages(self) -> bool:
-        """
-        Check whether keep messages is on.
-
-        :return: the indicator
-        """
-        return self._keep_messages_indicator
 
     def is_respond_all(self) -> bool:
         """
@@ -124,16 +113,6 @@ class Configuration(Loadable):
         self._respond_all_indicator = not self._respond_all_indicator
         self._store()
         return self._respond_all_indicator
-
-    def toggle_keep_messages(self) -> bool:
-        """
-        Toggle the keep messages flag
-
-        :return: the new value of the flag
-        """
-        self._keep_messages_indicator = not self._keep_messages_indicator
-        self._store()
-        return self._keep_messages_indicator
 
     def _migrate(self, loaded) -> None:
         print(f"Config is at version {self.version}")

@@ -93,28 +93,6 @@ def __listen(state: SystemCommandCallState, bot_base: BotBase, message: Message)
     raise Exception(f"Impossible system command call state: {state}")
 
 
-@command_meta(is_system_command=True, help_msg="Toggle für das Löschen von Nachrichten")
-def __keep(state: SystemCommandCallState, bot_base: BotBase, message: Message):
-    """
-    Toggle the keep flag
-
-    :param state: the state of the invocation
-    :param bot_base: the bot itself
-    :param message: the message the bot responds to
-    :return: the awaitable that sends the message
-    """
-
-    if state == SystemCommandCallState.NO_ADMIN:
-        return __not_authorized(bot_base, message)
-
-    if state == SystemCommandCallState.DIRECT_MESSAGE or state == SystemCommandCallState.VALID:
-        return send(message.author, message.channel, bot_base,
-                    f"Nachrichten löschen ist jetzt {'aus' if (bot_base.config.toggle_keep_messages()) else 'an'}"  #
-                    )
-
-    raise Exception(f"Impossible system command call state: {state}")
-
-
 @command_meta(is_system_command=True, help_msg="Macht jeden genannten Benutzer zum Admin", params=["@Mentions"])
 async def __admin(state: SystemCommandCallState, bot_base: BotBase, message: Message) -> None:
     """
@@ -183,8 +161,8 @@ async def __state(state: SystemCommandCallState, bot_base: BotBase, message: Mes
         msg += f"Channels: {', '.join(map(str, bot_base.config.get_channels()))}\n"
         msg += f"Admins: {', '.join(map(lambda uid: uid.mention, users))}\n"
         msg += f"Debug: {bot_base.config.is_debug()}\n"
-        msg += f"Respond-All: {bot_base.config.is_respond_all()}\n"
-        msg += f"Keep-Messages: {bot_base.config.is_keep_messages()}"
+        msg += f"Respond-All: {bot_base.config.is_respond_all()}"
+
         await send(message.author, message.channel, bot_base, msg)
         return
 
@@ -206,8 +184,8 @@ async def __shutdown(state: SystemCommandCallState, bot_base: BotBase, message: 
         return
 
     if state == SystemCommandCallState.DIRECT_MESSAGE or state == SystemCommandCallState.VALID:
-        if bot_base.config.is_keep_messages():
-            await delete(message, bot_base, try_force=True)
+        await delete(message, bot_base)
+        bot_base.scheduler.stop_scheduler()
         await bot_base.shutdown()
         return
 
@@ -235,11 +213,9 @@ async def __erase(state: SystemCommandCallState, bot_base: BotBase, message: Mes
     if state == SystemCommandCallState.VALID:
         async for m in message.channel.history():
             if m.id != message.id:
-                await delete(m, bot_base, try_force=True)
+                await delete(m, bot_base)
 
-        if bot_base.config.is_keep_messages():
-            await delete(message, bot_base, try_force=True)
-
+        await delete(message, bot_base)
         return
 
     raise Exception(f"Impossible system command call state: {state}")
@@ -325,7 +301,7 @@ async def __handling_template(bot: BotBase, cmd: str, message: Message, handler:
     return True
 
 
-commands = [__respond_all, __listen, __keep, __admin, __echo, __state, __shutdown, __erase, __debug]
+commands = [__respond_all, __listen, __admin, __echo, __state, __shutdown, __erase, __debug]
 """
 All Registered System Commands
 """

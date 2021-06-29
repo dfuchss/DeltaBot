@@ -64,7 +64,7 @@ async def __execute_reminder(data: dict, bot: BotBase) -> None:
     if channel is None:
         await user.send(message)
     else:
-        await send(user, channel, bot, message, try_delete=False)
+        await send(user, channel, bot, message)
 
 
 @command_meta(
@@ -102,8 +102,8 @@ async def __reminder(message: Message, bot: BotBase) -> None:
     bot.scheduler.queue(__execute_reminder(data, bot), dt.timestamp())
     resp = await send(message.author, message.channel, bot, f"Ich erinnere Dich am {dt} an **{cleanup_message}**")
 
-    await delete(message, bot, try_force=True)
-    await resp.delete(delay=15)
+    await delete(message, bot)
+    await delete(resp, bot, delay=15)
 
 
 def _init_reminders(bot: BotBase) -> None:

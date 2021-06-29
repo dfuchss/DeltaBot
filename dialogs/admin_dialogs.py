@@ -54,6 +54,6 @@ class Cleanup(Dialog):
                 continue
 
             if author == m.author or m.author == self._bot.user:
-                await delete(m, self._bot, try_force=True)
+                await delete(m, self._bot)
 
         return DialogResult.NEXT

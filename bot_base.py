@@ -1,12 +1,13 @@
 import functools
-from datetime import datetime
-from typing import List, Union, Any, Tuple, Dict, Callable
+from datetime import datetime, timedelta
+from typing import List, Union, Tuple, Dict, Callable, Any
 
-from discord import ChannelType, Message, User, DMChannel, TextChannel, NotFound, Client
+from discord import ChannelType, Message, NotFound, Client, TextChannel, User, DMChannel
 
 from cognitive import NLUService
 from configuration import Configuration
 from constants import SYSTEM_COMMAND_SYMBOL, USER_COMMAND_SYMBOL
+from loadable import Loadable
 from scheduler import BotScheduler
 
 __registered_commands: Dict[Tuple[str, bool], str] = {}
@@ -100,6 +101,60 @@ def dialog_meta(dialog_info: Union[str, List[str]] = None, name: str = None):
     return decorator
 
 
+class DeletionState(Loadable):
+    """
+    This state contains the scheduled deletions
+    """
+
+    def __init__(self):
+        super().__init__(path="./states/delete_state.json", version=1)
+        self._deletions = []
+        self._load()
+
+    def add_deletion(self, deletion: dict) -> None:
+        """
+        Add a new deletion.
+
+        :param deletion: the data as dictionary (see delete)
+        """
+        self._deletions.append(deletion)
+        self._store()
+
+    def remove_deletion(self, deletion: dict) -> None:
+        """
+        Remove a new deletion.
+
+        :param deletion: the data as dictionary (see delete)
+        """
+        self._deletions.remove(deletion)
+        self._store()
+
+    def deletions(self) -> List[dict]:
+        """
+        Return all updates as list of dictionaries
+
+        :return: all updates
+        """
+        return self._deletions
+
+
+_deletion_state = DeletionState()
+"""The one and only deletion state"""
+
+
+async def _execute_deletion(bot: Client, deletion: dict):
+    """Execute deletion of a message"""
+    _deletion_state.remove_deletion(deletion)
+
+    try:
+        ch: TextChannel = await bot.fetch_channel(deletion["cid"])
+        msg: Message = await ch.fetch_message(deletion["mid"])
+    except NotFound:
+        return
+
+    await msg.delete()
+
+
 class BotBase(Client):
     """The base class for the bot."""
 
@@ -108,6 +163,7 @@ class BotBase(Client):
         self.config: Configuration = Configuration()
         self.nlu: NLUService = NLUService(self.config)
         self.scheduler: BotScheduler = BotScheduler(self.loop)
+        self._init_deletions()
 
     @staticmethod
     def log(message: Message) -> None:
@@ -122,9 +178,14 @@ class BotBase(Client):
         """Shutdown the bot"""
         await self.close()
 
+    def _init_deletions(self):
+        """Init scheduled deletions"""
+        for deletion in _deletion_state.deletions():
+            self.scheduler.queue(_execute_deletion(self, deletion), deletion["ts"])
+
 
 async def send(respondee: User, channel: Union[DMChannel, TextChannel], bot: BotBase, message: Any,
-               mention: bool = True, try_delete: bool = True) -> Message:
+               mention: bool = True) -> Message:
     """
     Send a message to a channel.
 
@@ -133,7 +194,6 @@ async def send(respondee: User, channel: Union[DMChannel, TextChannel], bot: Bot
     :param bot: the bot itself
     :param message: the message to send
     :param mention: indicator for mentioning the respondee
-    :param try_delete: try to delete message after ttl (if activated)
     :return the sent message
     """
 
@@ -141,31 +201,35 @@ async def send(respondee: User, channel: Union[DMChannel, TextChannel], bot: Bot
         msg = await channel.send(f"{respondee.mention} {message}")
     else:
         msg = await channel.send(message)
-    if not channel.type == ChannelType.private and try_delete:
-        await delete(msg, bot, delay=bot.config.ttl)
-
     return msg
 
 
-async def delete(message: Message, bot: BotBase, try_force: bool = False, delay: float = None) -> None:
+async def delete(message: Message, bot: BotBase, delay: float = None) -> None:
     """
     Delete a message.
 
     :param message the actual message
     :param bot the actual bot
-    :param try_force indicates whether the bot shall try to delete even iff debug is activated
     :param delay some delay in seconds
     """
-    if (bot.config.is_debug() or bot.config.is_keep_messages()) and not try_force:
-        return
-
     if is_direct(message):
         return
 
-    try:
-        await message.delete(delay=delay)
-    except NotFound:
-        pass
+    if delay is None:
+        try:
+            await message.delete()
+        except NotFound:
+            pass
+    else:
+        # Schedule deletion
+        ts = (datetime.now() + timedelta(seconds=delay)).timestamp()
+        deletion = {
+            "ts": ts,
+            "cid": message.channel.id,
+            "mid": message.id
+        }
+        _deletion_state.add_deletion(deletion)
+        bot.scheduler.queue(_execute_deletion(bot, deletion), deletion["ts"])
 
 
 def is_direct(message: Message) -> bool:
@@ -207,4 +271,4 @@ async def send_help_message(message: Message, bot: BotBase) -> None:
                 response += f"**{SYSTEM_COMMAND_SYMBOL}{name}**: " + __registered_commands[(name, sys_command)] + "\n"
 
     response_msg = await send(message.author, message.channel, bot, response.strip())
-    await delete(response_msg, bot, delay=20, try_force=True)
+    await delete(response_msg, bot, delay=20)

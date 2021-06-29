@@ -201,7 +201,7 @@ class DeltaBot(BotBase):
             return
 
         pl: RawReactionActionEvent = payload
-        if pl.event_type != "REACTION_ADD" or pl.user_id == self.user.id:
+        if pl.user_id == self.user.id:
             return
 
         channel: TextChannel = await self.fetch_channel(pl.channel_id)

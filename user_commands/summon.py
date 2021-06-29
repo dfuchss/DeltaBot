@@ -257,7 +257,8 @@ async def __check_cancel(emoji: PartialEmoji, message: Message, update: dict, us
     await message.remove_reaction(emoji, user)
 
     if user.id != update["uid"]:
-        await send(user, message.channel, bot, "You are not the author of the /summon poll")
+        resp = await send(user, message.channel, bot, "Du bist nicht der Initiator der /summon Umfrage")
+        await delete(resp, bot, delay=10)
     else:
         __summon_state.remove_update(update)
         await message.delete()
