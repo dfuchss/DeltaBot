@@ -6,9 +6,10 @@ from discord import Message, VoiceChannel, RawReactionActionEvent
 
 from bot_base import delete, send, BotBase, send_help_message, command_meta
 from constants import USER_COMMAND_SYMBOL
+from .guild import __guild_manager, __show_guild_managers
 from .helpers import __read_number_param
 from .reminder import _init_reminders, __reminder
-from .roles import __roles, __guild_manager, __handle_role_reaction
+from .roles import __roles, __handle_role_reaction
 from .summon import __summon, __handling_reaction_summon, _init_summon_updates
 
 
@@ -21,6 +22,16 @@ async def __help(message: Message, bot: BotBase) -> None:
     :param bot: the bot itself
     """
     await send_help_message(message, bot)
+
+
+async def __help_persist(message: Message, bot: BotBase) -> None:
+    """
+    Send a help persistent message to the user
+
+    :param message: the message from the user
+    :param bot: the bot itself
+    """
+    await send_help_message(message, bot, timeout=False)
 
 
 @command_meta(help_msg="Würfelt eine Zahl zwischen 1 und N (wenn N fehlt, verwende ich 6)", params=["N"])
@@ -119,7 +130,8 @@ async def __handling_template(bot: BotBase, cmd: str, message: Message, func: Ha
     return True
 
 
-commands = [__help, __roll, __teams, __summon, __reminder, __roles, __guild_manager]
+commands = [__help, __help_persist, __roll, __teams, __summon, __reminder, __roles, __guild_manager,
+            __show_guild_managers]
 """
 All Registered Commands
 """

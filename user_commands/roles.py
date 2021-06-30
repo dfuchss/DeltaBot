@@ -1,108 +1,65 @@
 import re
-from typing import Dict, Tuple, List
+from typing import Dict, Tuple, List, Union, Optional
 
-from discord import Guild, Message, User, RawReactionActionEvent, NotFound, TextChannel, Role, Member
+from discord import Guild, Message, User, RawReactionActionEvent, TextChannel, Role, Member
 
 from bot_base import command_meta, BotBase, send, delete
 from loadable import Loadable
 from user_commands.helpers import __crop_command
+from .guild import _guild_state, get_guild
 
 
 class RolesState(Loadable):
     """
-    This state contains the updates to summon messages from the bot (e.g. "tomorrow" -> "today" at midnight)
+    This state contains the states regarding role management.
     """
 
     def __init__(self):
         super().__init__(path="./states/roles_state.json", version=1)
-        self._guild_to_message: Dict[str, Tuple[int, int]] = {}
-        self._guild_to_manager: Dict[str, List[int]] = {}
+        self._guild_to_message: Dict[str, List[int]] = {}
         self._load()
 
-    def add_guild_message(self, guild: Guild, message: Message) -> None:
-        self._guild_to_message[str(guild.id)] = (message.channel.id, message.id)
+    def add_role_message(self, guild: Guild, message: Message) -> None:
+        self._guild_to_message[str(guild.id)] = [message.channel.id, message.id]
         self._store()
 
-    def remove_guild_message(self, guild: Guild) -> None:
+    def remove_role_message(self, guild: Guild) -> None:
         del self._guild_to_message[str(guild.id)]
         self._store()
 
-    def guild_messages(self) -> Dict[str, Tuple[int, int]]:
-        return self._guild_to_message
+    def has_role_message(self, guild: Union[Guild, int]) -> bool:
+        gid = str(guild.id) if isinstance(guild, Guild) else str(guild)
+        return gid in self._guild_to_message.keys() \
+               and self._guild_to_message[gid] is not None \
+               and len(self._guild_to_message[gid]) != 0
 
-    def add_guild_manager(self, guild: Guild, user: User):
-        if guild.id in self._guild_to_manager.keys():
-            self._guild_to_manager[str(guild.id)].append(user.id)
-        else:
-            self._guild_to_manager[str(guild.id)] = [user.id]
+    def get_role_message(self, guild: Union[Guild, int]) -> Tuple[int, int]:
+        gid = str(guild.id) if isinstance(guild, Guild) else str(guild)
+        return (None, None) if not self.has_role_message(guild) else tuple(self._guild_to_message[gid])
 
-        self._store()
-
-    def remove_guild_manager(self, guild: Guild, user: User):
-        if guild.id in self._guild_to_manager.keys():
-            self._guild_to_manager[str(guild.id)].remove(user.id)
-            self._store()
-
-    def is_guild_manager(self, guild: Guild, user: User) -> bool:
-        if guild is None or str(guild.id) not in self._guild_to_manager.keys():
+    def is_guild_message(self, guild_id: int, channel_id: int, message_id: int) -> bool:
+        if str(guild_id) not in self._guild_to_message.keys():
             return False
-        return user.id in self._guild_to_manager[str(guild.id)]
-
-    def get_guild_managers(self, guild: Guild) -> List[int]:
-        if str(guild.id) not in self._guild_to_manager.keys():
-            return []
-        return self._guild_to_manager[str(guild.id)]
+        return [channel_id, message_id] == self._guild_to_message[str(guild_id)]
 
 
 __roles_state = RolesState()
 """The one and only roles state"""
 
 
-@command_meta(help_msg="Macht einen User zum Gilden-Manager (oder nimmt die Macht)", params=["@Mention"])
-async def __guild_manager(message: Message, bot: BotBase) -> None:
-    guild: Guild = message.guild
-    if guild is None:
-        msg = await send(message.author, message.channel, bot, "Leider gehört der Channel zu keiner Gilde")
-        await delete(msg, bot, delay=10)
-        return
-
-    if len(message.mentions) == 0:
-        msg = await send(message.author, message.channel, bot, "Leider habe ich keine Mentions gefunden")
-        await delete(msg, bot, delay=10)
-        return
-
-    if not bot.config.is_admin(message.author) and not (__roles_state.is_guild_manager(guild, message.author)):
-        msg = await send(message.author, message.channel, bot, "Du bist weder Admin noch Gilden-Manager")
-        await delete(msg, bot, delay=10)
-        return
-
-    for mention in message.mentions:
-        u: User = mention
-        if __roles_state.is_guild_manager(guild, u):
-            __roles_state.remove_guild_manager(guild, u)
-        else:
-            __roles_state.add_guild_manager(guild, u)
-
-    user_mentions = []
-    for uid in __roles_state.get_guild_managers(guild):
-        try:
-            user = await bot.fetch_user(uid)
-            user_mentions.append(user.mention)
-        except NotFound:
-            continue
-
-    resp = await send(message.author, message.channel, bot,
-                      f"Aktuelle Gilden-Manager: {', '.join(user_mentions) if len(user_mentions) != 0 else 'Keine'}")
-    await delete(resp, bot, 10)
-
-
 @command_meta(
     help_msg="Erzeugt eine Management-Nachricht für Rollen.",
-    params=["init | add Emoji @Mention | del Emoji | reset"])
+    params=["[...]"],
+    subcommands={
+        "init": "Erzeugt eine neue Management-Nachricht",
+        "add Emoji @Role": "Ordnet einer Rolle einen Emoji zu",
+        "del Emoji": "Löscht ein Zuordnung anhand des Emoji",
+        "reset": "Löscht die Management-Nachricht"
+    })
 async def __roles(message: Message, bot: BotBase) -> None:
     split_command = __crop_command(message.content).split(" ")
 
-    if not bot.config.is_admin(message.author) and not __roles_state.is_guild_manager(message.guild, message.author):
+    if not bot.config.is_admin(message.author) and not _guild_state.is_guild_manager(message.guild, message.author):
         resp = await send(message.author, message.channel, bot, "Du bist weder Admin noch Gilden-Manager")
         await delete(resp, bot, delay=10)
         return
@@ -129,31 +86,34 @@ async def __roles(message: Message, bot: BotBase) -> None:
     await delete(message, bot)
 
 
-__switcher_text = "Wähle Deine Rollen in dem Server :)"
-__no_roles = "*Aktuell können keine Rollen gewählt werden ..*"
+__switcher_text = "**Wähle Deine Rollen auf diesem Server :)**"
+__no_roles = "*Aktuell können keine Rollen gewählt werden .. warte auf den Gildenleiter :)*"
 
 
-async def __role_chooser_init(message: Message, bot: BotBase):
-    guild: Guild = message.guild
+async def __ensure_guild_message(message: Message, bot: BotBase, shall_exist: bool) -> Optional[Guild]:
+    guild: Guild = get_guild(message)
     if guild is None:
         msg = await send(message.author, message.channel, bot, "Leider gehört der Channel zu keiner Gilde")
         await delete(msg, bot, delay=10)
-        return
+        return None
 
-    guild_messages = __roles_state.guild_messages()
-    if str(guild.id) in guild_messages.keys():
+    if not shall_exist and __roles_state.has_role_message(guild):
         msg = await send(message.author, message.channel, bot,
                          "Für diese Gilde existiert schon eine Abstimmungsnachricht")
         await delete(msg, bot, delay=10)
-        return
+        return None
 
-    initial_text = f"{__switcher_text}\n{__no_roles}"
-    resp = await send(message.author, message.channel, bot, initial_text, mention=False)
-    __roles_state.add_guild_message(guild, resp)
+    if shall_exist and not __roles_state.has_role_message(guild):
+        msg = await send(message.author, message.channel, bot,
+                         "Für diese Gilde existiert noch keine Abstimmungsnachricht")
+        await delete(msg, bot, delay=10)
+        return None
+
+    return guild
 
 
-async def _load_mappings(guild: Guild, bot: BotBase) -> Dict[str, str]:
-    (cid, mid) = __roles_state.guild_messages()[str(guild.id)]
+async def __load_mappings(guild: Guild, bot: BotBase) -> Dict[str, str]:
+    (cid, mid) = __roles_state.get_role_message(guild)
 
     ch: TextChannel = await bot.fetch_channel(cid)
     msg: Message = await ch.fetch_message(mid)
@@ -167,7 +127,7 @@ async def _load_mappings(guild: Guild, bot: BotBase) -> Dict[str, str]:
     return mappings
 
 
-def _mapping_to_message(mappings: Dict[str, str]):
+def __mapping_to_message(mappings: Dict[str, str]):
     if len(mappings.keys()) == 0:
         return f"{__switcher_text}\n\n{__no_roles}"
 
@@ -178,18 +138,19 @@ def _mapping_to_message(mappings: Dict[str, str]):
     return res.strip()
 
 
-async def __role_chooser_add_role(message: Message, bot: BotBase):
-    guild: Guild = message.guild
+async def __role_chooser_init(message: Message, bot: BotBase):
+    guild: Guild = await __ensure_guild_message(message, bot, False)
     if guild is None:
-        msg = await send(message.author, message.channel, bot, "Leider gehört der Channel zu keiner Gilde")
-        await delete(msg, bot, delay=10)
         return
 
-    guild_messages = __roles_state.guild_messages()
-    if str(guild.id) not in guild_messages.keys():
-        msg = await send(message.author, message.channel, bot,
-                         "Für diese Gilde existiert noch keine Abstimmungsnachricht")
-        await delete(msg, bot, delay=10)
+    initial_text = f"{__switcher_text}\n{__no_roles}"
+    resp = await send(message.author, message.channel, bot, initial_text, mention=False)
+    __roles_state.add_role_message(guild, resp)
+
+
+async def __role_chooser_add_role(message: Message, bot: BotBase):
+    guild: Guild = await __ensure_guild_message(message, bot, True)
+    if guild is None:
         return
 
     if len(message.role_mentions) != 1:
@@ -207,7 +168,7 @@ async def __role_chooser_add_role(message: Message, bot: BotBase):
     role = message.role_mentions[0]
     emoji = data[1]
 
-    emoji_to_role_mappings: Dict[str, str] = await _load_mappings(guild, bot)
+    emoji_to_role_mappings: Dict[str, str] = await __load_mappings(guild, bot)
 
     if emoji in emoji_to_role_mappings.keys():
         msg = await send(message.author, message.channel, bot, f"Emoji ({emoji}) wird bereits verwendet")
@@ -216,27 +177,18 @@ async def __role_chooser_add_role(message: Message, bot: BotBase):
 
     emoji_to_role_mappings[emoji] = role.mention
 
-    (cid, mid) = __roles_state.guild_messages()[str(guild.id)]
+    (cid, mid) = __roles_state.get_role_message(guild)
 
     ch: TextChannel = await bot.fetch_channel(cid)
     guild_message: Message = await ch.fetch_message(mid)
 
-    await guild_message.edit(content=_mapping_to_message(emoji_to_role_mappings))
+    await guild_message.edit(content=__mapping_to_message(emoji_to_role_mappings))
     await guild_message.add_reaction(emoji)
 
 
 async def __role_chooser_del_role(message: Message, bot: BotBase):
-    guild: Guild = message.guild
+    guild: Guild = await __ensure_guild_message(message, bot, True)
     if guild is None:
-        msg = await send(message.author, message.channel, bot, "Leider gehört der Channel zu keiner Gilde")
-        await delete(msg, bot, delay=10)
-        return
-
-    guild_messages = __roles_state.guild_messages()
-    if str(guild.id) not in guild_messages.keys():
-        msg = await send(message.author, message.channel, bot,
-                         "Für diese Gilde existiert noch keine Abstimmungsnachricht")
-        await delete(msg, bot, delay=10)
         return
 
     # ["del", "emoji"]
@@ -247,7 +199,7 @@ async def __role_chooser_del_role(message: Message, bot: BotBase):
         return
 
     emoji = data[1]
-    emoji_to_role_mappings: Dict[str, str] = await _load_mappings(guild, bot)
+    emoji_to_role_mappings: Dict[str, str] = await __load_mappings(guild, bot)
 
     if emoji not in emoji_to_role_mappings.keys():
         msg = await send(message.author, message.channel, bot, "Emoji wird nicht verwendet")
@@ -256,54 +208,45 @@ async def __role_chooser_del_role(message: Message, bot: BotBase):
 
     del emoji_to_role_mappings[emoji]
 
-    (cid, mid) = __roles_state.guild_messages()[str(guild.id)]
+    (cid, mid) = __roles_state.get_role_message(guild)
     ch: TextChannel = await bot.fetch_channel(cid)
     guild_message: Message = await ch.fetch_message(mid)
 
-    await guild_message.edit(content=_mapping_to_message(emoji_to_role_mappings))
+    await guild_message.edit(content=__mapping_to_message(emoji_to_role_mappings))
     await guild_message.remove_reaction(emoji, bot.user)
 
 
 async def __role_chooser_reset(message: Message, bot: BotBase):
-    guild: Guild = message.guild
+    guild: Guild = await __ensure_guild_message(message, bot, True)
     if guild is None:
-        msg = await send(message.author, message.channel, bot, "Leider gehört der Channel zu keiner Gilde")
-        await delete(msg, bot, delay=10)
         return
 
-    guild_messages = __roles_state.guild_messages()
-    if str(guild.id) not in guild_messages.keys():
-        msg = await send(message.author, message.channel, bot,
-                         "Für diese Gilde existiert noch keine Abstimmungsnachricht")
-        await delete(msg, bot, delay=10)
-        return
-
-    (cid, mid) = __roles_state.guild_messages()[str(guild.id)]
+    (cid, mid) = __roles_state.get_role_message(guild)
 
     ch: TextChannel = await bot.fetch_channel(cid)
     guild_message: Message = await ch.fetch_message(mid)
 
-    __roles_state.remove_guild_message(guild)
+    __roles_state.remove_role_message(guild)
     await delete(guild_message, bot)
 
 
 async def __handle_role_reaction(bot: BotBase, payload: RawReactionActionEvent, message: Message) -> bool:
-    if str(payload.guild_id) not in __roles_state.guild_messages().keys():
-        return False
-
-    (cid, mid) = __roles_state.guild_messages()[str(payload.guild_id)]
-    if cid != payload.channel_id or mid != payload.message_id:
+    if not __roles_state.is_guild_message(payload.guild_id, payload.channel_id, payload.message_id):
         return False
 
     user: User = await bot.fetch_user(payload.user_id)
     await message.remove_reaction(payload.emoji, user)
 
-    guild: Guild = message.guild
+    guild: Guild = get_guild(message)
 
-    mappings: Dict[str, str] = await _load_mappings(guild, bot)
+    mappings: Dict[str, str] = await __load_mappings(guild, bot)
 
     # ID = <@&ID>
-    role_id = mappings[str(payload.emoji)]
+    role_id = mappings.get(str(payload.emoji), None)
+    if role_id is None:
+        msg = await send(message.author, message.channel, bot, "Emoji wird nicht verwendet")
+        await delete(msg, bot, delay=10)
+        return True
 
     roles: List[Role] = await guild.fetch_roles()
     role = list(filter(lambda r: str(r.id) in role_id, roles))
@@ -318,10 +261,10 @@ async def __handle_role_reaction(bot: BotBase, payload: RawReactionActionEvent, 
         else:
             await member.add_roles(user_role)
 
-        resp = await send(message.author, message.channel, bot, "Änderung der Rollen vorgenommen :)")
+        resp = await send(user, message.channel, bot, "Änderung der Rollen vorgenommen :)")
         await delete(resp, bot, delay=10)
     except Exception:
-        resp = await send(message.author, message.channel, bot, "Mir fehlen dafür wohl die Berechtigungen :(")
+        resp = await send(user, message.channel, bot, "Mir fehlen dafür wohl die Berechtigungen :(")
         await delete(resp, bot, delay=10)
 
     return True

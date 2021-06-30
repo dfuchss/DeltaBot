@@ -11,10 +11,13 @@ from loadable import Loadable
 from scheduler import BotScheduler
 
 __registered_commands: Dict[Tuple[str, bool], str] = {}
-"""All registered commands with its documentation as (cmd_name, is_system_command) -> help_msg"""
+"""All registered commands with their documentation as (cmd_name, is_system_command) -> help_msg"""
+__registered_subcommands: Dict[str, Dict[str, str]] = {}
+"""All registered subcommands commands with their documentation as cmd_name -> (subcommand_name -> help_msg)"""
 
 
-def __register_command(method: Callable, help_msg: str, is_system_command: bool, name: str, params: List[str]) -> None:
+def __register_command(method: Callable, help_msg: str, is_system_command: bool, name: str, params: List[str],
+                       subcommands: Dict[str, str]) -> None:
     """
     Register a system or user command with its documentation.
 
@@ -23,17 +26,23 @@ def __register_command(method: Callable, help_msg: str, is_system_command: bool,
     :param is_system_command: indicator whether system or user command
     :param name: the name of the command (if none it will be extracted from the __method)
     :param params: a list of parameters for the command
+    :param subcommands: a dictionary from subcommand to description
     """
     if name is None:
         assert method.__name__.startswith("__")
         name = method.__name__[2:].replace("_", "-")
     if params is None:
         params = []
-    __registered_commands[(f"{name} {' '.join(params)}".strip(), is_system_command)] = help_msg.strip()
+    if subcommands is None:
+        subcommands = {}
+
+    cmd_name = f"{name} {' '.join(params)}".strip()
+    __registered_commands[(cmd_name, is_system_command)] = help_msg.strip()
+    __registered_subcommands[cmd_name] = subcommands
 
 
 def command_meta(help_msg: str = None, is_system_command: bool = False, name: str = None,
-                 params: List[str] = None) -> Callable:
+                 params: List[str] = None, subcommands: Dict[str, str] = None) -> Callable:
     """
     Wrapper that decorates an existing command function and registers it to the documentation.
 
@@ -41,12 +50,13 @@ def command_meta(help_msg: str = None, is_system_command: bool = False, name: st
     :param is_system_command: indicator whether system command or user command
     :param name: overrides a computed name for the command
     :param params: a list of names of parameters of the command
+    :param subcommands: a dictionary from subcommand to description
     :return: the decorated function (same behavior as before)
     """
 
     def decorator(func):
         if help_msg is not None:
-            __register_command(func, help_msg, is_system_command, name, params)
+            __register_command(func, help_msg, is_system_command, name, params, subcommands)
 
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
@@ -241,12 +251,13 @@ def is_direct(message: Message) -> bool:
     return message.channel.type == ChannelType.private
 
 
-async def send_help_message(message: Message, bot: BotBase) -> None:
+async def send_help_message(message: Message, bot: BotBase, timeout: bool = True) -> None:
     """
     Send a help message to the author of message (and to the channel of message)
 
     :param message: the message to identify author and channel
     :param bot: the bot itself
+    :param timeout indicator whether the message shall be deleted after some time
     """
 
     response = f"Ich kann verschiedene Aufgaben erledigen:\n\n"
@@ -263,12 +274,17 @@ async def send_help_message(message: Message, bot: BotBase) -> None:
     for (name, sys_command) in sorted(__registered_commands.keys(), key=lambda nXt: nXt[0]):
         if not sys_command:
             response += f"**{USER_COMMAND_SYMBOL}{name}**: " + __registered_commands[(name, sys_command)] + "\n"
+            for subcommand in __registered_subcommands[name]:
+                response += f"\t\t**{subcommand}**: " + __registered_subcommands[name][subcommand] + "\n"
 
     if bot.config.is_admin(message.author):
         response += "\n\n*Folgende System-Befehle unterstütze ich:*\n\n"
         for (name, sys_command) in sorted(__registered_commands.keys(), key=lambda nXt: nXt[0]):
             if sys_command:
                 response += f"**{SYSTEM_COMMAND_SYMBOL}{name}**: " + __registered_commands[(name, sys_command)] + "\n"
+                for subcommand in __registered_subcommands[name]:
+                    response += f"\t\t**{subcommand}**: " + __registered_subcommands[name][subcommand] + "\n"
 
     response_msg = await send(message.author, message.channel, bot, response.strip())
-    await delete(response_msg, bot, delay=20)
+    if timeout:
+        await delete(response_msg, bot, delay=60)
