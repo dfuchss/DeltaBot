@@ -2,6 +2,7 @@ import re
 from typing import Dict, Tuple, List, Union, Optional
 
 from discord import Guild, Message, User, RawReactionActionEvent, TextChannel, Role, Member
+from emoji import UNICODE_EMOJI_ENGLISH
 
 from bot_base import command_meta, BotBase, send, delete
 from loadable import Loadable
@@ -160,7 +161,13 @@ async def __role_chooser_add_role(message: Message, bot: BotBase):
 
     # ["add", "emoji", "role"]
     data = re.sub(r"\s+", " ", __crop_command(message.content)).strip().split(" ")
-    if len(data) != 3 or (len(data[1]) != 1 and re.match(r"<:[A-Za-z0-9-]+:\d+", data[1]) is None):
+
+    # Strange Bug in Encoding
+    if len(data[1]) == 2:
+        data[1] = data[1][0]
+
+    if len(data) != 3 \
+            or (data[1] not in UNICODE_EMOJI_ENGLISH.keys() and re.match(r"<:[A-Za-z0-9-]+:\d+", data[1]) is None):
         msg = await send(message.author, message.channel, bot, "Ich konnte den Emoji nicht finden :(")
         await delete(msg, bot, delay=10)
         return

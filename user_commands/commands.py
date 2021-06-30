@@ -91,15 +91,16 @@ async def __teams(message: Message, bot: BotBase) -> None:
     await send(message.author, message.channel, bot, f"Zuordnung:\n{teams.strip()}", mention=False)
 
 
-def __unknown(message: Message, bot: BotBase) -> Awaitable[None]:
+async def __unknown(message: Message, bot: BotBase) -> None:
     """
     The default handler for unknown commands.
 
     :param message: the message from the user
     :param bot: the bot itself
-    :return: the send() Awaitable
+
     """
-    return send(message.author, message.channel, bot, "Unbekannter Befehl")
+    resp = await send(message.author, message.channel, bot, "Unbekannter Befehl")
+    await delete(resp, bot, delay=10)
 
 
 HandlingFunction = Union[  #
