@@ -45,9 +45,6 @@ class Configuration(Loadable):
         self._debug_indicator = False
         """Indicator whether debug mode is enabled or not"""
 
-        self._respond_all_indicator = False
-        """Indicator whether the bot shall interpret all messages originates from _channels or only iff mentioned"""
-
         self._respond_to_unknown_commands = False
         """Indicator whether the bot shall react to unknown commands"""
 
@@ -75,14 +72,6 @@ class Configuration(Loadable):
         :return: the indicator
         """
         return self._debug_indicator
-
-    def is_respond_all(self) -> bool:
-        """
-        Check whether respond all is on.
-
-        :return: the indicator
-        """
-        return self._respond_all_indicator
 
     def is_respond_to_unknown_commands(self) -> bool:
         """
@@ -119,16 +108,6 @@ class Configuration(Loadable):
         self._debug_indicator = not self._debug_indicator
         self._store()
         return self._debug_indicator
-
-    def toggle_respond_all(self) -> bool:
-        """
-        Toggle the respond all flag
-
-        :return: the new value of the flag
-        """
-        self._respond_all_indicator = not self._respond_all_indicator
-        self._store()
-        return self._respond_all_indicator
 
     def _migrate(self, loaded) -> None:
         print(f"Config is at version {self.version}")

@@ -46,27 +46,6 @@ def __not_authorized(bot: BotBase, message: Message) -> Awaitable:
     return send(message.author, message.channel, bot, "Du bist nicht authorisiert!")
 
 
-@command_meta(is_system_command=True, help_msg="Schaltet die Notwendigkeit von Mentions ab/an")
-def __respond_all(state: SystemCommandCallState, bot_base: BotBase, message: Message) -> Awaitable:
-    """
-    Toggle the respond all flag
-
-    :param state: the state of the invocation
-    :param bot_base: the bot itself
-    :param message: the message the bot responds to
-    :return: the awaitable that sends the message
-    """
-    if state == SystemCommandCallState.NO_ADMIN:
-        return __not_authorized(bot_base, message)
-
-    if state == SystemCommandCallState.DIRECT_MESSAGE or state == SystemCommandCallState.VALID:
-        return send(message.author, message.channel, bot_base,
-                    f"Immer Antworten-Modus ist jetzt {'an' if (bot_base.config.toggle_respond_all()) else 'aus'}"  #
-                    )
-
-    raise Exception(f"Impossible system command call state: {state}")
-
-
 @command_meta(is_system_command=True, help_msg="Aktiviert mein Zuhören in einem Text-Channel")
 def __listen(state: SystemCommandCallState, bot_base: BotBase, message: Message):
     """
@@ -303,7 +282,7 @@ async def __handling_template(bot: BotBase, cmd: str, message: Message, handler:
     return True
 
 
-commands = [__respond_all, __listen, __admin, __echo, __state, __shutdown, __erase, __debug]
+commands = [__listen, __admin, __echo, __state, __shutdown, __erase, __debug]
 """
 All Registered System Commands
 """

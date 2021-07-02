@@ -181,8 +181,7 @@ class DeltaBot(BotBase):
 
         handle_message: bool = False
         handle_message |= is_direct(message)
-        handle_message |= (self.user in message.mentions or self.config.is_respond_all()) \
-                          and ch_id in self.config.get_channels()
+        handle_message |= self.user in message.mentions and ch_id in self.config.get_channels()
         handle_message |= instance.has_active_dialog()
 
         if not handle_message:

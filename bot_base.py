@@ -267,7 +267,7 @@ async def send_help_message(message: Message, bot: BotBase, timeout: bool = True
     :param timeout indicator whether the message shall be deleted after some time
     """
 
-    response = f"Ich kann verschiedene Aufgaben erledigen:\n\n"
+    response = f"Ich kann verschiedene Aufgaben erledigen. Um mich anzusprechen, schreib {bot.user.mention}:\n\n"
     # Dialogs
     dialog_infos: List[str] = [item for sublist in
                                ([__registered_dialogs[name] for name in __registered_dialogs.keys()]) for item in
