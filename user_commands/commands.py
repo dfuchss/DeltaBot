@@ -47,8 +47,9 @@ async def __roll(message, bot) -> None:
     await send(message.author, message.channel, bot, f"{rnd}")
 
 
-@command_meta(help_msg="Ordnet die Leute in Deinem Voice Channel in N Teams (wenn N fehlt, verwende ich 2)",
-              params=["N"])
+@command_meta(
+    help_msg="Ordnet die Leute in Deinem Voice Channel in N Teams (wenn N fehlt, verwende ich als Teamanzahl 2)",
+    params=["N"])
 async def __teams(message: Message, bot: BotBase) -> None:
     """
     Create teams based on your voice channel's members. The method tries to parse an int argument of the command.

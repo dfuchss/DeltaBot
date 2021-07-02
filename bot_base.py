@@ -2,7 +2,7 @@ import functools
 from datetime import datetime, timedelta
 from typing import List, Union, Tuple, Dict, Callable, Any
 
-from discord import ChannelType, Message, NotFound, Client, TextChannel, User, DMChannel
+from discord import ChannelType, Message, NotFound, Client, TextChannel, User, DMChannel, Embed
 
 from cognitive import NLUService
 from configuration import Configuration
@@ -280,21 +280,25 @@ async def send_help_message(message: Message, bot: BotBase, timeout: bool = True
     response += "\n\n*Folgende User-Befehle unterstütze ich:*\n\n"
     for (name, sys_command) in sorted(__registered_commands.keys(), key=lambda nXt: nXt[0]):
         if not sys_command:
-            response += f"**{bot.config.user_command_symbol}{name}**: " \
+            response += f"**{bot.config.user_command_symbol}{name}**\n" \
                         + __registered_commands[(name, sys_command)] + "\n"
             for subcommand in __registered_subcommands[name]:
-                response += f"\t\t**{subcommand}**: " + __registered_subcommands[name][subcommand] + "\n"
+                response += f"→ **{subcommand}**: " + __registered_subcommands[name][subcommand] + "\n"
+            response += "\n"
 
-    if bot.config.is_admin(message.author):
-        response += "\n\n*Folgende System-Befehle unterstütze ich:*\n\n"
+    if timeout and bot.config.is_admin(message.author):
+        response += "\n*Folgende System-Befehle unterstütze ich:*\n\n"
         for (name, sys_command) in sorted(__registered_commands.keys(), key=lambda nXt: nXt[0]):
             if sys_command:
-                response += f"**{bot.config.system_command_symbol}{name}**: " \
+                response += f"**{bot.config.system_command_symbol}{name}**\n" \
                             + __registered_commands[
                                 (name, sys_command)] + "\n"
                 for subcommand in __registered_subcommands[name]:
-                    response += f"\t\t**{subcommand}**: " + __registered_subcommands[name][subcommand] + "\n"
+                    response += f"→ **{subcommand}**: " + __registered_subcommands[name][subcommand] + "\n"
+                response += "\n"
 
-    response_msg = await send(message.author, message.channel, bot, response.strip())
+    ch: TextChannel = message.channel
+    embed = Embed(title=f"{bot.user.display_name} Hilfe", description=response.strip(), color=0x0D0A33)
+    response_msg = await ch.send(embed=embed)
     if timeout:
         await delete(response_msg, bot, delay=60)
