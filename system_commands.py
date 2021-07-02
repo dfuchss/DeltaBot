@@ -5,7 +5,6 @@ from typing import Union, Callable, Awaitable, List
 from discord import Message, TextChannel, User
 
 from bot_base import is_direct, delete, send, BotBase, command_meta
-from constants import SYSTEM_COMMAND_SYMBOL
 
 
 class SystemCommandCallState(Enum):
@@ -277,7 +276,7 @@ async def __handling_template(bot: BotBase, cmd: str, message: Message, handler:
     :return: indicator whether the command has been executed
     """
 
-    cmd = f"{SYSTEM_COMMAND_SYMBOL}{cmd}"
+    cmd = f"{bot.config.system_command_symbol}{cmd}"
     if not message.content.startswith(cmd):
         return False
 
@@ -320,7 +319,7 @@ async def handle_system(bot: BotBase, message: Message) -> bool:
     :return: indicator whether a command has been executed
     """
 
-    if not message.clean_content.strip().startswith(SYSTEM_COMMAND_SYMBOL):
+    if not message.clean_content.strip().startswith(bot.config.system_command_symbol):
         return False
 
     for command in commands:

@@ -12,6 +12,12 @@ class Configuration(Loadable):
     def __init__(self):
         super().__init__(getenv("CONF_FILE", "./config.json"), version=2)
 
+        self.system_command_symbol = "\\"
+        """The symbol indicator for system commands"""
+
+        self.user_command_symbol = "/"
+        """The symbol indicator for user commands"""
+
         self.nlu_dir = "rasa/models"
         """The directory of the RASA models"""
 

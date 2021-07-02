@@ -38,6 +38,8 @@ class Loadable:
                     for attr in loaded.keys():
                         if not attr.startswith("__") and hasattr(self, attr):
                             setattr(self, attr, loaded[attr])
+                    # Store new properties (and delete old ones)
+                    self._store()
                 else:
                     self._migrate(loaded)
         except Exception:

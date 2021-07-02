@@ -6,7 +6,6 @@ from discord import ChannelType, Message, NotFound, Client, TextChannel, User, D
 
 from cognitive import NLUService
 from configuration import Configuration
-from constants import SYSTEM_COMMAND_SYMBOL, USER_COMMAND_SYMBOL
 from loadable import Loadable
 from scheduler import BotScheduler
 
@@ -281,7 +280,8 @@ async def send_help_message(message: Message, bot: BotBase, timeout: bool = True
     response += "\n\n*Folgende User-Befehle unterstütze ich:*\n\n"
     for (name, sys_command) in sorted(__registered_commands.keys(), key=lambda nXt: nXt[0]):
         if not sys_command:
-            response += f"**{USER_COMMAND_SYMBOL}{name}**: " + __registered_commands[(name, sys_command)] + "\n"
+            response += f"**{bot.config.user_command_symbol}{name}**: " \
+                        + __registered_commands[(name, sys_command)] + "\n"
             for subcommand in __registered_subcommands[name]:
                 response += f"\t\t**{subcommand}**: " + __registered_subcommands[name][subcommand] + "\n"
 
@@ -289,7 +289,9 @@ async def send_help_message(message: Message, bot: BotBase, timeout: bool = True
         response += "\n\n*Folgende System-Befehle unterstütze ich:*\n\n"
         for (name, sys_command) in sorted(__registered_commands.keys(), key=lambda nXt: nXt[0]):
             if sys_command:
-                response += f"**{SYSTEM_COMMAND_SYMBOL}{name}**: " + __registered_commands[(name, sys_command)] + "\n"
+                response += f"**{bot.config.system_command_symbol}{name}**: " \
+                            + __registered_commands[
+                                (name, sys_command)] + "\n"
                 for subcommand in __registered_subcommands[name]:
                     response += f"\t\t**{subcommand}**: " + __registered_subcommands[name][subcommand] + "\n"
 

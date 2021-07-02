@@ -5,7 +5,6 @@ from typing import Union, Callable, Awaitable, Optional
 from discord import Message, VoiceChannel, RawReactionActionEvent
 
 from bot_base import delete, send, BotBase, send_help_message, command_meta
-from constants import USER_COMMAND_SYMBOL
 from .guild import __guild_manager, __show_guild_managers
 from .helpers import __read_number_param
 from .reminder import _init_reminders, __reminder
@@ -122,7 +121,7 @@ async def __handling_template(bot: BotBase, cmd: str, message: Message, func: Ha
     :param func: the handling function that shall be executed if the command shall be executed
     :return: indicator whether the command has been executed
     """
-    cmd = f"{USER_COMMAND_SYMBOL}{cmd}"
+    cmd = f"{bot.config.user_command_symbol}{cmd}"
     if not message.content.startswith(cmd):
         return False
 
@@ -160,7 +159,7 @@ async def handle_user(bot: BotBase, message: Message) -> bool:
     :param message: the message from the user
     :return: indicator whether a command has been executed
     """
-    if not message.clean_content.strip().startswith(USER_COMMAND_SYMBOL):
+    if not message.clean_content.strip().startswith(bot.config.user_command_symbol):
         return False
 
     for command in commands:
