@@ -1,12 +1,11 @@
-import re
 from typing import Dict, Tuple, List, Union, Optional
 
 from discord import Guild, Message, User, RawReactionActionEvent, TextChannel, Role, Member
-from emoji import UNICODE_EMOJI_ENGLISH
 
 from bot_base import command_meta, BotBase, send, delete
 from loadable import Loadable
 from user_commands.helpers import __crop_command
+from utils import find_all_emojis
 from .guild import _guild_state, get_guild
 
 
@@ -159,21 +158,16 @@ async def __role_chooser_add_role(message: Message, bot: BotBase):
         await delete(msg, bot, delay=10)
         return
 
-    # ["add", "emoji", "role"]
-    data = re.sub(r"\s+", " ", __crop_command(message.content)).strip().split(" ")
+    emojis = find_all_emojis(message.content)
 
-    # Strange Bug in Encoding
-    if len(data[1]) == 2:
-        data[1] = data[1][0]
-
-    if len(data) != 3 \
-            or (data[1] not in UNICODE_EMOJI_ENGLISH.keys() and re.match(r"<:[A-Za-z0-9-]+:\d+", data[1]) is None):
-        msg = await send(message.author, message.channel, bot, "Ich konnte den Emoji nicht finden :(")
+    if len(emojis) != 1:
+        msg = await send(message.author, message.channel, bot,
+                         f"Ich konnte nicht genau einen Emoji finden :(\nIch fand insgesamt {len(emojis)} emojis")
         await delete(msg, bot, delay=10)
         return
 
     role = message.role_mentions[0]
-    emoji = data[1]
+    emoji = emojis[0]
 
     emoji_to_role_mappings: Dict[str, str] = await __load_mappings(guild, bot)
 
@@ -198,14 +192,14 @@ async def __role_chooser_del_role(message: Message, bot: BotBase):
     if guild is None:
         return
 
-    # ["del", "emoji"]
-    data = re.sub(r"\s+", " ", __crop_command(message.content)).strip().split(" ")
-    if len(data) != 2 or (len(data[1]) != 1 and re.match(r"<:[A-Za-z0-9-]+:\d+", data[1]) is None):
-        msg = await send(message.author, message.channel, bot, "Ich konnte den Emoji nicht finden :(")
+    emojis = find_all_emojis(message.content)
+    if len(emojis) != 1:
+        msg = await send(message.author, message.channel, bot,
+                         f"Ich konnte nicht genau einen Emoji finden :(\nIch fand insgesamt {len(emojis)} emojis")
         await delete(msg, bot, delay=10)
         return
 
-    emoji = data[1]
+    emoji = emojis[0]
     emoji_to_role_mappings: Dict[str, str] = await __load_mappings(guild, bot)
 
     if emoji not in emoji_to_role_mappings.keys():
