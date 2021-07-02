@@ -99,6 +99,9 @@ async def __unknown(message: Message, bot: BotBase) -> None:
     :param bot: the bot itself
 
     """
+    if not bot.config.is_respond_to_unknown_commands():
+        return
+
     resp = await send(message.author, message.channel, bot, "Unbekannter Befehl")
     await delete(resp, bot, delay=10)
 

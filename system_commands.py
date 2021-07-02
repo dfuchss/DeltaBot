@@ -243,17 +243,20 @@ def __debug(state: SystemCommandCallState, bot_base: BotBase, message: Message):
     raise Exception(f"Impossible system command call state: {state}")
 
 
-def __unknown(state: SystemCommandCallState, bot_base: BotBase, message: Message):
+async def __unknown(state: SystemCommandCallState, bot_base: BotBase, message: Message) -> None:
     """
     Handler for all unknown commands
 
     :param state: the state of the invocation
     :param bot_base: the bot itself
     :param message: the message the bot responds to
-    :return: the awaitable that sends the message
     """
 
-    return send(message.author, message.channel, bot_base, "Unbekannter Befehl")
+    if not bot_base.config.is_respond_to_unknown_commands():
+        return
+
+    resp = await send(message.author, message.channel, bot_base, "Unbekannter Befehl")
+    await delete(resp, bot_base, delay=10)
 
 
 HandlingFunction = Union[  #

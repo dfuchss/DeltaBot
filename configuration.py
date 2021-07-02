@@ -42,6 +42,9 @@ class Configuration(Loadable):
         self._respond_all_indicator = False
         """Indicator whether the bot shall interpret all messages originates from _channels or only iff mentioned"""
 
+        self._respond_to_unknown_commands = False
+        """Indicator whether the bot shall react to unknown commands"""
+
         self._load()
 
     def is_admin(self, user: User) -> bool:
@@ -74,6 +77,13 @@ class Configuration(Loadable):
         :return: the indicator
         """
         return self._respond_all_indicator
+
+    def is_respond_to_unknown_commands(self) -> bool:
+        """
+        Returns indicator whether the bot shall react to unknown commands
+        :return: the indicator
+        """
+        return self._respond_to_unknown_commands
 
     def get_channels(self) -> List[int]:
         return self._channels
