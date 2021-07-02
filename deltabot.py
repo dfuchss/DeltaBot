@@ -169,9 +169,11 @@ class DeltaBot(BotBase):
             return
 
         if await handle_system(self, message):
+            self.log(message)
             return
 
         if await handle_user(self, message):
+            self.log(message)
             return
 
         instance = self.__get_bot_instance(message.author)
