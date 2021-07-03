@@ -185,8 +185,9 @@ async def __role_chooser_add_role(message: Message, bot: BotBase):
     guild_message: Message = await ch.fetch_message(mid)
 
     components: List[Component] = []
-    if isinstance(guild_message.components, ActionRow):
-        components = guild_message.components.components
+    if isinstance(guild_message.components, list) and len(guild_message.components) == 1 and isinstance(
+            guild_message.components[0], ActionRow):
+        components = guild_message.components[0].components
     components.append(Button(emoji=emoji, custom_id=emoji))
 
     await guild_message.edit(content=__mapping_to_message(emoji_to_role_mappings), components=[components])
@@ -264,13 +265,15 @@ async def __handling_button_roles(bot: BotBase, payload: dict, message: Message,
 
     user_role: Role = role[0]
     member: Member = await guild.fetch_member(user.id)
+    member_roles = [role.mention for role in member.roles]
     try:
         if user_role in member.roles:
             await member.remove_roles(user_role)
+            member_roles.remove(user_role.mention)
         else:
             await member.add_roles(user_role)
+            member_roles.append(user_role.mention)
 
-        member_roles = [role.mention for role in member.roles]
         current_roles = list(filter(lambda m: m in member_roles, mappings.values()))
         resp = await send(user, message.channel, bot,
                           f"Deine von mir verwalteten Rollen sind aktuell: " +
