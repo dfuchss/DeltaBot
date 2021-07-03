@@ -2,13 +2,13 @@ from asyncio import iscoroutine
 from random import randint, shuffle
 from typing import Union, Callable, Awaitable, Optional
 
-from discord import Message, VoiceChannel, RawReactionActionEvent
+from discord import Message, VoiceChannel
 
 from bot_base import delete, send, BotBase, send_help_message, command_meta
 from .guild import __guild_manager, __show_guild_managers
 from .helpers import __read_number_param
 from .reminder import _init_reminders, __reminder
-from .roles import __roles, __handle_role_reaction
+from .roles import __roles, __handling_button_roles
 from .summon import __summon, __handling_button_summon, _init_summon_updates
 
 
@@ -176,20 +176,7 @@ async def handle_user_button(bot: BotBase, payload: dict, message: Message, butt
     if await __handling_button_summon(bot, payload, message, button_id, user_id):
         return True
 
-    return False
-
-
-async def handle_user_reaction(bot: BotBase, payload: RawReactionActionEvent, message: Message) -> bool:
-    """
-    Handle reactions of users to responses for user commands.
-
-    :param bot: the bot itself
-    :param payload: the raw payload for the added reaction
-    :param message: the message the user reacted to
-    :return: indicator whether the reaction was handled by the user command handlers
-    """
-
-    if await __handle_role_reaction(bot, payload, message):
+    if await __handling_button_roles(bot, payload, message, button_id, user_id):
         return True
 
     return False

@@ -1,6 +1,7 @@
 from typing import Dict, Tuple, List, Union, Optional
 
-from discord import Guild, Message, User, RawReactionActionEvent, TextChannel, Role, Member
+from discord import Guild, Message, User, TextChannel, Role, Member
+from discord_components import ActionRow, Button, Component
 
 from bot_base import command_meta, BotBase, send, delete
 from loadable import Loadable
@@ -134,7 +135,7 @@ def __mapping_to_message(mappings: Dict[str, str]):
     res = __switcher_text + "\n\n"
     for emoji in mappings.keys():
         res += f"{emoji}→{mappings[emoji]}\n"
-    res += f"\nBitte Reactions zum An- und Abwählen verwenden"
+    res += f"\nBitte Buttons zum An- und Abwählen verwenden"
     return res.strip()
 
 
@@ -183,8 +184,12 @@ async def __role_chooser_add_role(message: Message, bot: BotBase):
     ch: TextChannel = await bot.fetch_channel(cid)
     guild_message: Message = await ch.fetch_message(mid)
 
-    await guild_message.edit(content=__mapping_to_message(emoji_to_role_mappings))
-    await guild_message.add_reaction(emoji)
+    components: List[Component] = []
+    if isinstance(guild_message.components, ActionRow):
+        components = guild_message.components.components
+    components.append(Button(emoji=emoji, custom_id=emoji))
+
+    await guild_message.edit(content=__mapping_to_message(emoji_to_role_mappings), components=[components])
 
 
 async def __role_chooser_del_role(message: Message, bot: BotBase):
@@ -213,8 +218,12 @@ async def __role_chooser_del_role(message: Message, bot: BotBase):
     ch: TextChannel = await bot.fetch_channel(cid)
     guild_message: Message = await ch.fetch_message(mid)
 
-    await guild_message.edit(content=__mapping_to_message(emoji_to_role_mappings))
-    await guild_message.remove_reaction(emoji, bot.user)
+    components: List[Component] = []
+    if isinstance(guild_message.components, ActionRow):
+        components = guild_message.components.components
+
+    components = list(filter(lambda b: b.custom_id == emoji, components))
+    await guild_message.edit(content=__mapping_to_message(emoji_to_role_mappings), components=components)
 
 
 async def __role_chooser_reset(message: Message, bot: BotBase):
@@ -231,19 +240,18 @@ async def __role_chooser_reset(message: Message, bot: BotBase):
     await delete(guild_message, bot)
 
 
-async def __handle_role_reaction(bot: BotBase, payload: RawReactionActionEvent, message: Message) -> bool:
-    if not __roles_state.is_guild_message(payload.guild_id, payload.channel_id, payload.message_id):
+async def __handling_button_roles(bot: BotBase, payload: dict, message: Message, button_id, user_id) -> bool:
+    guild: Guild = get_guild(message)
+
+    if guild is None or not __roles_state.is_guild_message(guild.id, message.channel.id, message.id):
         return False
 
-    user: User = await bot.fetch_user(payload.user_id)
-    await message.remove_reaction(payload.emoji, user)
-
-    guild: Guild = get_guild(message)
+    user: User = await bot.fetch_user(user_id)
 
     mappings: Dict[str, str] = await __load_mappings(guild, bot)
 
     # ID = <@&ID>
-    role_id = mappings.get(str(payload.emoji), None)
+    role_id = mappings.get(str(button_id), None)
     if role_id is None:
         msg = await send(message.author, message.channel, bot, "Emoji wird nicht verwendet")
         await delete(msg, bot, delay=10)
@@ -262,7 +270,11 @@ async def __handle_role_reaction(bot: BotBase, payload: RawReactionActionEvent, 
         else:
             await member.add_roles(user_role)
 
-        resp = await send(user, message.channel, bot, "Änderung der Rollen vorgenommen :)")
+        member_roles = [role.mention for role in member.roles]
+        current_roles = list(filter(lambda m: m in member_roles, mappings.values()))
+        resp = await send(user, message.channel, bot,
+                          f"Deine von mir verwalteten Rollen sind aktuell: " +
+                          f"{', '.join(current_roles) if len(current_roles) != 0 else '*NIX*'}")
         await delete(resp, bot, delay=10)
     except Exception:
         resp = await send(user, message.channel, bot, "Mir fehlen dafür wohl die Berechtigungen :(")
