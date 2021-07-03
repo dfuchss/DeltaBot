@@ -1,11 +1,12 @@
 from typing import Dict, Tuple, List, Union, Optional
 
-from discord import Guild, Message, User, RawReactionActionEvent, TextChannel, Role, Member
+from discord import Guild, Message, User, TextChannel, Role, Member
+from discord_components import ActionRow, Button, Component
 
 from bot_base import command_meta, BotBase, send, delete
 from loadable import Loadable
 from user_commands.helpers import __crop_command
-from utils import find_all_emojis
+from utils import find_all_emojis, load_emoji
 from .guild import _guild_state, get_guild
 
 
@@ -134,7 +135,7 @@ def __mapping_to_message(mappings: Dict[str, str]):
     res = __switcher_text + "\n\n"
     for emoji in mappings.keys():
         res += f"{emoji}→{mappings[emoji]}\n"
-    res += f"\nBitte Reactions zum An- und Abwählen verwenden"
+    res += f"\nBitte Buttons zum An- und Abwählen verwenden"
     return res.strip()
 
 
@@ -183,8 +184,13 @@ async def __role_chooser_add_role(message: Message, bot: BotBase):
     ch: TextChannel = await bot.fetch_channel(cid)
     guild_message: Message = await ch.fetch_message(mid)
 
-    await guild_message.edit(content=__mapping_to_message(emoji_to_role_mappings))
-    await guild_message.add_reaction(emoji)
+    components: List[Component] = []
+    if isinstance(guild_message.components, list) and len(guild_message.components) == 1 and isinstance(
+            guild_message.components[0], ActionRow):
+        components = guild_message.components[0].components
+    components.append(Button(emoji=await load_emoji(emoji, guild), custom_id=emoji))
+
+    await guild_message.edit(content=__mapping_to_message(emoji_to_role_mappings), components=[components])
 
 
 async def __role_chooser_del_role(message: Message, bot: BotBase):
@@ -213,8 +219,12 @@ async def __role_chooser_del_role(message: Message, bot: BotBase):
     ch: TextChannel = await bot.fetch_channel(cid)
     guild_message: Message = await ch.fetch_message(mid)
 
-    await guild_message.edit(content=__mapping_to_message(emoji_to_role_mappings))
-    await guild_message.remove_reaction(emoji, bot.user)
+    components: List[Component] = []
+    if isinstance(guild_message.components, ActionRow):
+        components = guild_message.components.components
+
+    components = list(filter(lambda b: b.custom_id == emoji, components))
+    await guild_message.edit(content=__mapping_to_message(emoji_to_role_mappings), components=components)
 
 
 async def __role_chooser_reset(message: Message, bot: BotBase):
@@ -231,19 +241,18 @@ async def __role_chooser_reset(message: Message, bot: BotBase):
     await delete(guild_message, bot)
 
 
-async def __handle_role_reaction(bot: BotBase, payload: RawReactionActionEvent, message: Message) -> bool:
-    if not __roles_state.is_guild_message(payload.guild_id, payload.channel_id, payload.message_id):
+async def __handling_button_roles(bot: BotBase, payload: dict, message: Message, button_id, user_id) -> bool:
+    guild: Guild = get_guild(message)
+
+    if guild is None or not __roles_state.is_guild_message(guild.id, message.channel.id, message.id):
         return False
 
-    user: User = await bot.fetch_user(payload.user_id)
-    await message.remove_reaction(payload.emoji, user)
-
-    guild: Guild = get_guild(message)
+    user: User = await bot.fetch_user(user_id)
 
     mappings: Dict[str, str] = await __load_mappings(guild, bot)
 
     # ID = <@&ID>
-    role_id = mappings.get(str(payload.emoji), None)
+    role_id = mappings.get(str(button_id), None)
     if role_id is None:
         msg = await send(message.author, message.channel, bot, "Emoji wird nicht verwendet")
         await delete(msg, bot, delay=10)
