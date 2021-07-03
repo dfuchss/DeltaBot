@@ -2,7 +2,7 @@ from os import environ
 from threading import Lock
 from typing import Dict, List, Optional, Union
 
-from discord import Status, User, Activity, ActivityType, TextChannel, Message
+from discord import Status, User, Activity, ActivityType, RawReactionActionEvent, TextChannel, Message
 from discord_components import DiscordComponents, ActionRow, Button, InteractionType, Interaction
 
 from bot_base import BotBase, send_help_message, send, is_direct, delete
@@ -15,7 +15,7 @@ from dialogs.misc_dialogs import Clock
 from dialogs.news_dialog import News
 from dialogs.qna import QnA, QnAAnswer
 from system_commands import handle_system
-from user_commands.commands import handle_user, init_user_commands, handle_user_button
+from user_commands.commands import handle_user, handle_user_reaction, init_user_commands, handle_user_button
 from utils import get_guild
 
 
@@ -245,6 +245,38 @@ class DeltaBot(BotBase):
                 return container
 
         return None
+
+    async def on_raw_reaction_add(self, payload: RawReactionActionEvent) -> None:
+        """
+        Handle a newly added reaction.
+
+        :param payload: the raw data of the event
+        """
+        if not type(payload) is RawReactionActionEvent:
+            return
+
+        pl: RawReactionActionEvent = payload
+        if pl.user_id == self.user.id:
+            return
+
+        channel: TextChannel = await self.fetch_channel(pl.channel_id)
+        message: Message = await channel.fetch_message(pl.message_id)
+
+        if message.author != self.user:
+            return
+
+        if await handle_user_reaction(self, pl, message):
+            return
+
+        # Check whether the reactions a restricted by me ..
+        restricted = any(map(lambda r: r.me, message.reactions))
+        if not restricted:
+            return
+
+        user: User = await self.fetch_user(pl.user_id)
+        for reaction in message.reactions:
+            if not reaction.me:
+                await reaction.remove(user)
 
     def __get_bot_instance(self, author: User) -> BotInstance:
         """
