@@ -4,7 +4,7 @@ from random import choice
 from typing import List, Dict, Optional, Tuple
 
 from discord import Message, User, TextChannel, NotFound
-from discord_components import Button
+from discord_components import Button, ButtonStyle
 
 from bot_base import BotBase, send, delete, is_direct, command_meta
 from constants import DAYS
@@ -54,6 +54,8 @@ __summon_state = SummonState()
 
 __summon_reactions = ['\N{Thumbs Up Sign}', '\N{Black Question Mark Ornament}', '\N{Thumbs Down Sign}']
 """All allowed reactions to a summon message from the bot"""
+__summon_reactions_colors = [ButtonStyle.green, ButtonStyle.grey, ButtonStyle.red]
+"""All reactions colors to a summon message from the bot"""
 
 __cancel_reaction = '\N{Wastebasket}'
 """Reaction to cancel a summon command"""
@@ -214,7 +216,10 @@ async def __summon(message: Message, bot: BotBase) -> None:
     response += f"\n\n{__poll_request}"
 
     channel: TextChannel = message.channel
-    buttons = [Button(emoji=e, custom_id=e) for e in [*__summon_reactions, __cancel_reaction]]
+
+    buttons = [Button(emoji=emoji, custom_id=emoji, style=style) for emoji, style in
+               zip(__summon_reactions, __summon_reactions_colors)]
+    buttons.append(Button(emoji=__cancel_reaction, custom_id=__cancel_reaction))
 
     resp_message: Message = await channel.send(response)
     await resp_message.edit(components=[buttons])
