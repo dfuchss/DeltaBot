@@ -1,9 +1,10 @@
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from discord import Guild, User, Message
 
 from bot_base import command_meta, send, delete, BotBase, NotFound
 from loadable import Loadable
+from utils import get_guild
 
 
 class GuildState(Loadable):
@@ -47,10 +48,6 @@ class GuildState(Loadable):
 
 _guild_state = GuildState()
 """The one and only guild state"""
-
-
-def get_guild(message: Message) -> Optional[Guild]:
-    return None if message is None or not isinstance(message.guild, Guild) else message.guild
 
 
 @command_meta(help_msg="Macht einen User zum Gildenleiter (oder nimmt die Macht)", params=["@Mention"])

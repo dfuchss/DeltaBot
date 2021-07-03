@@ -1,9 +1,10 @@
 import datetime
 import re
 from random import choice
-from typing import List, Dict
+from typing import List, Dict, Optional, Tuple
 
-from discord import Message, User, TextChannel, RawReactionActionEvent, NotFound, PartialEmoji
+from discord import Message, User, TextChannel, NotFound
+from discord_components import Button
 
 from bot_base import BotBase, send, delete, is_direct, command_meta
 from constants import DAYS
@@ -57,7 +58,7 @@ __summon_reactions = ['\N{Thumbs Up Sign}', '\N{Black Question Mark Ornament}', 
 __cancel_reaction = '\N{Wastebasket}'
 """Reaction to cancel a summon command"""
 
-__poll_request = "Bitte Reactions zum Abstimmen benutzen:"
+__poll_request = "Bitte die Buttons zum Abstimmen benutzen:"
 """Message used to indicate a poll for the users"""
 __poll_finished = "*Umfrage beendet .. keine Abstimmung mehr möglich :)*"
 """Message used to indicate a finished poll for the users"""
@@ -104,10 +105,9 @@ async def __terminate_summon_poll(msg: Message):
     Terminates / Finalizes a summon poll
     :param msg: the message associated with the poll
     """
-    await msg.clear_reactions()
     new_content = msg.content
     new_content = new_content.replace(__poll_request, __poll_finished)
-    await msg.edit(content=new_content)
+    await msg.edit(content=new_content, components=[])
 
 
 async def __execute_summon_update(u: dict, bot: BotBase) -> None:
@@ -126,10 +126,6 @@ async def __execute_summon_update(u: dict, bot: BotBase) -> None:
 
     try:
         ch: TextChannel = await bot.fetch_channel(cid)
-    except NotFound:
-        return
-
-    try:
         msg: Message = await ch.fetch_message(mid)
     except NotFound:
         return
@@ -150,6 +146,33 @@ async def __execute_summon_update(u: dict, bot: BotBase) -> None:
     __add_to_scheduler(bot, u["uid"], msg, new_day_offset, new_day_value)
 
 
+async def _find_roles(message: Message, spec: str, user: User, bot: BotBase) -> Optional[Tuple[List[str], str]]:
+    """
+    Find mentioned roles and update specification string for response message
+    :param message: the original message
+    :param spec: the remaining text from the message
+    :param user: the user that responded to the message
+    :param bot: the bot itself
+    :return: None if none role found, (mentioned roles as list, updated spec text) otherwise
+    """
+    if len(message.role_mentions) != 0:
+        # Try to search "@Game" for non mentionable games ..
+        roles: List[str] = [r.mention for r in message.role_mentions]
+        for r in roles:
+            spec = spec.replace(r, "")
+        return roles, spec
+
+    elif re.search(r"@[A-Za-z0-9-_]+", message.content) is not None:
+        roles: List[str] = re.findall(r"@[A-Za-z0-9-_]+", message.content)
+        for r in roles:
+            spec = spec.replace(r, "")
+
+        return list(map(lambda r: f"**{r}**", roles)), spec
+    else:
+        await send(user, message.channel, bot, f"Ich habe keine Gruppen gefunden ..")
+        return None
+
+
 @command_meta(help_msg="Erzeugt eine Umfrage an alle @Mentions für eine optionale Zeit.",
               params=["@Mentions", "[Zeit]"])
 async def __summon(message: Message, bot: BotBase) -> None:
@@ -166,21 +189,11 @@ async def __summon(message: Message, bot: BotBase) -> None:
     user: User = message.author
     spec: str = __crop_command(message.content)
 
-    if len(message.role_mentions) != 0:
-        # Try to search "@Game" for non mentionable games ..
-        roles: List[str] = [r.mention for r in message.role_mentions]
-        for r in roles:
-            spec = spec.replace(r, "")
-
-    elif re.search(r"@[A-Za-z0-9-_]+", message.content) is not None:
-        roles: List[str] = re.findall(r"@[A-Za-z0-9-_]+", message.content)
-        for r in roles:
-            spec = spec.replace(r, "")
-
-        roles = list(map(lambda r: f"**{r}**", roles))
-    else:
-        await send(user, message.channel, bot, f"Ich habe keine Gruppen gefunden ..")
+    found_roles_x_new_spec = await _find_roles(message, spec, user, bot)
+    if found_roles_x_new_spec is None:
         return
+
+    roles, spec = found_roles_x_new_spec
 
     # Calc Day Offset ..
     offset, match_start, match_end, default_val = find_day_by_special_rgx(spec)
@@ -201,11 +214,10 @@ async def __summon(message: Message, bot: BotBase) -> None:
     response += f"\n\n{__poll_request}"
 
     channel: TextChannel = message.channel
-    resp_message: Message = await channel.send(response)
-    for react in __summon_reactions:
-        await resp_message.add_reaction(react)
+    buttons = [Button(emoji=e, custom_id=e) for e in [*__summon_reactions, __cancel_reaction]]
 
-    await resp_message.add_reaction(__cancel_reaction)
+    resp_message: Message = await channel.send(response)
+    await resp_message.edit(components=[buttons])
     await delete(message, bot, True)
 
     __add_to_scheduler(bot, message.author.id, resp_message, offset, day)
@@ -241,7 +253,7 @@ def __read_reactions(reactions: List[str], message_content: str) -> Dict[str, Li
     return result
 
 
-async def __check_cancel(emoji: PartialEmoji, message: Message, update: dict, user: User, bot: BotBase) -> bool:
+async def __check_cancel(emoji: str, message: Message, update: dict, user: User, bot: BotBase) -> bool:
     """
     Check whether a user wants to cancel the /summon poll.
     :param emoji: the emoji that has been used
@@ -251,10 +263,8 @@ async def __check_cancel(emoji: PartialEmoji, message: Message, update: dict, us
     :param bot: the bot itself
     :return: indicator whether someone requested a cancel
     """
-    if emoji.name != __cancel_reaction:
+    if emoji != __cancel_reaction:
         return False
-
-    await message.remove_reaction(emoji, user)
 
     if user.id != update["uid"]:
         resp = await send(user, message.channel, bot, "Du bist nicht der Initiator der /summon Umfrage")
@@ -265,22 +275,21 @@ async def __check_cancel(emoji: PartialEmoji, message: Message, update: dict, us
     return True
 
 
-async def __update_message(user: User, emoji: PartialEmoji, message: Message):
+async def __update_message(user: User, emoji: str, message: Message):
     """
-    Update a message according to the reactions.
+    Update a message according to the user reactions.
     :param user: the user that reacted
     :param emoji: the emoji the user has used
     :param message: the message to change
     """
     text = message.content
-    react = emoji.name
 
     reactions: Dict[str, List[str]] = __read_reactions(__summon_reactions, text)
 
-    if user.mention in reactions[react]:
-        reactions[react].remove(user.mention)
+    if user.mention in reactions[emoji]:
+        reactions[emoji].remove(user.mention)
     else:
-        reactions[react].append(user.mention)
+        reactions[emoji].append(user.mention)
 
     result_msg = text.split("\n")[0].strip()
     summary = ""
@@ -295,19 +304,17 @@ async def __update_message(user: User, emoji: PartialEmoji, message: Message):
         result_msg = f"{result_msg}\n\nAktuell:\n{summary.strip()}"
 
     result_msg += f"\n\n{__poll_request}"
-
-    await message.remove_reaction(emoji, user)
     await message.edit(content=result_msg)
 
 
-async def __handling_reaction_summon(bot: BotBase, payload: RawReactionActionEvent, message: Message) -> bool:
+async def __handling_button_summon(bot: BotBase, payload: dict, message: Message, button_id, user_id) -> bool:
     """
     Handle the reactions to a summon response from the bot
 
     :param bot: the bot itself
-    :param payload: the raw payload of the reaction add operation
+    :param payload: the raw payload of the button click operation
     :param message: the message the user responds to
-    :return: indicator whether the reaction has been handled
+    :return: indicator whether the button has been handled
     """
     if message.author != bot.user:
         return False
@@ -318,18 +325,15 @@ async def __handling_reaction_summon(bot: BotBase, payload: RawReactionActionEve
         return False
 
     update = update[0]
-    user: User = await bot.fetch_user(payload.user_id)
+    user: User = await bot.fetch_user(user_id)
 
-    react = payload.emoji.name
-
-    if await __check_cancel(payload.emoji, message, update, user, bot):
+    if await __check_cancel(button_id, message, update, user, bot):
         return True
 
-    if react not in __summon_reactions:
-        await message.remove_reaction(payload.emoji, user)
+    if button_id not in __summon_reactions:
         return True
 
-    await __update_message(user, payload.emoji, message)
+    await __update_message(user, button_id, message)
     return True
 
 

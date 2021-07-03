@@ -1,8 +1,9 @@
 from os import environ
 from threading import Lock
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 from discord import Status, User, Activity, ActivityType, RawReactionActionEvent, TextChannel, Message
+from discord_components import DiscordComponents, ActionRow, Button, InteractionType, Interaction
 
 from bot_base import BotBase, send_help_message, send, is_direct, delete
 from cognitive import IntentResult, EntityResult
@@ -14,7 +15,8 @@ from dialogs.misc_dialogs import Clock
 from dialogs.news_dialog import News
 from dialogs.qna import QnA, QnAAnswer
 from system_commands import handle_system
-from user_commands.commands import handle_user, handle_user_reaction, init_user_commands
+from user_commands.commands import handle_user, handle_user_reaction, init_user_commands, handle_user_button
+from utils import get_guild
 
 
 class BotInstance:
@@ -147,6 +149,7 @@ class DeltaBot(BotBase):
         self._user_to_instance = {}
         self._user_to_instance_lock = Lock()
         init_user_commands(self)
+        self._discord_components = None
 
     async def on_ready(self) -> None:
         """ Will be executed on ready event. """
@@ -156,6 +159,8 @@ class DeltaBot(BotBase):
 
         print('Starting scheduler ..')
         self.scheduler.start_scheduler()
+
+        self._discord_components = DiscordComponents(self)
 
     async def on_message(self, message: Message) -> None:
         """
@@ -191,6 +196,55 @@ class DeltaBot(BotBase):
         self.log(message)
 
         await instance.handle(message)
+
+    async def on_raw_button_click(self, payload: dict, *args, **kwargs) -> None:
+        cid = payload["message"]["channel_id"]
+        mid = payload["message"]["id"]
+        button_id = payload["data"]["custom_id"]
+        user_id = payload["member"]["user"]["id"]
+
+        if user_id == self.user.id:
+            return
+
+        channel: TextChannel = await self.fetch_channel(cid)
+        message: Message = await channel.fetch_message(mid)
+
+        if message.author != self.user:
+            return
+
+        user = await self.fetch_user(user_id)
+        await self.discord_button_response(button_id, message, user, payload)
+
+        if await handle_user_button(self, payload, message, button_id, user_id):
+            return
+
+    async def discord_button_response(self, button_id: str, message: Message, user: User, payload: dict):
+        button: Button = self.find_component(button_id, message.components)
+        if button is None:
+            return
+
+        interaction = Interaction(bot=self, client=self._discord_components, user=user, guild=get_guild(message),
+                                  channel=message.channel, interacted_component=button, parent_component=button,
+                                  raw_data={"d": payload}, message=message)
+        await interaction.respond(type=InteractionType.DeferredUpdateMessage)
+
+    def find_component(self, button_id, container: Union[List, ActionRow, Button]) -> Optional[Button]:
+        if isinstance(container, list):
+            for elem in container:
+                component = self.find_component(button_id, elem)
+                if component is not None:
+                    return component
+
+        if isinstance(container, ActionRow):
+            component = self.find_component(button_id, container.components)
+            if component is not None:
+                return component
+
+        if isinstance(container, Button):
+            if container.id == button_id:
+                return container
+
+        return None
 
     async def on_raw_reaction_add(self, payload: RawReactionActionEvent) -> None:
         """

@@ -9,7 +9,7 @@ from .guild import __guild_manager, __show_guild_managers
 from .helpers import __read_number_param
 from .reminder import _init_reminders, __reminder
 from .roles import __roles, __handle_role_reaction
-from .summon import __summon, __handling_reaction_summon, _init_summon_updates
+from .summon import __summon, __handling_button_summon, _init_summon_updates
 
 
 @command_meta(help_msg="Zeigt diese Hilfe an :)")
@@ -172,6 +172,13 @@ async def handle_user(bot: BotBase, message: Message) -> bool:
     return True
 
 
+async def handle_user_button(bot: BotBase, payload: dict, message: Message, button_id, user_id) -> bool:
+    if await __handling_button_summon(bot, payload, message, button_id, user_id):
+        return True
+
+    return False
+
+
 async def handle_user_reaction(bot: BotBase, payload: RawReactionActionEvent, message: Message) -> bool:
     """
     Handle reactions of users to responses for user commands.
@@ -181,8 +188,6 @@ async def handle_user_reaction(bot: BotBase, payload: RawReactionActionEvent, me
     :param message: the message the user reacted to
     :return: indicator whether the reaction was handled by the user command handlers
     """
-    if await __handling_reaction_summon(bot, payload, message):
-        return True
 
     if await __handle_role_reaction(bot, payload, message):
         return True

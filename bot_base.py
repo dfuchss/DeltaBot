@@ -158,10 +158,9 @@ async def _execute_deletion(bot: Client, deletion: dict):
     try:
         ch: TextChannel = await bot.fetch_channel(deletion["cid"])
         msg: Message = await ch.fetch_message(deletion["mid"])
+        await msg.delete()
     except NotFound:
-        return
-
-    await msg.delete()
+        pass
 
 
 class BotBase(Client):

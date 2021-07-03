@@ -1,6 +1,7 @@
 import re
-from typing import List
+from typing import List, Optional
 
+from discord import Message, Guild
 from emoji import UNICODE_EMOJI_ENGLISH
 
 
@@ -19,3 +20,7 @@ def find_all_emojis(input_message_content: str, unique=True) -> List[str]:
             emojis.append(char)
 
     return list(set(emojis)) if unique else emojis
+
+
+def get_guild(message: Message) -> Optional[Guild]:
+    return None if message is None or not isinstance(message.guild, Guild) else message.guild
