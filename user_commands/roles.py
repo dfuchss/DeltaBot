@@ -219,11 +219,14 @@ async def __role_chooser_del_role(message: Message, bot: BotBase):
     ch: TextChannel = await bot.fetch_channel(cid)
     guild_message: Message = await ch.fetch_message(mid)
 
-    components: List[Component] = []
-    if isinstance(guild_message.components, ActionRow):
-        components = guild_message.components.components
+    components = []
+    if hasattr(guild_message, "components") and isinstance(guild_message.components, list) and len(
+            guild_message.components) == 1 and isinstance(guild_message.components[0], ActionRow):
+        components = guild_message.components[0].components
 
-    components = list(filter(lambda b: b.custom_id == emoji, components))
+    components = list(filter(lambda b: b.custom_id != emoji, components))
+    if len(components) != 0:
+        components = [components]
     await guild_message.edit(content=__mapping_to_message(emoji_to_role_mappings), components=components)
 
 
