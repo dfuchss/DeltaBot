@@ -2,6 +2,7 @@ import re
 from typing import List, Optional, Union
 
 from discord import Message, Guild, Emoji
+from discord_components import ActionRow, Button
 from emoji import UNICODE_EMOJI_ENGLISH
 
 
@@ -33,3 +34,35 @@ async def load_emoji(emoji: str, guild: Guild) -> Union[str, Emoji]:
     emoji = emoji.split(":")[2]
     emoji = int(emoji[0:len(emoji) - 1])
     return await guild.fetch_emoji(emoji)
+
+
+def get_buttons(container: Union[List, ActionRow, Button]) -> List[Button]:
+    if isinstance(container, list):
+        for elem in container:
+            yield from get_buttons(elem)
+
+    if isinstance(container, ActionRow):
+        yield from get_buttons(container.components)
+
+    if isinstance(container, Button):
+        yield container
+
+
+def create_button_grid(buttons: List[Button], max_in_column: int = 5, try_mod_zero: bool = True) -> List[List[Button]]:
+    if try_mod_zero:
+        num_buttons = len(buttons)
+        for i in reversed(range(3, max_in_column + 1)):
+            if num_buttons % i == 0:
+                max_in_column = i
+                break
+
+    rows = []
+    row = []
+    for b in buttons:
+        if len(row) >= max_in_column:
+            rows.append(row)
+            row = []
+        row.append(b)
+    if len(row) > 0:
+        rows.append(row)
+    return rows

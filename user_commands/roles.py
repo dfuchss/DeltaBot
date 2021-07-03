@@ -1,12 +1,12 @@
 from typing import Dict, Tuple, List, Union, Optional
 
 from discord import Guild, Message, User, TextChannel, Role, Member
-from discord_components import ActionRow, Button, Component
+from discord_components import Button
 
 from bot_base import command_meta, BotBase, send, delete
 from loadable import Loadable
 from user_commands.helpers import __crop_command
-from utils import find_all_emojis, load_emoji
+from utils import find_all_emojis, load_emoji, get_buttons, create_button_grid
 from .guild import _guild_state, get_guild
 
 
@@ -184,13 +184,11 @@ async def __role_chooser_add_role(message: Message, bot: BotBase):
     ch: TextChannel = await bot.fetch_channel(cid)
     guild_message: Message = await ch.fetch_message(mid)
 
-    components: List[Component] = []
-    if isinstance(guild_message.components, list) and len(guild_message.components) == 1 and isinstance(
-            guild_message.components[0], ActionRow):
-        components = guild_message.components[0].components
+    components = list(get_buttons(guild_message.components)) if hasattr(guild_message, "components") else []
     components.append(Button(emoji=await load_emoji(emoji, guild), custom_id=emoji))
 
-    await guild_message.edit(content=__mapping_to_message(emoji_to_role_mappings), components=[components])
+    await guild_message.edit(content=__mapping_to_message(emoji_to_role_mappings),
+                             components=create_button_grid(components))
 
 
 async def __role_chooser_del_role(message: Message, bot: BotBase):
@@ -219,15 +217,10 @@ async def __role_chooser_del_role(message: Message, bot: BotBase):
     ch: TextChannel = await bot.fetch_channel(cid)
     guild_message: Message = await ch.fetch_message(mid)
 
-    components = []
-    if hasattr(guild_message, "components") and isinstance(guild_message.components, list) and len(
-            guild_message.components) == 1 and isinstance(guild_message.components[0], ActionRow):
-        components = guild_message.components[0].components
-
+    components = get_buttons(guild_message.components) if hasattr(guild_message, "components") else []
     components = list(filter(lambda b: b.custom_id != emoji, components))
-    if len(components) != 0:
-        components = [components]
-    await guild_message.edit(content=__mapping_to_message(emoji_to_role_mappings), components=components)
+    await guild_message.edit(content=__mapping_to_message(emoji_to_role_mappings),
+                             components=create_button_grid(components))
 
 
 async def __role_chooser_reset(message: Message, bot: BotBase):

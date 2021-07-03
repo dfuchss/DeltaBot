@@ -1,9 +1,9 @@
 from os import environ
 from threading import Lock
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional
 
 from discord import Status, User, Activity, ActivityType, TextChannel, Message
-from discord_components import DiscordComponents, ActionRow, Button, InteractionType, Interaction
+from discord_components import DiscordComponents, Button, InteractionType, Interaction
 
 from bot_base import BotBase, send_help_message, send, is_direct, delete
 from cognitive import IntentResult, EntityResult
@@ -16,7 +16,7 @@ from dialogs.news_dialog import News
 from dialogs.qna import QnA, QnAAnswer
 from system_commands import handle_system
 from user_commands.commands import handle_user, init_user_commands, handle_user_button
-from utils import get_guild
+from utils import get_guild, get_buttons
 
 
 class BotInstance:
@@ -219,7 +219,7 @@ class DeltaBot(BotBase):
             return
 
     async def discord_button_response(self, button_id: str, message: Message, user: User, payload: dict):
-        button: Button = self.find_component(button_id, message.components)
+        button: Button = next((e for e in get_buttons(message.components) if e.id == button_id), None)
         if button is None:
             return
 
@@ -227,24 +227,6 @@ class DeltaBot(BotBase):
                                   channel=message.channel, interacted_component=button, parent_component=button,
                                   raw_data={"d": payload}, message=message)
         await interaction.respond(type=InteractionType.DeferredUpdateMessage)
-
-    def find_component(self, button_id, container: Union[List, ActionRow, Button]) -> Optional[Button]:
-        if isinstance(container, list):
-            for elem in container:
-                component = self.find_component(button_id, elem)
-                if component is not None:
-                    return component
-
-        if isinstance(container, ActionRow):
-            component = self.find_component(button_id, container.components)
-            if component is not None:
-                return component
-
-        if isinstance(container, Button):
-            if container.id == button_id:
-                return container
-
-        return None
 
     def __get_bot_instance(self, author: User) -> BotInstance:
         """
