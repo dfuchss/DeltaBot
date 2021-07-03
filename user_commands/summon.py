@@ -57,6 +57,8 @@ __summon_reactions = ['\N{Thumbs Up Sign}', '\N{Black Question Mark Ornament}', 
 __summon_reactions_colors = [ButtonStyle.green, ButtonStyle.grey, ButtonStyle.red]
 """All reactions colors to a summon message from the bot"""
 
+__finish_reaction = '\N{Chequered Flag}'
+"""Reaction to finish a summon command"""
 __cancel_reaction = '\N{Wastebasket}'
 """Reaction to cancel a summon command"""
 
@@ -219,6 +221,8 @@ async def __summon(message: Message, bot: BotBase) -> None:
 
     buttons = [Button(emoji=emoji, custom_id=emoji, style=style) for emoji, style in
                zip(__summon_reactions, __summon_reactions_colors)]
+
+    buttons.append(Button(emoji=__finish_reaction, custom_id=__finish_reaction))
     buttons.append(Button(emoji=__cancel_reaction, custom_id=__cancel_reaction))
 
     resp_message: Message = await channel.send(response)
@@ -272,11 +276,33 @@ async def __check_cancel(emoji: str, message: Message, update: dict, user: User,
         return False
 
     if user.id != update["uid"]:
-        resp = await send(user, message.channel, bot, "Du bist nicht der Initiator der /summon Umfrage")
+        resp = await send(user, message.channel, bot, "Nur der Initiator kann die Umfrage löschen")
         await delete(resp, bot, delay=10)
     else:
         __summon_state.remove_update(update)
         await message.delete()
+    return True
+
+
+async def __check_finish(emoji: str, message: Message, update: dict, user: User, bot: BotBase) -> bool:
+    """
+    Check whether a user wants to finish the /summon poll.
+    :param emoji: the emoji that has been used
+    :param message: the message a user reacts
+    :param update: the associated update object
+    :param user: the user
+    :param bot: the bot itself
+    :return: indicator whether someone requested a cancel
+    """
+    if emoji != __finish_reaction:
+        return False
+
+    if user.id != update["uid"]:
+        resp = await send(user, message.channel, bot, "Nur der Initiator kann die Umfrage beenden")
+        await delete(resp, bot, delay=10)
+    else:
+        __summon_state.remove_update(update)
+        await __terminate_summon_poll(message)
     return True
 
 
@@ -333,6 +359,9 @@ async def __handling_button_summon(bot: BotBase, payload: dict, message: Message
     user: User = await bot.fetch_user(user_id)
 
     if await __check_cancel(button_id, message, update, user, bot):
+        return True
+
+    if await __check_finish(button_id, message, update, user, bot):
         return True
 
     if button_id not in __summon_reactions:
