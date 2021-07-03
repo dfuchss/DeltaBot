@@ -270,7 +270,9 @@ async def __handling_button_roles(bot: BotBase, payload: dict, message: Message,
             await member.add_roles(user_role)
             member_roles.append(user_role.mention)
 
-        current_roles = list(filter(lambda m: m in member_roles, mappings.values()))
+        current_roles = list(map(lambda e_x_m: e_x_m[0],
+                                 filter(lambda emoji_x_mention: emoji_x_mention[1] in member_roles, mappings.items())))
+
         resp = await send(user, message.channel, bot,
                           f"Deine von mir verwalteten Rollen sind aktuell: " +
                           f"{', '.join(current_roles) if len(current_roles) != 0 else '*NIX*'}")
