@@ -200,12 +200,12 @@ class BotBase(Client):
             self.scheduler.queue(_execute_deletion(self, deletion), deletion["ts"])
 
 
-async def send(respondee: User, channel: Union[DMChannel, TextChannel], bot: BotBase, message: Any,
+async def send(recipient: User, channel: Union[DMChannel, TextChannel], bot: BotBase, message: Any,
                mention: bool = True) -> Message:
     """
     Send a message to a channel.
 
-    :param respondee: the user which has started the conversation
+    :param recipient: the user which has started the conversation
     :param channel: the target channel for sending the message
     :param bot: the bot itself
     :param message: the message to send
@@ -214,7 +214,7 @@ async def send(respondee: User, channel: Union[DMChannel, TextChannel], bot: Bot
     """
 
     if mention:
-        msg = await channel.send(f"{respondee.mention} {message}")
+        msg = await channel.send(f"{recipient.mention} {message}")
     else:
         msg = await channel.send(message)
     return msg
@@ -257,6 +257,18 @@ def is_direct(message: Message) -> bool:
     return message.channel.type == ChannelType.private
 
 
+def _gen_message_for_commands(command_type: str, is_system_command: bool, bot: BotBase) -> str:
+    symbol = bot.config.system_command_symbol if is_system_command else bot.config.user_command_symbol
+    response = f"*Folgende {command_type} unterstütze ich:*\n\n"
+    for (name, sys_command) in sorted(__registered_commands.keys(), key=lambda name_x_type: name_x_type[0]):
+        if sys_command == is_system_command:
+            response += f"**{symbol}{name}**\n" + __registered_commands[(name, sys_command)] + "\n"
+            for subcommand in __registered_subcommands[name]:
+                response += f"→ **{subcommand}**: " + __registered_subcommands[name][subcommand] + "\n"
+            response += "\n"
+    return response
+
+
 async def send_help_message(message: Message, bot: BotBase, timeout: bool = True) -> None:
     """
     Send a help message to the author of message (and to the channel of message)
@@ -276,25 +288,11 @@ async def send_help_message(message: Message, bot: BotBase, timeout: bool = True
         response += f"* {task}\n"
 
     # User Commands:
-    response += "\n\n*Folgende User-Befehle unterstütze ich:*\n\n"
-    for (name, sys_command) in sorted(__registered_commands.keys(), key=lambda nXt: nXt[0]):
-        if not sys_command:
-            response += f"**{bot.config.user_command_symbol}{name}**\n" \
-                        + __registered_commands[(name, sys_command)] + "\n"
-            for subcommand in __registered_subcommands[name]:
-                response += f"→ **{subcommand}**: " + __registered_subcommands[name][subcommand] + "\n"
-            response += "\n"
+    response += f"\n\n{_gen_message_for_commands('Befehle', False, bot)}"
 
+    # System Commands:
     if timeout and bot.config.is_admin(message.author):
-        response += "\n*Folgende System-Befehle unterstütze ich:*\n\n"
-        for (name, sys_command) in sorted(__registered_commands.keys(), key=lambda nXt: nXt[0]):
-            if sys_command:
-                response += f"**{bot.config.system_command_symbol}{name}**\n" \
-                            + __registered_commands[
-                                (name, sys_command)] + "\n"
-                for subcommand in __registered_subcommands[name]:
-                    response += f"→ **{subcommand}**: " + __registered_subcommands[name][subcommand] + "\n"
-                response += "\n"
+        response += f"\n{_gen_message_for_commands('System-Befehle', True, bot)}"
 
     ch: TextChannel = message.channel
     embed = Embed(title=f"{bot.user.display_name} Hilfe", description=response.strip(), color=0x0D0A33)

@@ -16,6 +16,7 @@ class NewsProvider:
 
     def __init__(self, name, url):
         """Create a new news provider
+
         :param name the name of the provider
         :param url the url to the rss feed of the provider
         """

@@ -7,9 +7,9 @@ from discord import Message, User, TextChannel, NotFound
 from discord_components import Button, ButtonStyle
 
 from bot_base import BotBase, send, delete, is_direct, command_meta
-from constants import DAYS
 from loadable import Loadable
-from .helpers import __crop_command, find_day_by_special_rgx
+from utils import DAYS, find_day_by_special_rgx
+from .helpers import __crop_command
 
 
 class SummonState(Loadable):
@@ -107,6 +107,7 @@ def __add_to_scheduler(bot: BotBase, user_id: int, resp_message: Message, offset
 async def __terminate_summon_poll(msg: Message):
     """
     Terminates / Finalizes a summon poll
+
     :param msg: the message associated with the poll
     """
     new_content = msg.content
@@ -153,6 +154,7 @@ async def __execute_summon_update(u: dict, bot: BotBase) -> None:
 async def _find_roles(message: Message, spec: str, user: User, bot: BotBase) -> Optional[Tuple[List[str], str]]:
     """
     Find mentioned roles and update specification string for response message
+
     :param message: the original message
     :param spec: the remaining text from the message
     :param user: the user that responded to the message
@@ -232,7 +234,7 @@ async def __summon(message: Message, bot: BotBase) -> None:
     __add_to_scheduler(bot, message.author.id, resp_message, offset, day)
 
 
-def __read_reactions(reactions: List[str], message_content: str) -> Dict[str, List[str]]:
+def __read_text_reactions(reactions: List[str], message_content: str) -> Dict[str, List[str]]:
     """
     Read reactions from a message (reactions are stored in the message text)
 
@@ -265,6 +267,7 @@ def __read_reactions(reactions: List[str], message_content: str) -> Dict[str, Li
 async def __check_cancel(emoji: str, message: Message, update: dict, user: User, bot: BotBase) -> bool:
     """
     Check whether a user wants to cancel the /summon poll.
+
     :param emoji: the emoji that has been used
     :param message: the message a user reacts
     :param update: the associated update object
@@ -287,6 +290,7 @@ async def __check_cancel(emoji: str, message: Message, update: dict, user: User,
 async def __check_finish(emoji: str, message: Message, update: dict, user: User, bot: BotBase) -> bool:
     """
     Check whether a user wants to finish the /summon poll.
+
     :param emoji: the emoji that has been used
     :param message: the message a user reacts
     :param update: the associated update object
@@ -309,13 +313,14 @@ async def __check_finish(emoji: str, message: Message, update: dict, user: User,
 async def __update_message(user: User, emoji: str, message: Message):
     """
     Update a message according to the user reactions.
+
     :param user: the user that reacted
     :param emoji: the emoji the user has used
     :param message: the message to change
     """
     text = message.content
 
-    reactions: Dict[str, List[str]] = __read_reactions(__summon_reactions, text)
+    reactions: Dict[str, List[str]] = __read_text_reactions(__summon_reactions, text)
 
     if user.mention in reactions[emoji]:
         reactions[emoji].remove(user.mention)
@@ -338,14 +343,16 @@ async def __update_message(user: User, emoji: str, message: Message):
     await message.edit(content=result_msg)
 
 
-async def __handling_button_summon(bot: BotBase, payload: dict, message: Message, button_id, user_id) -> bool:
+async def __handling_button_summon(bot: BotBase, payload: dict, message: Message, button_id: str, user_id: int) -> bool:
     """
-    Handle the reactions to a summon response from the bot
+    Handle pressed buttons for summon user commands.
 
     :param bot: the bot itself
-    :param payload: the raw payload of the button click operation
-    :param message: the message the user responds to
-    :return: indicator whether the button has been handled
+    :param payload: the raw payload from discord
+    :param message: the message which belongs to the button
+    :param button_id: the id of the pressed button
+    :param user_id: the id of the user who pressed the button
+    :return: indicator whether the button was related to this command
     """
     if message.author != bot.user:
         return False

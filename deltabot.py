@@ -197,7 +197,12 @@ class DeltaBot(BotBase):
 
         await instance.handle(message)
 
-    async def on_raw_button_click(self, payload: dict, *args, **kwargs) -> None:
+    async def on_raw_button_click(self, payload: dict) -> None:
+        """
+        Handle a button click to a message.
+
+        :param payload: the raw payload from discord
+        """
         cid = payload["message"]["channel_id"]
         mid = payload["message"]["id"]
         button_id = payload["data"]["custom_id"]
@@ -213,12 +218,20 @@ class DeltaBot(BotBase):
             return
 
         user = await self.fetch_user(user_id)
-        await self.discord_button_response(button_id, message, user, payload)
+        await self._discord_button_response(button_id, message, user, payload)
 
         if await handle_user_button(self, payload, message, button_id, user_id):
             return
 
-    async def discord_button_response(self, button_id: str, message: Message, user: User, payload: dict):
+    async def _discord_button_response(self, button_id: str, message: Message, user: User, payload: dict) -> None:
+        """
+        Generate a response that discord will not show an error to the user due to a timeout.
+
+        :param button_id: the id of the button that has been pressed
+        :param message: the associated message
+        :param user: the user that has pressed the button
+        :param payload: the raw payload of the event
+        """
         button: Button = next((e for e in get_buttons(message.components) if e.id == button_id), None)
         if button is None:
             return

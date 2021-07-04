@@ -4,7 +4,7 @@ from discord import Message, TextChannel
 
 from bot_base import BotBase, send, is_direct, delete, command_meta
 from loadable import Loadable
-from .helpers import find_time
+from utils import find_time
 
 
 class ReminderState(Loadable):
@@ -109,6 +109,7 @@ async def __reminder(message: Message, bot: BotBase) -> None:
 def _init_reminders(bot: BotBase) -> None:
     """
     Initialize the scheduler for reminders.
+
     :param bot: the bot itself
     """
     for r in __reminder_state.reminders():

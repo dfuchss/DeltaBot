@@ -237,7 +237,17 @@ async def __role_chooser_reset(message: Message, bot: BotBase):
     await delete(guild_message, bot)
 
 
-async def __handling_button_roles(bot: BotBase, payload: dict, message: Message, button_id, user_id) -> bool:
+async def __handling_button_roles(bot: BotBase, payload: dict, message: Message, button_id: str, user_id: int) -> bool:
+    """
+    Handle pressed buttons for roles user commands.
+
+    :param bot: the bot itself
+    :param payload: the raw payload from discord
+    :param message: the message which belongs to the button
+    :param button_id: the id of the pressed button
+    :param user_id: the id of the user who pressed the button
+    :return: indicator whether the button was related to this command
+    """
     guild: Guild = get_guild(message)
 
     if guild is None or not __roles_state.is_guild_message(guild.id, message.channel.id, message.id):

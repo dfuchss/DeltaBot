@@ -24,6 +24,7 @@ async def __help(message: Message, bot: BotBase) -> None:
 
 
 async def __help_persist(message: Message, bot: BotBase) -> None:
+    # Not documented as this method shall be hidden to the user
     """
     Send a help persistent message to the user
 
@@ -172,7 +173,17 @@ async def handle_user(bot: BotBase, message: Message) -> bool:
     return True
 
 
-async def handle_user_button(bot: BotBase, payload: dict, message: Message, button_id, user_id) -> bool:
+async def handle_user_button(bot: BotBase, payload: dict, message: Message, button_id: str, user_id: int) -> bool:
+    """
+    Handle pressed buttons for user commands.
+
+    :param bot: the bot itself
+    :param payload: the raw payload from discord
+    :param message: the message which belongs to the button
+    :param button_id: the id of the pressed button
+    :param user_id: the id of the user who pressed the button
+    :return: indicator whether the button was related to a user command
+    """
     if await __handling_button_summon(bot, payload, message, button_id, user_id):
         return True
 
