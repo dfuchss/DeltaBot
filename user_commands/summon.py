@@ -59,7 +59,7 @@ __summon_reactions_colors = [ButtonStyle.green, ButtonStyle.grey, ButtonStyle.re
 
 __finish_reaction = '\N{Chequered Flag}'
 """Reaction to finish a summon command"""
-__cancel_reaction = '\N{Wastebasket}'
+__cancel_reaction = '\N{Put Litter in Its Place Symbol}'
 """Reaction to cancel a summon command"""
 
 __poll_request = "Bitte die Buttons zum Abstimmen benutzen:"
