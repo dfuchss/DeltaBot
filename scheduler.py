@@ -1,4 +1,5 @@
 import asyncio
+import traceback
 from asyncio import iscoroutine
 from threading import Thread, RLock
 from time import sleep, time
@@ -77,8 +78,10 @@ class BotScheduler:
                     continue
                 self.__await(func) if iscoroutine(func) else func()
                 completed.append((func, ts))
-        except Exception as e:
-            print(e)
+        except Exception:
+            traceback.print_exc()
+            # Skip failed execution
+            completed.append(copy)
 
         with self._lock:
             for completed_task in completed:
