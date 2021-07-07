@@ -72,16 +72,16 @@ class BotScheduler:
         current_time = time()
         completed = []
 
-        try:
-            for (func, ts) in copy:
-                if ts is not None and current_time < ts:
-                    continue
+        for (func, ts) in copy:
+            if ts is not None and current_time < ts:
+                continue
+            try:
                 self.__await(func) if iscoroutine(func) else func()
-                completed.append((func, ts))
-        except Exception:
-            traceback.print_exc()
-            # Skip failed execution
-            completed.append(copy)
+            except Exception:
+                traceback.print_exc()
+                
+            # If executed or failed it's completed
+            completed.append((func, ts))
 
         with self._lock:
             for completed_task in completed:
