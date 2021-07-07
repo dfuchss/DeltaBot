@@ -47,46 +47,6 @@ class RolesState(Loadable):
 __roles_state = RolesState()
 """The one and only roles state"""
 
-
-@command_meta(
-    help_msg="Erzeugt eine Management-Nachricht für Rollen.",
-    params=["[...]"],
-    subcommands={
-        "init": "Erzeugt eine neue Management-Nachricht",
-        "add Emoji @Role": "Ordnet einer Rolle einen Emoji zu",
-        "del Emoji": "Löscht ein Zuordnung anhand des Emoji",
-        "reset": "Löscht die Management-Nachricht"
-    })
-async def __roles(message: Message, bot: BotBase) -> None:
-    split_command = __crop_command(message.content).split(" ")
-
-    if not bot.config.is_admin(message.author) and not _guild_state.is_guild_manager(message.guild, message.author):
-        resp = await send(message.author, message.channel, bot, "Du bist weder Admin noch Gilden-Manager")
-        await delete(resp, bot, delay=10)
-        return
-
-    if len(split_command) == 0 or split_command[0] not in ["init", "add", "del", "reset"]:
-        resp = await send(message.author, message.channel, bot, "Du musst einen der Sub-Befehle verwenden:\n"
-                          + "* init: erzeugt eine die Abstimmungsnachricht für die Rollen\n"
-                          + "* add Emoji @Mention: fügt einen Emoji für die entsprechende Rolle hinzu\n"
-                          + "* del Emoji: löscht die Rollenzuordnung für ein Emoji\n"
-                          + "* reset: löscht die Abstimmungsnachricht"
-                          )
-        await delete(resp, bot, delay=20)
-        return
-
-    switcher = {
-        "init": __role_chooser_init,
-        "add": __role_chooser_add_role,
-        "del": __role_chooser_del_role,
-        "reset": __role_chooser_reset
-    }
-
-    sub_command = switcher.get(split_command[0])
-    await sub_command(message, bot)
-    await delete(message, bot)
-
-
 __switcher_text = "**Wähle Deine Rollen auf diesem Server :)**"
 __no_roles = "*Aktuell können keine Rollen gewählt werden .. warte auf den Gildenleiter :)*"
 
@@ -235,6 +195,45 @@ async def __role_chooser_reset(message: Message, bot: BotBase):
 
     __roles_state.remove_role_message(guild)
     await delete(guild_message, bot)
+
+
+@command_meta(
+    help_msg="Erzeugt eine Management-Nachricht für Rollen.",
+    params=["[...]"],
+    subcommands={
+        "init": "Erzeugt eine neue Management-Nachricht",
+        "add Emoji @Role": "Ordnet einer Rolle einen Emoji zu",
+        "del Emoji": "Löscht ein Zuordnung anhand des Emoji",
+        "reset": "Löscht die Management-Nachricht"
+    })
+async def __roles(message: Message, bot: BotBase) -> None:
+    split_command = __crop_command(message.content).split(" ")
+
+    if not bot.config.is_admin(message.author) and not _guild_state.is_guild_manager(message.guild, message.author):
+        resp = await send(message.author, message.channel, bot, "Du bist weder Admin noch Gilden-Manager")
+        await delete(resp, bot, delay=10)
+        return
+
+    if len(split_command) == 0 or split_command[0] not in ["init", "add", "del", "reset"]:
+        resp = await send(message.author, message.channel, bot, "Du musst einen der Sub-Befehle verwenden:\n"
+                          + "* init: erzeugt eine die Abstimmungsnachricht für die Rollen\n"
+                          + "* add Emoji @Mention: fügt einen Emoji für die entsprechende Rolle hinzu\n"
+                          + "* del Emoji: löscht die Rollenzuordnung für ein Emoji\n"
+                          + "* reset: löscht die Abstimmungsnachricht"
+                          )
+        await delete(resp, bot, delay=20)
+        return
+
+    switcher = {
+        "init": __role_chooser_init,
+        "add": __role_chooser_add_role,
+        "del": __role_chooser_del_role,
+        "reset": __role_chooser_reset
+    }
+
+    sub_command = switcher.get(split_command[0])
+    await sub_command(message, bot)
+    await delete(message, bot)
 
 
 async def __handling_button_roles(bot: BotBase, payload: dict, message: Message, button_id: str, user_id: int) -> bool:

@@ -1,111 +1,15 @@
 from asyncio import iscoroutine
-from random import randint, shuffle
-from typing import Union, Callable, Awaitable, Optional
+from typing import Union, Callable, Awaitable
 
-from discord import Message, VoiceChannel
+from discord import Message
 
-from bot_base import delete, send, BotBase, send_help_message, command_meta
+from bot_base import BotBase, send
+from bot_base import delete
 from .guild import __guild_manager, __show_guild_managers
-from .helpers import __read_number_param
+from .misc import __help, __help_persist, __roll, __teams
 from .reminder import _init_reminders, __reminder
 from .roles import __roles, __handling_button_roles
 from .summon import __summon, __handling_button_summon, _init_summon_updates
-
-
-@command_meta(help_msg="Zeigt diese Hilfe an :)")
-async def __help(message: Message, bot: BotBase) -> None:
-    """
-    Send a help message to the user
-
-    :param message: the message from the user
-    :param bot: the bot itself
-    """
-    await send_help_message(message, bot)
-
-
-async def __help_persist(message: Message, bot: BotBase) -> None:
-    # Not documented as this method shall be hidden to the user
-    """
-    Send a help persistent message to the user
-
-    :param message: the message from the user
-    :param bot: the bot itself
-    """
-    await send_help_message(message, bot, timeout=False)
-
-
-@command_meta(help_msg="Würfelt eine Zahl zwischen 1 und N (wenn N fehlt, verwende ich 6)", params=["N"])
-async def __roll(message, bot) -> None:
-    """
-    Roll a dice. The method tries to parse an int argument of the command. If no int found the dice defaults to 6 sides
-
-    :param message: the message from the user
-    :param bot: the bot itself
-    """
-    text: str = message.content
-    dice = __read_number_param(text, 6)
-    rnd = randint(1, dice)
-    await send(message.author, message.channel, bot, f"{rnd}")
-
-
-@command_meta(
-    help_msg="Ordnet die Leute in Deinem Voice Channel in N Teams (wenn N fehlt, verwende ich als Teamanzahl 2)",
-    params=["N"])
-async def __teams(message: Message, bot: BotBase) -> None:
-    """
-    Create teams based on your voice channel's members. The method tries to parse an int argument of the command.
-    If no int found the dice defaults to 2 teams
-
-    :param message: the message from the user
-    :param bot: the bot itself
-    """
-    text: str = message.content
-    num = __read_number_param(text, 2)
-
-    channel: Optional[VoiceChannel] = None
-    try:
-        channel = message.author.voice.channel
-    except Exception:
-        pass
-
-    if channel is None:
-        await send(message.author, message.channel, bot, "Ich finde keinen Voice Channel")
-        return
-
-    members = [await bot.fetch_user(member) for member in channel.voice_states.keys()]
-    members = list(map(lambda n: n.mention, filter(lambda m: m is not None, members)))
-    shuffle(members)
-
-    groups = {}
-    for i in range(0, num):
-        groups[i] = []
-
-    i = 0
-    for e in members:
-        groups[i].append(e)
-        i = (i + 1) % num
-
-    teams = ""
-    for t in groups.keys():
-        teams = teams + f"{t + 1}: {groups[t]}\n"
-
-    await send(message.author, message.channel, bot, f"Zuordnung:\n{teams.strip()}", mention=False)
-
-
-async def __unknown(message: Message, bot: BotBase) -> None:
-    """
-    The default handler for unknown commands.
-
-    :param message: the message from the user
-    :param bot: the bot itself
-
-    """
-    if not bot.config.is_respond_to_unknown_commands():
-        return
-
-    resp = await send(message.author, message.channel, bot, "Unbekannter Befehl")
-    await delete(resp, bot, delay=10)
-
 
 HandlingFunction = Union[  #
     Callable[[Message, BotBase], None],  #
@@ -133,6 +37,21 @@ async def __handling_template(bot: BotBase, cmd: str, message: Message, func: Ha
 
     await delete(message, bot)
     return True
+
+
+async def __unknown(message: Message, bot: BotBase) -> None:
+    """
+    The default handler for unknown commands.
+
+    :param message: the message from the user
+    :param bot: the bot itself
+
+    """
+    if not bot.config.is_respond_to_unknown_commands():
+        return
+
+    resp = await send(message.author, message.channel, bot, "Unbekannter Befehl")
+    await delete(resp, bot, delay=10)
 
 
 commands = [__help, __help_persist, __roll, __teams, __summon, __reminder, __roles, __guild_manager,

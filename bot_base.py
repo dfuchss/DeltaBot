@@ -192,6 +192,7 @@ class BotBase(Client):
 
     async def shutdown(self) -> None:
         """Shutdown the bot"""
+        self.scheduler.stop_scheduler()
         await self.close()
 
     def _init_deletions(self):
@@ -234,7 +235,7 @@ async def delete(message: Message, bot: BotBase, delay: float = None) -> None:
     if delay is None:
         try:
             await message.delete()
-        except NotFound:
+        except (NotFound, RuntimeError):
             pass
     else:
         # Schedule deletion

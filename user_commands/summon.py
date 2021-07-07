@@ -179,61 +179,6 @@ async def _find_roles(message: Message, spec: str, user: User, bot: BotBase) -> 
         return None
 
 
-@command_meta(help_msg="Erzeugt eine Umfrage an alle @Mentions für eine optionale Zeit.",
-              params=["@Mentions", "[Zeit]"])
-async def __summon(message: Message, bot: BotBase) -> None:
-    """
-    Create a poll to gather mentioned groups a a certain time.
-
-    :param message: the message from the user
-    :param bot: the bot itself
-    """
-    if is_direct(message):
-        await send(message.author, message.channel, bot, "/summon funktioniert nicht in DM channels")
-        return
-
-    user: User = message.author
-    spec: str = __crop_command(message.content)
-
-    found_roles_x_new_spec = await _find_roles(message, spec, user, bot)
-    if found_roles_x_new_spec is None:
-        return
-
-    roles, spec = found_roles_x_new_spec
-
-    # Calc Day Offset ..
-    offset, match_start, match_end, default_val = find_day_by_special_rgx(spec)
-    if offset is None:
-        day = "**heute**"
-        offset = 0
-    else:
-        spec = spec[:match_start] + spec[(match_end + 1):]
-        day = f"**{default_val}**"
-
-    spec = re.sub(r"\s+", spec, " ").strip()
-    response = choice(__summon_msg)
-    response = response.replace("###USER###", user.mention)
-    response = response.replace("###MENTION###", " ".join(roles))
-    response = response.replace("###TIME###", 'zur gewohnten Zeit' if len(spec) == 0 else spec)
-    response = response.replace("###DAY###", day)
-
-    response += f"\n\n{__poll_request}"
-
-    channel: TextChannel = message.channel
-
-    buttons = [Button(emoji=emoji, custom_id=emoji, style=style) for emoji, style in
-               zip(__summon_reactions, __summon_reactions_colors)]
-
-    buttons.append(Button(emoji=__finish_reaction, custom_id=__finish_reaction))
-    buttons.append(Button(emoji=__cancel_reaction, custom_id=__cancel_reaction))
-
-    resp_message: Message = await channel.send(response)
-    await resp_message.edit(components=[buttons])
-    await delete(message, bot, True)
-
-    __add_to_scheduler(bot, message.author.id, resp_message, offset, day)
-
-
 def __read_text_reactions(reactions: List[str], message_content: str) -> Dict[str, List[str]]:
     """
     Read reactions from a message (reactions are stored in the message text)
@@ -341,6 +286,61 @@ async def __update_message(user: User, emoji: str, message: Message):
 
     result_msg += f"\n\n{__poll_request}"
     await message.edit(content=result_msg)
+
+
+@command_meta(help_msg="Erzeugt eine Umfrage an alle @Mentions für eine optionale Zeit.",
+              params=["@Mentions", "[Zeit]"])
+async def __summon(message: Message, bot: BotBase) -> None:
+    """
+    Create a poll to gather mentioned groups a a certain time.
+
+    :param message: the message from the user
+    :param bot: the bot itself
+    """
+    if is_direct(message):
+        await send(message.author, message.channel, bot, "/summon funktioniert nicht in DM channels")
+        return
+
+    user: User = message.author
+    spec: str = __crop_command(message.content)
+
+    found_roles_x_new_spec = await _find_roles(message, spec, user, bot)
+    if found_roles_x_new_spec is None:
+        return
+
+    roles, spec = found_roles_x_new_spec
+
+    # Calc Day Offset ..
+    offset, match_start, match_end, default_val = find_day_by_special_rgx(spec)
+    if offset is None:
+        day = "**heute**"
+        offset = 0
+    else:
+        spec = spec[:match_start] + spec[(match_end + 1):]
+        day = f"**{default_val}**"
+
+    spec = re.sub(r"\s+", spec, " ").strip()
+    response = choice(__summon_msg)
+    response = response.replace("###USER###", user.mention)
+    response = response.replace("###MENTION###", " ".join(roles))
+    response = response.replace("###TIME###", 'zur gewohnten Zeit' if len(spec) == 0 else spec)
+    response = response.replace("###DAY###", day)
+
+    response += f"\n\n{__poll_request}"
+
+    channel: TextChannel = message.channel
+
+    buttons = [Button(emoji=emoji, custom_id=emoji, style=style) for emoji, style in
+               zip(__summon_reactions, __summon_reactions_colors)]
+
+    buttons.append(Button(emoji=__finish_reaction, custom_id=__finish_reaction))
+    buttons.append(Button(emoji=__cancel_reaction, custom_id=__cancel_reaction))
+
+    resp_message: Message = await channel.send(response)
+    await resp_message.edit(components=[buttons])
+    await delete(message, bot, True)
+
+    __add_to_scheduler(bot, message.author.id, resp_message, offset, day)
 
 
 async def __handling_button_summon(bot: BotBase, payload: dict, message: Message, button_id: str, user_id: int) -> bool:
