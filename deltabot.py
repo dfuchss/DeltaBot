@@ -181,6 +181,10 @@ class DeltaBot(BotBase):
             self.log(message)
             return
 
+        if await self._handle_unknown_command_symbols(message):
+            self.log(message)
+            return
+
         instance = self.__get_bot_instance(message.author)
         ch_id = message.channel.id
 
@@ -240,6 +244,28 @@ class DeltaBot(BotBase):
                                   channel=message.channel, interacted_component=button, parent_component=button,
                                   raw_data={"d": payload}, message=message)
         await interaction.respond(type=InteractionType.DeferredUpdateMessage)
+
+    async def _handle_unknown_command_symbols(self, message: Message):
+        command_starts = ["!", "/", "\\", "-", "~", "$", "§", "=", "?"]
+        command_starts.remove(self.config.system_command_symbol)
+        command_starts.remove(self.config.user_command_symbol)
+
+        if not any([message.content.strip().startswith(c) for c in command_starts]):
+            return False
+
+        user: User = message.author
+
+        text = f"JFYI: Benutzerbefehle starten für mich mit `{self.config.user_command_symbol}`"
+
+        # Check whether messages already contain explanations
+        async for m in user.history(limit=20):
+            if m.author != self.user:
+                continue
+            if m.content == text:
+                return True
+
+        await user.send(text)
+        return True
 
     def __get_bot_instance(self, author: User) -> BotInstance:
         """

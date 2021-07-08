@@ -139,8 +139,8 @@ async def __state(state: SystemCommandCallState, bot_base: BotBase, message: Mes
         msg += f"Channels: {', '.join(map(str, bot_base.config.get_channels()))}\n"
         msg += f"Admins: {', '.join(map(lambda uid: uid.mention, users))}\n"
         msg += f"Debug: {bot_base.config.is_debug()}\n"
-        msg += f"User Command Symbol: '{bot_base.config.user_command_symbol}'\n"
-        msg += f"System Command Symbol: '{bot_base.config.system_command_symbol}'"
+        msg += f"User Command Symbol: `{bot_base.config.user_command_symbol}`\n"
+        msg += f"System Command Symbol: `{bot_base.config.system_command_symbol}`"
 
         await send(message.author, message.channel, bot_base, msg)
         return
