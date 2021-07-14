@@ -218,7 +218,7 @@ class DeltaBot(BotBase):
         channel: TextChannel = await self.fetch_channel(cid)
         message: Message = await channel.fetch_message(mid)
 
-        if message.author != self.user or message.author.bot:
+        if message.author != self.user:
             return
 
         user = await self.fetch_user(user_id)
