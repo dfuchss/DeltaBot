@@ -7,7 +7,7 @@ from discord import Message, Guild, Emoji
 from discord_components import ActionRow, Button
 from emoji import UNICODE_EMOJI_ENGLISH
 
-DAYS = [
+__special_days = [
     (r"\bheute\b", 0, "heute"),
     (r"(\bmorgen\b|\bin einem tag\b|\bin 1 tag\b)", 1, "morgen"),
     (r"(\bübermorgen\b|\bin zwei tagen\b|\bin 2 tagen\b)", 2, "übermorgen")
@@ -16,6 +16,36 @@ DAYS = [
 A definition of regexes for special days (e.g. "heute" or "morgen") as triple:
 (regex, offset_to_today, default_value)
 """
+
+
+def get_date_representation(delta_days: int) -> Optional[str]:
+    """
+    Create a textual date representation (e.g. 0=>'heute')
+
+    :param delta_days: the amount of days remaining
+    :return: a textual representation iff possible
+    """
+    if delta_days < 0:
+        return None
+
+    if delta_days < len(__special_days):
+        return __special_days[delta_days][2]
+
+    return f"in {delta_days} Tagen"
+
+
+def __find_day_by_rgx_special_days(text: str) -> Optional[Tuple[int, int, int, str]]:
+    for (rgx, offset, default) in __special_days:
+        matches = [g for g in re.finditer(rgx, text, re.IGNORECASE)]
+        if len(matches) == 0:
+            continue
+
+        min_idx = min([start for (start, end) in [match.regs[0] for match in matches]])
+        max_idx = max([end for (start, end) in [match.regs[0] for match in matches]])
+        return offset, min_idx, max_idx, default
+
+    return None
+
 
 __df: DateFinder = DateFinder()
 
@@ -37,7 +67,51 @@ def find_date_by_finder(clean_msg: str) -> Tuple[Optional[datetime.datetime], Op
     return dt[0], start_idx, end_idx
 
 
-def find_day_by_special_rgx(text: str) -> Tuple[Optional[int], Optional[int], Optional[int], Optional[int]]:
+def __next_weekend_start():
+    dow = datetime.datetime.now().weekday()
+    if dow < 5:
+        return 5 - dow
+    return 5 - dow + 7
+
+
+__generic_time_spans = [
+    (r"in \d+ minute", lambda t: int(t.split(" ")[1]), datetime.timedelta(minutes=1)),
+    (r"in einer minute", lambda t: 1, datetime.timedelta(minutes=1)),
+
+    (r"in \d+ stunde", lambda t: int(t.split(" ")[1]), datetime.timedelta(hours=1)),
+    (r"in einer stunde", lambda t: 1, datetime.timedelta(hours=1)),
+
+    (r"in \d+ tag", lambda t: int(t.split(" ")[1]), datetime.timedelta(days=1)),
+    (r"in einem tag", lambda t: 1, datetime.timedelta(days=1)),
+
+    (r"in \d+ woche", lambda t: int(t.split(" ")[1]), datetime.timedelta(weeks=1)),
+    (r"in einer woche", lambda t: 1, datetime.timedelta(weeks=1)),
+
+    (r"[nächstem|nächstes] wochenende", lambda t: __next_weekend_start(), datetime.timedelta(days=1))
+]
+
+
+def __find_day_by_general_rgx(text: str) -> Optional[Tuple[int, int, int, str]]:
+    for (rgx, extractor, unit) in __generic_time_spans:
+        # Only consider multiple days ..
+        if unit < datetime.timedelta(days=1):
+            continue
+
+        matches = [g for g in re.finditer(rgx, text, re.IGNORECASE)]
+        if len(matches) != 1:
+            continue
+
+        match = matches[0]
+        value = extractor(match.string.strip())
+
+        days = int(value * (unit.total_seconds() // (24 * 60 * 60)))
+        start, end = match.regs[0]
+        return days, start, end, f"in {days} Tagen"
+
+    return None
+
+
+def find_day_by_special_rgx(text: str) -> Tuple[Optional[int], Optional[int], Optional[int], Optional[str]]:
     """
     Find a mentioned date by regex matching.
     The result contains a day_offset (today=0, tomorrow=1, ..), a max and min index for the match,
@@ -46,14 +120,15 @@ def find_day_by_special_rgx(text: str) -> Tuple[Optional[int], Optional[int], Op
     :param text: a text
     :return: a quadruple (None,None,None,None) if nothing was recognized; otherwise (day_offset,min_idx,max_idx,default)
     """
-    for (rgx, offset, default) in DAYS:
-        matches = [g for g in re.finditer(rgx, text, re.IGNORECASE)]
-        if len(matches) == 0:
-            continue
 
-        min_idx = min([start for (start, end) in [match.regs[0] for match in matches]])
-        max_idx = max([end for (start, end) in [match.regs[0] for match in matches]])
-        return offset, min_idx, max_idx, default
+    special_day_match = __find_day_by_rgx_special_days(text)
+
+    if special_day_match is not None:
+        return special_day_match
+
+    general_day_match = __find_day_by_general_rgx(text)
+    if general_day_match is not None:
+        return general_day_match
 
     return None, None, None, None
 

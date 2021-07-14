@@ -169,8 +169,8 @@ class DeltaBot(BotBase):
         :param message: the message to handle
         """
 
-        # don't respond to ourselves
-        if message.author == self.user:
+        # don't respond to ourselves or bots
+        if message.author == self.user or message.author.bot:
             return
 
         if await handle_system(self, message):
@@ -191,7 +191,7 @@ class DeltaBot(BotBase):
         handle_message: bool = False
         handle_message |= is_direct(message)
         handle_message |= self.user in message.mentions and ch_id in self.config.get_channels()
-        handle_message |= instance.has_active_dialog()
+        handle_message |= instance.has_active_dialog() and ch_id in self.config.get_channels()
 
         if not handle_message:
             return
@@ -218,7 +218,7 @@ class DeltaBot(BotBase):
         channel: TextChannel = await self.fetch_channel(cid)
         message: Message = await channel.fetch_message(mid)
 
-        if message.author != self.user:
+        if message.author != self.user or message.author.bot:
             return
 
         user = await self.fetch_user(user_id)

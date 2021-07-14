@@ -8,7 +8,7 @@ from discord_components import Button, ButtonStyle
 
 from bot_base import BotBase, send, delete, is_direct, command_meta
 from loadable import Loadable
-from utils import DAYS, find_day_by_special_rgx
+from utils import find_day_by_special_rgx, get_date_representation
 from .helpers import __crop_command
 
 
@@ -141,9 +141,7 @@ async def __execute_summon_update(u: dict, bot: BotBase) -> None:
         await __terminate_summon_poll(msg)
         return
 
-    _, _, new_day_value = DAYS[new_day_offset]
-    new_day_value = f"**{new_day_value}**"
-
+    new_day_value = f"**{get_date_representation(new_day_offset)}**"
     new_content = msg.content.replace(day_value, new_day_value)
     await msg.edit(content=new_content)
 
