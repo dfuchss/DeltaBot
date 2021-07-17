@@ -279,17 +279,21 @@ async def send_help_message(message: Message, bot: BotBase, timeout: bool = True
     :param timeout indicator whether the message shall be deleted after some time
     """
 
-    response = f"Ich kann verschiedene Aufgaben erledigen. Um mich anzusprechen, schreib {bot.user.mention}:\n\n"
-    # Dialogs
-    dialog_infos: List[str] = [item for sublist in
-                               ([__registered_dialogs[name] for name in __registered_dialogs.keys()]) for item in
-                               sublist]
+    response = ""
+    if not bot.config.is_nlu_disabled():
+        response = f"Ich kann verschiedene Aufgaben erledigen. Um mich anzusprechen, schreib {bot.user.mention}:\n\n"
+        # Dialogs
+        dialog_infos: List[str] = [item for sublist in
+                                   ([__registered_dialogs[name] for name in __registered_dialogs.keys()]) for item in
+                                   sublist]
 
-    for task in sorted(dialog_infos):
-        response += f"* {task}\n"
+        for task in sorted(dialog_infos):
+            response += f"* {task}\n"
+
+        response += "\n\n"
 
     # User Commands:
-    response += f"\n\n{_gen_message_for_commands('Befehle', False, bot)}"
+    response += f"{_gen_message_for_commands('Befehle', False, bot)}"
 
     # System Commands:
     if timeout and bot.config.is_admin(message.author):
