@@ -48,6 +48,9 @@ class Configuration(Loadable):
         self._respond_to_unknown_commands = False
         """Indicator whether the bot shall react to unknown commands"""
 
+        self._disable_nlu = False
+        """Indicator whether the NLU Unit shall be disabled or not"""
+
         self._load()
 
     def is_admin(self, user: User) -> bool:
@@ -76,9 +79,18 @@ class Configuration(Loadable):
     def is_respond_to_unknown_commands(self) -> bool:
         """
         Returns indicator whether the bot shall react to unknown commands
+
         :return: the indicator
         """
         return self._respond_to_unknown_commands
+
+    def is_nlu_disabled(self) -> bool:
+        """
+        Returns indicator whether the NLU Unit of the bot shall be disabled
+
+        :return: the indicator
+        """
+        return self._disable_nlu
 
     def get_channels(self) -> List[int]:
         return self._channels

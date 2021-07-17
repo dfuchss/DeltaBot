@@ -199,6 +199,11 @@ class DeltaBot(BotBase):
         await delete(message, self)
         self.log(message)
 
+        if self.config.is_nlu_disabled():
+            await send(message.author, message.channel, self,
+                       f"NLU Einheit wurde vom Admin deaktiviert. Ich kann Deine Aussage daher nicht interpretieren :(")
+            return
+
         await instance.handle(message)
 
     async def on_raw_button_click(self, payload: dict) -> None:
