@@ -261,8 +261,9 @@ __pycache__/
 *.pyc
 .venv
 .vscode/
-rasa/models/
-*.env
 
-config.json
+*.env
+.env
+
+config.json*
 states

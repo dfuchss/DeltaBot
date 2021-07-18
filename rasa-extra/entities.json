@@ -1,0 +1,42 @@
+{
+  "groups": [
+    {
+      "name": "news",
+      "entities": [
+        {
+          "name": "IT",
+          "values": ["it", "heise", "heise.de", "technik"]
+        },
+        {
+          "name": "Sport",
+          "values": ["sport", "fu\u00dfball", "darts"]
+        },
+        {
+          "name": "Allgemein",
+          "values": ["allgemein", "welt", "alles"]
+        },
+        {
+          "name": "Netcup",
+          "values": ["netcup", "webhosting"]
+        }
+      ]
+    },
+    {
+      "name": "user",
+      "entities": [
+        {
+          "name": "user",
+          "values": ["user", "users", "benutzer", "nutzer"]
+        },
+        {
+          "name": "ich",
+          "values": ["ich", "mich", "mein"]
+        },
+        {
+          "name": "sie",
+          "values": ["sie"]
+        }
+      ]
+    }
+  ]
+}

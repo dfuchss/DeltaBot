@@ -24,10 +24,10 @@ class Configuration(Loadable):
         self.nlu_threshold = 0.7
         """The RASA classification threshold for intents"""
 
-        self.nlu_not_classified = "rasa/training-nc.md"
+        self.nlu_not_classified = "rasa-extra/training-nc.md"
         """The file to store not classified sentences"""
 
-        self.entity_file = "rasa/entities.json"
+        self.entity_file = "rasa-extra/entities.json"
         """The file that contains the entity definitions"""
 
         self.ttl = 10.0
@@ -144,6 +144,7 @@ class Configuration(Loadable):
                 if not attr.startswith("__") and hasattr(self, attr):
                     setattr(self, attr, loaded[attr])
             self.version = 3
+            self.entity_file = "rasa-extra/entities.json"
             self._store()
             print("Configuration: version changed from 2 to 3")
             return
