@@ -16,7 +16,6 @@ Possible types are:
 - enhancement
 - bugfix
 - hotfix
-- language-model
 
 The pull request template will provide additional information on the requirement for the integration of changes into the DeltaBot.  
 Once the changes in your pull request are approved, they can be merged into `main`.

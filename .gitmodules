@@ -1,0 +1,3 @@
+[submodule "rasa"]
+	path = rasa
+	url = ../DeltaBot-NLU

@@ -1,12 +1,3 @@
-FROM python:3.8-slim as builder
-
-WORKDIR /usr/src/app
-COPY ./requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-COPY ./rasa/ ./
-RUN rasa telemetry disable
-RUN rasa train nlu --nlu ./training.yml
-
 FROM python:3.8-slim
 ENV TZ=Europe/Berlin
 ENV DiscordToken "The_Discord_Token"
@@ -27,9 +18,7 @@ WORKDIR /usr/src/app
 
 COPY ./requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-RUN rasa telemetry disable
 
 COPY ./ ./
-COPY --from=builder /usr/src/app/models ./rasa/models
 
 CMD ["python", "./deltabot.py"]

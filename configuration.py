@@ -10,7 +10,7 @@ class Configuration(Loadable):
     """The configuration of the DeltaBot"""
 
     def __init__(self):
-        super().__init__(getenv("CONF_FILE", "./config.json"), version=2)
+        super().__init__(getenv("CONF_FILE", "./config.json"), version=3)
 
         self.system_command_symbol = "\\"
         """The symbol indicator for system commands"""
@@ -18,11 +18,8 @@ class Configuration(Loadable):
         self.user_command_symbol = "/"
         """The symbol indicator for user commands"""
 
-        self.nlu_dir = "rasa/models"
-        """The directory of the RASA models"""
-
-        self.nlu_name = "nlu"
-        """The name of the RASA NLU"""
+        self.nlu_url = "http://localhost:5005"
+        """The url of the RASA service"""
 
         self.nlu_threshold = 0.7
         """The RASA classification threshold for intents"""
@@ -128,7 +125,10 @@ class Configuration(Loadable):
             print("Migration not possible. No version found.")
             return
 
-        if loaded["version"] == 1:
+        version = loaded["version"]
+
+        if version == 1:
+            version = 2
             # Push to V2
             for attr in loaded.keys():
                 if not attr.startswith("__") and hasattr(self, attr):
@@ -137,6 +137,15 @@ class Configuration(Loadable):
             self.entity_file = "rasa/entities.json"
             self._store()
             print("Configuration: version changed from 1 to 2")
+
+        if version == 2:
+            version = 3
+            for attr in loaded.keys():
+                if not attr.startswith("__") and hasattr(self, attr):
+                    setattr(self, attr, loaded[attr])
+            self.version = 3
+            self._store()
+            print("Configuration: version changed from 2 to 3")
             return
 
         print("Migration not possible. No migration profile available")

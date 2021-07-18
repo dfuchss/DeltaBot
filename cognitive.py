@@ -1,9 +1,9 @@
-from json import loads
+from json import loads, dumps
 from re import search, sub
 from typing import List
 
-from rasa.model import get_model
-from rasa.nlu.model import Interpreter
+import requests
+from requests import Response
 
 from configuration import Configuration
 
@@ -103,8 +103,10 @@ class NLUService:
         :param config the bot configuration
         """
         self._config = config
-        model = f"{get_model(self._config.nlu_dir)}/{self._config.nlu_name}"
-        self.interpreter = Interpreter.load(model)
+        self._url = config.nlu_url
+
+        self._version = self._get_rasa_version()
+
         with open(config.entity_file, encoding="utf-8-sig") as ef:
             self.entity_model = self._load_entities_from_json(loads(ef.read()))
 
@@ -115,11 +117,27 @@ class NLUService:
         :param content the text input
         :return a tuple which contains a list of intent results and a list of entity results
         """
+
+        if self._version is None:
+            return [], []
+
         content = sub(r"[^a-zA-Z0-9ÄÖÜäöüß -]", "", content)
         if content == "":
-            return None, None
+            return [], []
 
-        res = self.interpreter.parse(content)
+        try:
+            payload = dumps({"text": content})
+            response = requests.post(f"{self._url}/model/parse", data=payload)
+        except ConnectionError:
+            print("Cannot establish connection to RASA")
+            return [], []
+
+        if response.status_code != 200:
+            print(f"Error while getting data from RASA: {response}")
+            return [], []
+
+        res = response.json()
+
         # Set top scoring intent ..
         intent_ranking = res["intent_ranking"]
 
@@ -184,3 +202,26 @@ class NLUService:
                 group_entities.append(Entity(entity_name, entity_vals))
             groups.append(EntityGroup(group_name, group_entities))
         return EntityModel(groups)
+
+    def _get_rasa_version(self):
+        # Hello from Rasa: 2.6.1
+        try:
+            response: Response = requests.get(self._url)
+        except ConnectionError:
+            print("RASA Service not available")
+            return None
+
+        if response.status_code != 200:
+            print("Cannot connect to RASA Service")
+            return None
+
+        status_msg_rgx = "Hello from Rasa: "
+
+        msg = response.text
+        if not msg.startswith(status_msg_rgx):
+            print("Unknown status message from Rasa Service")
+            return None
+
+        version = msg.split(status_msg_rgx)[1]
+        print(f"Connected to Rasa Service: {version}")
+        return version

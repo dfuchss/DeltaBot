@@ -3,6 +3,7 @@
 .gitattributes
 .environment.env
 
+rasa
 .venv
 .idea
 __pycache__

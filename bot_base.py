@@ -169,17 +169,10 @@ class BotBase(Client):
     def __init__(self):
         super().__init__()
         self.config: Configuration = Configuration()
-        # Load NLU Lazy ..
-        self.nlu: Union[NLUService, Callable] = lambda: NLUService(self.config)
+
+        self.nlu: NLUService = NLUService(self.config)
         self.scheduler: BotScheduler = BotScheduler(self.loop)
         self._init_deletions()
-
-    def __getattribute__(self, name: str):
-        attr = super(BotBase, self).__getattribute__(name)
-        if name == "nlu" and callable(attr):
-            nlu = self.nlu = attr()
-            return nlu
-        return attr
 
     @staticmethod
     def log(message: Message) -> None:
