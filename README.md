@@ -1,29 +1,23 @@
 # DeltaBot - My simple Discord Bot
+
 This repo contains my first [Discord](https://discordapp.com/) bot. It uses [RASA]("https://rasa.com") for NLP.
 
 ## Requirements (Development):
-- python3 with pip
-<!--
-- ffmpeg executable in path
-- opus lib in library path
--->
+
+* Python 3.8 with pip
+* `pip install -r requirements.txt`
+* `pip install -r rasa/requirements.txt`
 
 ## Run the Bot (via Docker)
+
 You'll need the following two things:
-* The possibility to run a docker container
-* A Discord Bot Account
 
-<!-- Then simply run ``docker build -t deltabot .`` to build a docker image of the bot. -->
- 
+* The possibility to run docker containers
+* A Discord Bot Account (and of course the Token)
+
 To start the bot simply run:
-```
-docker run -d \
-    --env DiscordToken="Your Discord Token" \
-ghcr.io/dfuchss/deltabot
- ```
 
-You might also want to access / store the configuration. Therefore, you can use the `--env CONF_FILE=/path/you/want -v MachinePath/VolumePath`
-
-If you want to persist states, you have to map `-v MachinePath:/usr/src/app/states`
-
+* Create empty configuration: `touch config.json`
+* Store token to environment: `echo "DiscordToken=YOUR-Discord-TOKEN" > .env`
+* Start the Bot: `docker-compose up -d`
 
