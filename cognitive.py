@@ -128,7 +128,7 @@ class NLUService:
         try:
             payload = dumps({"text": content})
             response = requests.post(f"{self._url}/model/parse", data=payload)
-        except ConnectionError:
+        except Exception:
             print("Cannot establish connection to RASA")
             return [], []
 
@@ -207,7 +207,7 @@ class NLUService:
         # Hello from Rasa: 2.6.1
         try:
             response: Response = requests.get(self._url)
-        except ConnectionError:
+        except Exception:
             print("RASA Service not available")
             return None
 

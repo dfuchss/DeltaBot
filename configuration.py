@@ -24,7 +24,7 @@ class Configuration(Loadable):
         self.nlu_threshold = 0.7
         """The RASA classification threshold for intents"""
 
-        self.nlu_not_classified = "rasa-extra/training-nc.md"
+        self.nlu_not_classified = "rasa-unknown/training-nc.md"
         """The file to store not classified sentences"""
 
         self.entity_file = "rasa-extra/entities.json"

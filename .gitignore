@@ -265,5 +265,7 @@ __pycache__/
 *.env
 .env
 
+rasa-unknown
+
 config.json*
 states
