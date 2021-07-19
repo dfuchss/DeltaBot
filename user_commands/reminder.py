@@ -101,7 +101,18 @@ async def __reminder(message: Message, bot: BotBase) -> None:
     __reminder_state.add_reminder(data)
 
     bot.scheduler.queue(__execute_reminder(data, bot), dt.timestamp())
-    resp = await send(message.author, message.channel, bot, f"Ich erinnere Dich am {dt} an **{cleanup_message}**")
+
+    message_without_mentions = str(cleanup_message)
+    
+    if len(message.mentions) + len(message.role_mentions) > 0:
+        message_without_mentions = message_without_mentions.replace("<@!", "<@")
+        for m in message.mentions:
+            message_without_mentions = message_without_mentions.replace(m.mention, f"@{m.name}")
+        for r in message.role_mentions:
+            message_without_mentions = message_without_mentions.replace(r.mention, f"@{r.name}")
+
+    resp = await send(message.author, message.channel, bot,
+                      f"Ich erinnere Dich am {dt} an **{message_without_mentions}**")
 
     await delete(message, bot)
     await delete(resp, bot, delay=15)
