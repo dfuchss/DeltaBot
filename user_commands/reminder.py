@@ -32,8 +32,9 @@ class ReminderState(Loadable):
 
         :param reminder: the data as dictionary (see __reminder)
         """
-        self._reminders.remove(reminder)
-        self._store()
+        if reminder in self._reminders:
+            self._reminders.remove(reminder)
+            self._store()
 
     def reminders(self) -> List[dict]:
         """

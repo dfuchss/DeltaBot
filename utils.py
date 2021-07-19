@@ -75,16 +75,16 @@ def __next_weekend_start():
 
 
 __generic_time_spans = [
-    (r"in \d+ minute", lambda t: int(t.split(" ")[1]), datetime.timedelta(minutes=1)),
+    (r"in \d+ minute(n)?", lambda t: int(t.split(" ")[1]), datetime.timedelta(minutes=1)),
     (r"in einer minute", lambda t: 1, datetime.timedelta(minutes=1)),
 
-    (r"in \d+ stunde", lambda t: int(t.split(" ")[1]), datetime.timedelta(hours=1)),
+    (r"in \d+ stunde(n)?", lambda t: int(t.split(" ")[1]), datetime.timedelta(hours=1)),
     (r"in einer stunde", lambda t: 1, datetime.timedelta(hours=1)),
 
-    (r"in \d+ tag", lambda t: int(t.split(" ")[1]), datetime.timedelta(days=1)),
+    (r"in \d+ tag(en)?", lambda t: int(t.split(" ")[1]), datetime.timedelta(days=1)),
     (r"in einem tag", lambda t: 1, datetime.timedelta(days=1)),
 
-    (r"in \d+ woche", lambda t: int(t.split(" ")[1]), datetime.timedelta(weeks=1)),
+    (r"in \d+ woche(n)?", lambda t: int(t.split(" ")[1]), datetime.timedelta(weeks=1)),
     (r"in einer woche", lambda t: 1, datetime.timedelta(weeks=1)),
 
     (r"[nächstem|nächstes] wochenende", lambda t: __next_weekend_start(), datetime.timedelta(days=1))

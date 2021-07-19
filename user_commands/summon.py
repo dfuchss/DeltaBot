@@ -37,8 +37,9 @@ class SummonState(Loadable):
 
         :param update: the data as dictionary (see __summon)
         """
-        self._updates.remove(update)
-        self._store()
+        if update in self._updates:
+            self._updates.remove(update)
+            self._store()
 
     def updates(self) -> List[dict]:
         """
@@ -75,6 +76,14 @@ __summon_msg = [f"###USER###: Wer wäre ###DAY### ###TIME### dabei? ###MENTION##
 """All Templates for summon messages"""
 
 
+def __get_buttons() -> List[Button]:
+    buttons = [Button(emoji=emoji, custom_id=emoji, style=style) for emoji, style in
+               zip(__summon_reactions, __summon_reactions_colors)]
+    buttons.append(Button(emoji=__finish_reaction, custom_id=__finish_reaction))
+    buttons.append(Button(emoji=__cancel_reaction, custom_id=__cancel_reaction))
+    return buttons
+
+
 def __add_to_scheduler(bot: BotBase, user_id: int, resp_message: Message, offset: int, day: str) -> None:
     """
     Add a summon day update to the scheduler.
@@ -90,7 +99,7 @@ def __add_to_scheduler(bot: BotBase, user_id: int, resp_message: Message, offset
 
     next_time = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(days=1)
     # For testing:
-    # next_time = datetime.datetime.now() + datetime.timedelta(seconds=5)
+    next_time = datetime.datetime.now() + datetime.timedelta(seconds=5)
 
     data = {
         "ts": next_time.timestamp(),
@@ -143,10 +152,15 @@ async def __execute_summon_update(u: dict, bot: BotBase) -> None:
 
     new_day_value = f"**{get_date_representation(new_day_offset)}**"
     new_content = msg.content.replace(day_value, new_day_value)
-    await msg.edit(content=new_content)
+
+    await msg.delete()
+
+    # Create a new message
+    new_msg = await ch.send(new_content)
+    await new_msg.edit(components=[__get_buttons()])
 
     # Schedule new change ..
-    __add_to_scheduler(bot, u["uid"], msg, new_day_offset, new_day_value)
+    __add_to_scheduler(bot, u["uid"], new_msg, new_day_offset, new_day_value)
 
 
 async def _find_roles(message: Message, spec: str, user: User, bot: BotBase) -> Optional[Tuple[List[str], str]]:
@@ -327,15 +341,9 @@ async def __summon(message: Message, bot: BotBase) -> None:
     response += f"\n\n{__poll_request}"
 
     channel: TextChannel = message.channel
-
-    buttons = [Button(emoji=emoji, custom_id=emoji, style=style) for emoji, style in
-               zip(__summon_reactions, __summon_reactions_colors)]
-
-    buttons.append(Button(emoji=__finish_reaction, custom_id=__finish_reaction))
-    buttons.append(Button(emoji=__cancel_reaction, custom_id=__cancel_reaction))
-
     resp_message: Message = await channel.send(response)
-    await resp_message.edit(components=[buttons])
+
+    await resp_message.edit(components=[__get_buttons()])
     await delete(message, bot, True)
 
     __add_to_scheduler(bot, message.author.id, resp_message, offset, day)
