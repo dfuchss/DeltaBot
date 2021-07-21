@@ -99,7 +99,7 @@ def __add_to_scheduler(bot: BotBase, user_id: int, resp_message: Message, offset
 
     next_time = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0) + datetime.timedelta(days=1)
     # For testing:
-    next_time = datetime.datetime.now() + datetime.timedelta(seconds=5)
+    # next_time = datetime.datetime.now() + datetime.timedelta(seconds=5)
 
     data = {
         "ts": next_time.timestamp(),
