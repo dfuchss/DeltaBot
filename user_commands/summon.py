@@ -123,6 +123,9 @@ async def __terminate_summon_poll(msg: Message):
     new_content = new_content.replace(__poll_request, __poll_finished)
     await msg.edit(content=new_content, components=[])
 
+    if msg.pinned:
+        await msg.unpin()
+
 
 async def __execute_summon_update(u: dict, bot: BotBase) -> None:
     """
@@ -153,14 +156,11 @@ async def __execute_summon_update(u: dict, bot: BotBase) -> None:
     new_day_value = f"**{get_date_representation(new_day_offset)}**"
     new_content = msg.content.replace(day_value, new_day_value)
 
-    await msg.delete()
-
     # Create a new message
-    new_msg = await ch.send(new_content)
-    await new_msg.edit(components=[__get_buttons()])
+    await msg.edit(content=new_content)
 
     # Schedule new change ..
-    __add_to_scheduler(bot, u["uid"], new_msg, new_day_offset, new_day_value)
+    __add_to_scheduler(bot, u["uid"], msg, new_day_offset, new_day_value)
 
 
 async def _find_roles(message: Message, spec: str, user: User, bot: BotBase) -> Optional[Tuple[List[str], str]]:
@@ -344,6 +344,8 @@ async def __summon(message: Message, bot: BotBase) -> None:
     resp_message: Message = await channel.send(response)
 
     await resp_message.edit(components=[__get_buttons()])
+    await resp_message.pin()
+
     await delete(message, bot, True)
 
     __add_to_scheduler(bot, message.author.id, resp_message, offset, day)
