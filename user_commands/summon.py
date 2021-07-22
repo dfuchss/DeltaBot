@@ -300,6 +300,32 @@ async def __update_message(user: User, emoji: str, message: Message):
     await message.edit(content=result_msg)
 
 
+async def __delete_pinning_response(bot: BotBase, channel: TextChannel, pinned_message: Message):
+    """
+    Directly after pinning delete the pinning response for bot messages
+
+    :param bot: the bot
+    :param channel: the channel where a message has been pinned
+    :param pinned_message: the pinned message
+    """
+    last_message = await channel.history(limit=1).flatten()
+    if len(last_message) != 1:
+        return
+
+    last_message = last_message[0]
+
+    if last_message.author != bot.user:
+        return
+
+    if last_message.id == pinned_message.id:
+        return
+
+    if last_message.reference is None or last_message.reference.message_id != pinned_message.id:
+        return
+
+    await last_message.delete()
+
+
 @command_meta(help_msg="Erzeugt eine Umfrage an alle @Mentions für eine optionale Zeit.",
               params=["@Mentions", "[Zeit]"])
 async def __summon(message: Message, bot: BotBase) -> None:
@@ -345,6 +371,9 @@ async def __summon(message: Message, bot: BotBase) -> None:
 
     await resp_message.edit(components=[__get_buttons()])
     await resp_message.pin()
+
+    # Delete "DeltaBot pinned a message to this channel. See pinned messages"
+    await __delete_pinning_response(bot, channel, resp_message)
 
     await delete(message, bot, True)
 
