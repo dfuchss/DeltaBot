@@ -1,6 +1,7 @@
 # DeltaBot - My simple Discord Bot
 
 This repo contains my first [Discord](https://discordapp.com/) bot. It uses [RASA]("https://rasa.com") for NLP.
+The NLU is located [here](https://github.com/dfuchss/DeltaBot-NLU).
 
 ## Requirements (Development):
 
