@@ -253,7 +253,7 @@ class DeltaBot(BotBase):
             return
 
         user = await self.fetch_user(user_id)
-        await self._discord_button_response(button_id, message, user, payload)
+        await self._discord_component_response(button_id, message, user, payload)
 
         if await handle_user_button(self, payload, message, button_id, user_id):
             return
