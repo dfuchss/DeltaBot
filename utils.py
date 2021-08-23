@@ -4,7 +4,7 @@ from typing import List, Union, Iterator, Tuple, Optional
 
 from datefinder import DateFinder
 from discord import Message, Guild, Emoji
-from discord_components import ActionRow, Button
+from discord_components import ActionRow, Button, Select
 from emoji import UNICODE_EMOJI_ENGLISH
 
 __special_days = [
@@ -226,21 +226,24 @@ def get_guild(message: Message) -> Optional[Guild]:
     return None if message is None or not isinstance(message.guild, Guild) else message.guild
 
 
-def get_buttons(container: Union[List, ActionRow, Button]) -> Iterator[Button]:
+def get_components(container: Union[List, ActionRow, Button]) -> Iterator[Button]:
     """
-    Find all buttons in a composite / container recursively.
+    Find all components in a composite / container recursively.
 
     :param container: the start container
     :return: an iterator of buttons
     """
     if isinstance(container, list):
         for elem in container:
-            yield from get_buttons(elem)
+            yield from get_components(elem)
 
     if isinstance(container, ActionRow):
-        yield from get_buttons(container.components)
+        yield from get_components(container.components)
 
     if isinstance(container, Button):
+        yield container
+
+    if isinstance(container, Select):
         yield container
 
 

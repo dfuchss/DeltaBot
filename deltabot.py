@@ -3,7 +3,7 @@ from threading import Lock
 from typing import Dict, List, Optional
 
 from discord import Status, User, Activity, ActivityType, TextChannel, Message
-from discord_components import DiscordComponents, Button, InteractionType, Interaction
+from discord_components import DiscordComponents, Component, InteractionType, Interaction
 
 from bot_base import BotBase, send_help_message, send, is_direct, delete
 from cognitive import IntentResult, EntityResult
@@ -15,8 +15,8 @@ from dialogs.misc_dialogs import Clock
 from dialogs.news_dialog import News
 from dialogs.qna import QnA, QnAAnswer
 from system_commands import handle_system
-from user_commands.commands import handle_user, init_user_commands, handle_user_button
-from utils import get_guild, get_buttons
+from user_commands.commands import handle_user, init_user_commands, handle_user_button, handle_user_selection
+from utils import get_guild, get_components
 
 
 class BotInstance:
@@ -206,6 +206,32 @@ class DeltaBot(BotBase):
 
         await instance.handle(message)
 
+    async def on_raw_select_option(self, payload: dict):
+        """
+        Handle a button click to a message.
+
+        :param payload: the raw payload from discord
+        """
+        cid = payload["message"]["channel_id"]
+        mid = payload["message"]["id"]
+        selection_id = payload["data"]["custom_id"]
+        selections = payload["data"]["values"]
+        user_id = payload["member"]["user"]["id"]
+
+        if user_id == self.user.id:
+            return
+
+        channel: TextChannel = await self.fetch_channel(cid)
+        message: Message = await channel.fetch_message(mid)
+        if message.author != self.user:
+            return
+
+        user = await self.fetch_user(user_id)
+        await self._discord_component_response(selection_id, message, user, payload)
+
+        if await handle_user_selection(self, payload, message, selection_id, selections, user_id):
+            return
+
     async def on_raw_button_click(self, payload: dict) -> None:
         """
         Handle a button click to a message.
@@ -232,21 +258,21 @@ class DeltaBot(BotBase):
         if await handle_user_button(self, payload, message, button_id, user_id):
             return
 
-    async def _discord_button_response(self, button_id: str, message: Message, user: User, payload: dict) -> None:
+    async def _discord_component_response(self, component_id: str, message: Message, user: User, payload: dict) -> None:
         """
         Generate a response that discord will not show an error to the user due to a timeout.
 
-        :param button_id: the id of the button that has been pressed
+        :param component_id: the id of the component that has been pressed
         :param message: the associated message
         :param user: the user that has pressed the button
         :param payload: the raw payload of the event
         """
-        button: Button = next((e for e in get_buttons(message.components) if e.id == button_id), None)
-        if button is None:
+        component: Component = next((e for e in get_components(message.components) if e.id == component_id), None)
+        if component is None:
             return
 
         interaction = Interaction(bot=self, client=self._discord_components, user=user, guild=get_guild(message),
-                                  channel=message.channel, interacted_component=button, parent_component=button,
+                                  channel=message.channel, interacted_component=component, parent_component=component,
                                   raw_data={"d": payload}, message=message)
         await interaction.respond(type=InteractionType.DeferredUpdateMessage)
 

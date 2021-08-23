@@ -6,7 +6,7 @@ from discord_components import Button
 from bot_base import command_meta, BotBase, send, delete
 from loadable import Loadable
 from user_commands.helpers import __crop_command
-from utils import find_all_emojis, load_emoji, get_buttons, create_button_grid
+from utils import find_all_emojis, load_emoji, get_components, create_button_grid
 from .guild import _guild_state, get_guild
 
 
@@ -144,7 +144,7 @@ async def __role_chooser_add_role(message: Message, bot: BotBase):
     ch: TextChannel = await bot.fetch_channel(cid)
     guild_message: Message = await ch.fetch_message(mid)
 
-    components = list(get_buttons(guild_message.components)) if hasattr(guild_message, "components") else []
+    components = list(get_components(guild_message.components)) if hasattr(guild_message, "components") else []
     components.append(Button(emoji=await load_emoji(emoji, guild), custom_id=emoji))
 
     await guild_message.edit(content=__mapping_to_message(emoji_to_role_mappings),
@@ -177,7 +177,7 @@ async def __role_chooser_del_role(message: Message, bot: BotBase):
     ch: TextChannel = await bot.fetch_channel(cid)
     guild_message: Message = await ch.fetch_message(mid)
 
-    components = get_buttons(guild_message.components) if hasattr(guild_message, "components") else []
+    components = get_components(guild_message.components) if hasattr(guild_message, "components") else []
     components = list(filter(lambda b: b.custom_id != emoji, components))
     await guild_message.edit(content=__mapping_to_message(emoji_to_role_mappings),
                              components=create_button_grid(components))
