@@ -95,18 +95,28 @@ class Configuration(Loadable):
     def get_admins(self) -> List[int]:
         return self._admins
 
-    def add_admins(self, message: Message) -> None:
+    def change_admins(self, message: Message) -> None:
         if not self.is_admin(message.author):
             return
 
         for user in message.mentions:
-            self._admins.append(user.id)
+            if user.id not in self._admins:
+                self._admins.append(user.id)
+            else:
+                self._admins.remove(user.id)
 
         self._store()
 
-    def add_channel(self, channel_id) -> None:
-        self._channels.append(channel_id)
+    def change_listen_channel(self, channel_id) -> None:
+        if channel_id not in self._channels:
+            self._channels.append(channel_id)
+        else:
+            self._channels.remove(channel_id)
+
         self._store()
+
+    def get_listen_channels(self) -> List[int]:
+        return self._channels
 
     def toggle_debug(self) -> bool:
         """

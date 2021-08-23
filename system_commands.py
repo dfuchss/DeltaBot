@@ -46,7 +46,7 @@ def __not_authorized(bot: BotBase, message: Message) -> Awaitable:
     return send(message.author, message.channel, bot, "Du bist nicht authorisiert!")
 
 
-@command_meta(is_system_command=True, help_msg="Aktiviert mein Zuhören in einem Text-Channel")
+@command_meta(is_system_command=True, help_msg="Aktiviert oder Deaktiviert mein Zuhören in einem Text-Channel")
 def __listen(state: SystemCommandCallState, bot_base: BotBase, message: Message):
     """
     Listen to the mentioned channels.
@@ -65,8 +65,12 @@ def __listen(state: SystemCommandCallState, bot_base: BotBase, message: Message)
 
     if state == SystemCommandCallState.VALID:
         channel: TextChannel = message.channel
-        bot_base.config.add_channel(channel.id)
-        return send(message.author, channel, bot_base, f"Ich höre jetzt auf {channel.mention}")
+        bot_base.config.change_listen_channel(channel.id)
+
+        now_listen = channel.id in bot_base.config.get_channels()
+
+        return send(message.author, channel, bot_base,
+                    f"Ich höre jetzt {'' if now_listen else 'nicht mehr'} auf {channel.mention}")
 
     raise Exception(f"Impossible system command call state: {state}")
 
@@ -86,7 +90,7 @@ async def __admin(state: SystemCommandCallState, bot_base: BotBase, message: Mes
         return
 
     if state == SystemCommandCallState.DIRECT_MESSAGE or state == SystemCommandCallState.VALID:
-        bot_base.config.add_admins(message)
+        bot_base.config.change_admins(message)
         users = await __to_users(bot_base, bot_base.config.get_admins())
         await send(message.author, message.channel, bot_base,
                    f"Admins: {', '.join(map(lambda uid: uid.mention, users))}")
