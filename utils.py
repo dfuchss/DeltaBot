@@ -1,6 +1,6 @@
 import datetime
 import re
-from typing import List, Union, Iterator, Tuple, Optional
+from typing import List, Union, Iterator, Tuple, Optional, Awaitable, Callable, Dict
 
 from datefinder import DateFinder
 from discord import Message, Guild, Emoji
@@ -273,3 +273,21 @@ def create_button_grid(buttons: List[Button], max_in_row: int = 5, try_mod_zero:
     if len(row) > 0:
         rows.append(row)
     return rows
+
+
+class MethodVersionStore:
+    def __init__(self):
+        self._methods: Dict[str, List[Union[Callable, Awaitable]]] = {}
+
+    def store_method(self, method: Union[Callable, Awaitable]) -> None:
+        name = method.__name__
+
+        if name not in self._methods.keys():
+            self._methods[name] = [method]
+        else:
+            self._methods[name].append(method)
+
+    def get_methods(self, name: str) -> List[Union[Callable, Awaitable]]:
+        if name not in self._methods.keys():
+            return []
+        return list(set(self._methods[name]))

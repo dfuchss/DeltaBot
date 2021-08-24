@@ -105,7 +105,7 @@ class NLUService:
         self._config = config
         self._url = config.nlu_url
 
-        self._version = self._get_rasa_version()
+        self._version = None
 
         with open(config.entity_file, encoding="utf-8-sig") as ef:
             self.entity_model = self._load_entities_from_json(loads(ef.read()))
@@ -119,7 +119,9 @@ class NLUService:
         """
 
         if self._version is None:
-            return [], []
+            self._version = self._get_rasa_version()
+            if self._version is None:
+                return [], []
 
         content = sub(r"[^a-zA-Z0-9ÄÖÜäöüß -]", "", content)
         if content == "":

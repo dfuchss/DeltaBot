@@ -16,7 +16,7 @@ from dialogs.news_dialog import News
 from dialogs.qna import QnA, QnAAnswer
 from system_commands import handle_system
 from user_commands.commands import handle_user, init_user_commands, handle_user_button, handle_user_selection
-from utils import get_guild, get_components
+from utils import get_guild, get_components, MethodVersionStore
 
 
 class BotInstance:
@@ -146,6 +146,8 @@ class DeltaBot(BotBase):
     def __init__(self) -> None:
         """ Initialize the DeltaBot. """
         super().__init__()
+        self._methods = MethodVersionStore()
+
         self._user_to_instance = {}
         self._user_to_instance_lock = Lock()
         init_user_commands(self)
@@ -160,7 +162,27 @@ class DeltaBot(BotBase):
         print('Starting scheduler ..')
         self.scheduler.start_scheduler()
 
+        # Register Discord Components and preserve on_socket_response
+        self._methods.store_method(self.on_socket_response)
         self._discord_components = DiscordComponents(self)
+        self._methods.store_method(self.on_socket_response)
+        self._create_on_socket_response()
+
+    def _create_on_socket_response(self):
+        methods = self._methods.get_methods("on_socket_response")
+
+        async def on_socket_response(payload: dict):
+            for m in methods:
+                try:
+                    await m(payload)
+                except Exception as e:
+                    print(e)
+
+        self.on_socket_response = on_socket_response
+
+    async def on_socket_response(self, payload: dict):
+        if self.config.is_debug():
+            print(f"DEBUG (SOCKET): {payload}")
 
     async def on_message(self, message: Message) -> None:
         """
