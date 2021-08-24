@@ -7,50 +7,11 @@ from discord import Message, User, TextChannel, NotFound
 from discord_components import Select, SelectOption
 
 from bot_base import BotBase, send, delete, is_direct, command_meta
-from loadable import Loadable
+from loadable import DictStore
 from utils import find_day_by_special_rgx, get_date_representation
 from .helpers import __crop_command
 
-
-class SummonState(Loadable):
-    """
-    This state contains the updates to summon messages from the bot (e.g. "tomorrow" -> "today" at midnight)
-    """
-
-    def __init__(self):
-        super().__init__(path="./states/summon_state.json", version=1)
-        self._updates = []
-        self._load()
-
-    def add_update(self, update: dict) -> None:
-        """
-        Add a new update.
-
-        :param update: the data as dictionary (see __summon)
-        """
-        self._updates.append(update)
-        self._store()
-
-    def remove_update(self, update: dict) -> None:
-        """
-        Remove an update.
-
-        :param update: the data as dictionary (see __summon)
-        """
-        if update in self._updates:
-            self._updates.remove(update)
-            self._store()
-
-    def updates(self) -> List[dict]:
-        """
-        Return all updates as list of dictionaries
-
-        :return: all updates
-        """
-        return self._updates
-
-
-__summon_state = SummonState()
+__summon_state = DictStore("./states/summon_state.json")
 """The one and only summon state"""
 
 __summon_reactions = [("Sicher dabei :)", '\N{Thumbs Up Sign}'),  #
@@ -107,7 +68,7 @@ def __add_to_scheduler(bot: BotBase, user_id: int, resp_message: Message, offset
         "day_value": day,
         "day_offset": offset
     }
-    __summon_state.add_update(data)
+    __summon_state.add_data(data)
     bot.scheduler.queue(__execute_summon_update(data, bot), data["ts"])
 
 
@@ -132,7 +93,7 @@ async def __execute_summon_update(u: dict, bot: BotBase) -> None:
     :param u: the data for the update as dictionary
     :param bot: the bot itself
     """
-    __summon_state.remove_update(u)
+    __summon_state.remove_data(u)
 
     cid = u["cid"]
     mid = u["mid"]
@@ -237,7 +198,7 @@ async def __check_cancel(emoji: str, message: Message, update: dict, user: User,
         resp = await send(user, message.channel, bot, "Nur der Initiator kann die Umfrage löschen")
         await delete(resp, bot, delay=10)
     else:
-        __summon_state.remove_update(update)
+        __summon_state.remove_data(update)
         await message.delete()
     return True
 
@@ -260,7 +221,7 @@ async def __check_finish(emoji: str, message: Message, update: dict, user: User,
         resp = await send(user, message.channel, bot, "Nur der Initiator kann die Umfrage beenden")
         await delete(resp, bot, delay=10)
     else:
-        __summon_state.remove_update(update)
+        __summon_state.remove_data(update)
         await __terminate_summon_poll(message)
     return True
 
@@ -393,7 +354,7 @@ async def __handling_selection_summon(bot: BotBase, payload: dict, message: Mess
     if message.author != bot.user:
         return False
 
-    update = list(filter(lambda m: m["mid"] == message.id and m["cid"] == message.channel.id, __summon_state.updates()))
+    update = list(filter(lambda m: m["mid"] == message.id and m["cid"] == message.channel.id, __summon_state.data()))
 
     if len(update) == 0:
         return False
@@ -422,5 +383,5 @@ def _init_summon_updates(bot: BotBase) -> None:
 
     :param bot: the bot itself
     """
-    for u in __summon_state.updates():
+    for u in __summon_state.data():
         bot.scheduler.queue(__execute_summon_update(u, bot), u["ts"])

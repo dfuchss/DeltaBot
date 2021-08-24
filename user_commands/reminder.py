@@ -1,51 +1,10 @@
-from typing import List
-
 from discord import Message, TextChannel
 
 from bot_base import BotBase, send, is_direct, delete, command_meta
-from loadable import Loadable
+from loadable import DictStore
 from utils import find_time
 
-
-class ReminderState(Loadable):
-    """
-    This state contains all future reminders.
-    """
-
-    def __init__(self):
-        super().__init__(path="./states/reminder_state.json", version=1)
-        self._reminders = []
-        self._load()
-
-    def add_reminder(self, reminder: dict) -> None:
-        """
-        Add a new reminder.
-
-        :param reminder: the data as dictionary (see __reminder)
-        """
-        self._reminders.append(reminder)
-        self._store()
-
-    def remove_reminder(self, reminder: dict) -> None:
-        """
-        Remove a reminder.
-
-        :param reminder: the data as dictionary (see __reminder)
-        """
-        if reminder in self._reminders:
-            self._reminders.remove(reminder)
-            self._store()
-
-    def reminders(self) -> List[dict]:
-        """
-        Get all stored reminders.
-
-        :return: a list of reminders as dictionaries
-        """
-        return self._reminders
-
-
-__reminder_state = ReminderState()
+__reminder_state = DictStore("./states/reminder_state.json")
 """The one and only reminder_state"""
 
 
@@ -56,7 +15,7 @@ async def __execute_reminder(data: dict, bot: BotBase) -> None:
     :param data: the data for the reminder (e.g. user, channel, text)
     :param bot: the bot itself
     """
-    __reminder_state.remove_reminder(data)
+    __reminder_state.remove_data(data)
 
     message = data["msg"]
     channel: TextChannel = None if data["cid"] is None else await bot.fetch_channel(data["cid"])
@@ -98,12 +57,12 @@ async def __reminder(message: Message, bot: BotBase) -> None:
         "msg": cleanup_message
     }
 
-    __reminder_state.add_reminder(data)
+    __reminder_state.add_data(data)
 
     bot.scheduler.queue(__execute_reminder(data, bot), dt.timestamp())
 
     message_without_mentions = str(cleanup_message)
-    
+
     if len(message.mentions) + len(message.role_mentions) > 0:
         message_without_mentions = message_without_mentions.replace("<@!", "<@")
         for m in message.mentions:
@@ -124,5 +83,5 @@ def _init_reminders(bot: BotBase) -> None:
 
     :param bot: the bot itself
     """
-    for r in __reminder_state.reminders():
+    for r in __reminder_state.data():
         bot.scheduler.queue(__execute_reminder(r, bot), r["ts"])

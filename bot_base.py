@@ -6,7 +6,7 @@ from discord import ChannelType, Message, NotFound, Client, TextChannel, User, D
 
 from cognitive import NLUService
 from configuration import Configuration
-from loadable import Loadable
+from loadable import DictStore
 from scheduler import BotScheduler
 
 __registered_commands: Dict[Tuple[str, bool], str] = {}
@@ -110,50 +110,13 @@ def dialog_meta(dialog_info: Union[str, List[str]] = None, name: str = None):
     return decorator
 
 
-class DeletionState(Loadable):
-    """
-    This state contains the scheduled deletions
-    """
-
-    def __init__(self):
-        super().__init__(path="./states/delete_state.json", version=1)
-        self._deletions = []
-        self._load()
-
-    def add_deletion(self, deletion: dict) -> None:
-        """
-        Add a new deletion.
-
-        :param deletion: the data as dictionary (see delete)
-        """
-        self._deletions.append(deletion)
-        self._store()
-
-    def remove_deletion(self, deletion: dict) -> None:
-        """
-        Remove a new deletion.
-
-        :param deletion: the data as dictionary (see delete)
-        """
-        self._deletions.remove(deletion)
-        self._store()
-
-    def deletions(self) -> List[dict]:
-        """
-        Return all updates as list of dictionaries
-
-        :return: all updates
-        """
-        return self._deletions
-
-
-_deletion_state = DeletionState()
+_deletion_state = DictStore("./states/delete_state.json")
 """The one and only deletion state"""
 
 
 async def _execute_deletion(bot: Client, deletion: dict):
     """Execute deletion of a message"""
-    _deletion_state.remove_deletion(deletion)
+    _deletion_state.remove_data(deletion)
 
     try:
         ch: TextChannel = await bot.fetch_channel(deletion["cid"])
@@ -199,7 +162,7 @@ class BotBase(Client):
 
     def _init_deletions(self):
         """Init scheduled deletions"""
-        for deletion in _deletion_state.deletions():
+        for deletion in _deletion_state.data():
             self.scheduler.queue(_execute_deletion(self, deletion), deletion["ts"])
 
 
@@ -247,7 +210,7 @@ async def delete(message: Message, bot: BotBase, delay: float = None) -> None:
             "cid": message.channel.id,
             "mid": message.id
         }
-        _deletion_state.add_deletion(deletion)
+        _deletion_state.add_data(deletion)
         bot.scheduler.queue(_execute_deletion(bot, deletion), deletion["ts"])
 
 

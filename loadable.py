@@ -2,6 +2,7 @@ import os.path
 import pathlib
 from json import dumps, loads
 from os.path import exists
+from typing import List
 
 from json_objects import convert_to_dict
 
@@ -53,3 +54,41 @@ class Loadable:
         :param loaded: the loaded data from the file (needs manually applied to the loadable)
         """
         pass
+
+
+class DictStore(Loadable):
+    """
+    This state contains all future reminders.
+    """
+
+    def __init__(self, path):
+        super().__init__(path=path, version=1)
+        self._data = []
+        self._load()
+
+    def add_data(self, data: dict) -> None:
+        """
+        Add a new data point.
+
+        :param data: the data point as dictionary
+        """
+        self._data.append(data)
+        self._store()
+
+    def remove_data(self, data: dict) -> None:
+        """
+        Remove a data point.
+
+        :param data: the data as dictionary
+        """
+        if data in self._data:
+            self._data.remove(data)
+            self._store()
+
+    def data(self) -> List[dict]:
+        """
+        Get all stored data points.
+
+        :return: a list of data points as dictionaries
+        """
+        return self._data
