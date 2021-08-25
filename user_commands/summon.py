@@ -313,10 +313,18 @@ async def __update_message(user: User, emoji_id: str, message: Message):
     all_reactions = await __get_summon_reactions(get_guild(message))
     reactions: Dict[str, List[str]] = __read_text_reactions(all_reactions, text)
 
-    if user.mention in reactions[emoji_id]:
-        reactions[emoji_id].remove(user.mention)
-    else:
-        reactions[emoji_id].append(user.mention)
+    for emoji in reactions.keys():
+        if emoji != emoji_id and user.mention in reactions[emoji]:
+            # Remove at any other place
+            reactions[emoji].remove(user.mention)
+
+        if emoji != emoji_id:
+            continue
+
+        if user.mention in reactions[emoji_id]:
+            reactions[emoji_id].remove(user.mention)
+        else:
+            reactions[emoji_id].append(user.mention)
 
     result_msg = text.split("\n")[0].strip()
     summary = ""
