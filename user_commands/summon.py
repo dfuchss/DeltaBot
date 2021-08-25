@@ -15,9 +15,9 @@ __summon_state = DictStore("./states/summon_state.json")
 """The one and only summon state"""
 
 __summon_reactions = [("Sicher dabei :)", '\N{Thumbs Up Sign}'),  #
-                      ("Eher dabei", '\N{Thumbs Up Sign} | \N{Black Question Mark Ornament}'),  #
+                      ("Eher dabei", '\N{Thinking Face}'),  #
                       ("Unsicher", '\N{Black Question Mark Ornament}'),  #
-                      ("Eher nicht", '\N{Black Question Mark Ornament} | \N{Thumbs Down Sign}'),  #
+                      ("Eher nicht", '\N{Pensive Face}'),  #
                       ("Sicher nicht :(", '\N{Thumbs Down Sign}')  #
                       ]
 """All allowed reactions to a summon message from the bot"""
