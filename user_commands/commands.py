@@ -9,7 +9,7 @@ from .guild import __guild_manager, __show_guild_managers
 from .misc import __help, __help_persist, __roll, __teams
 from .reminder import _init_reminders, __reminder
 from .roles import __roles, __handling_button_roles
-from .summon import __summon, __handling_selection_summon, _init_summon_updates
+from .summon import __summon, _init_summon_updates, __handling_button_summon
 
 HandlingFunction = Union[  #
     Callable[[Message, BotBase], None],  #
@@ -106,6 +106,9 @@ async def handle_user_button(bot: BotBase, payload: dict, message: Message, butt
     if await __handling_button_roles(bot, payload, message, button_id, user_id):
         return True
 
+    if await __handling_button_summon(bot, payload, message, button_id, user_id):
+        return True
+
     return False
 
 
@@ -122,7 +125,4 @@ async def handle_user_selection(bot: BotBase, payload: dict, message: Message, s
     :param user_id: the id of the user who pressed the button
     :return: indicator whether the button was related to a user command
     """
-    if await __handling_selection_summon(bot, payload, message, selection_id, selections, user_id):
-        return True
-
     return False

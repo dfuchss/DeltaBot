@@ -1,31 +1,38 @@
 import datetime
 import re
 from random import choice
-from typing import List, Dict, Optional, Tuple
+from typing import List, Dict, Optional, Tuple, Union
 
-from discord import Message, User, TextChannel, NotFound
-from discord_components import Select, SelectOption
+from discord import Message, User, TextChannel, NotFound, Guild, Emoji
+from discord_components import Button, ButtonStyle
 
 from bot_base import BotBase, send, delete, is_direct, command_meta
 from loadable import DictStore
-from utils import find_day_by_special_rgx, get_date_representation
+from utils import find_day_by_special_rgx, get_date_representation, get_guild, create_button_grid
 from .helpers import __crop_command
 
 __summon_state = DictStore("./states/summon_state.json")
 """The one and only summon state"""
 
-__summon_reactions = [("Sicher dabei :)", '\N{Thumbs Up Sign}'),  #
-                      ("Eher dabei", '\N{Thinking Face}'),  #
-                      ("Unsicher", '\N{Black Question Mark Ornament}'),  #
-                      ("Eher nicht", '\N{Pensive Face}'),  #
-                      ("Sicher nicht :(", '\N{Thumbs Down Sign}')  #
-                      ]
+__summon_reactions_default = ['\N{Thumbs Up Sign}', '\N{Thinking Face}',  #
+                              '\N{Black Question Mark Ornament}',
+                              '\N{Pensive Face}', '\N{Thumbs Down Sign}'  #
+                              ]
 """All allowed reactions to a summon message from the bot"""
-__finish_reaction = ("Umfrage beenden", '\N{Chequered Flag}')
+
+__summon_reactions_mid_filenames = ["./user_commands/assets/ThumbsUp45.png", "./user_commands/assets/ThumbsUp135.png"]
+"""Special images for position 1 and 3 in __summon_reactions_default"""
+
+__summon_reactions_colors = [ButtonStyle.green, ButtonStyle.grey, ButtonStyle.grey, ButtonStyle.grey, ButtonStyle.red]
+"""All reactions colors to a summon message from the bot"""
+
+__finish_reaction = '\N{Octagonal Sign}'
 """Reaction to finish a summon command"""
-__cancel_reaction = ("Umfrage löschen", '\N{Put Litter in Its Place Symbol}')
+__cancel_reaction = '\N{Put Litter in Its Place Symbol}'
 """Reaction to cancel a summon command"""
 
+__poll_request = "Bitte die Buttons zum Abstimmen benutzen:"
+"""Message used to indicate a poll for the users"""
 __poll_finished = "*Umfrage beendet .. keine Abstimmung mehr möglich :)*"
 """Message used to indicate a finished poll for the users"""
 
@@ -37,10 +44,60 @@ __summon_msg = [f"###USER###: Wer wäre ###DAY### ###TIME### dabei? ###MENTION##
 """All Templates for summon messages"""
 
 
-def __get_selections() -> List[SelectOption]:
-    text_x_value = __summon_reactions + [__finish_reaction, __cancel_reaction]
-    options = [SelectOption(label=f"{v[0]} {v[1]}", value=v[1]) for v in text_x_value]
-    return options
+def __to_emoji_ids(reactions: Union[List[Union[str, Emoji]], Union[str, Emoji]]):
+    if isinstance(reactions, List):
+        return [r if isinstance(r, str) else r.name for r in reactions]
+
+    return reactions if isinstance(reactions, str) else reactions.name
+
+
+async def __register_emojis(guild: Guild, found_summon_emojis: List[Emoji], summon_emojis: List[str],
+                            __summon_reactions_mid_filenames: List[str]):
+    print(f"Registering Summon Emojis in {guild.name}")
+
+    for (emoji, path) in zip(summon_emojis, __summon_reactions_mid_filenames):
+        if emoji in [e.name for e in found_summon_emojis]:
+            continue
+        with open(path, "rb") as emoji_file:
+            data = emoji_file.read()
+        await guild.create_custom_emoji(name=emoji, image=data)
+
+
+async def __get_summon_reactions(guild: Guild) -> List[Union[str, Emoji]]:
+    if guild is None:
+        return __summon_reactions_default
+
+    try:
+        all_emojis: List[Emoji] = await guild.fetch_emojis()
+        summon_emojis = [e.split(".")[-2].split("/")[-1] for e in __summon_reactions_mid_filenames]
+        found_summon_emojis = list(filter(lambda e: e.name in summon_emojis, all_emojis))
+        if len(found_summon_emojis) != len(summon_emojis):
+            await __register_emojis(guild, found_summon_emojis, summon_emojis, __summon_reactions_mid_filenames)
+            all_emojis = await guild.fetch_emojis()
+            found_summon_emojis = list(filter(lambda e: e.name in summon_emojis, all_emojis))
+
+        # Registered Emojis
+        emojis = list(__summon_reactions_default)
+        # Replace with custom emojis
+        emojis[1] = found_summon_emojis[0]
+        emojis[3] = found_summon_emojis[1]
+
+        return emojis
+
+    except Exception as e:
+        print(f"Missing Permissions to add Emojis, or other error for Guild {guild.name}", e)
+        return __summon_reactions_default
+
+
+async def __get_buttons(guild: Guild) -> List[List[Button]]:
+    summon_reactions = await __get_summon_reactions(guild)
+    buttons = [Button(emoji=emoji, custom_id=__to_emoji_ids(emoji), style=style)  #
+               for emoji, style in zip(summon_reactions, __summon_reactions_colors)]
+
+    buttons.append(Button(emoji=__finish_reaction, custom_id=__finish_reaction))
+    buttons.append(Button(emoji=__cancel_reaction, custom_id=__cancel_reaction))
+
+    return create_button_grid(buttons, try_mod_zero=False)
 
 
 def __add_to_scheduler(bot: BotBase, user_id: int, resp_message: Message, offset: int, day: str) -> None:
@@ -79,7 +136,7 @@ async def __terminate_summon_poll(msg: Message):
     :param msg: the message associated with the poll
     """
     new_content = msg.content
-    new_content = new_content + f"\n\n{__poll_finished}"
+    new_content = new_content.replace(__poll_request, __poll_finished)
     await msg.edit(content=new_content, components=[])
 
     if msg.pinned:
@@ -158,16 +215,25 @@ def __find_mention_type(line: str, reactions: List[str]):
     return None
 
 
-def __read_text_reactions(reactions: List[str], message_content: str) -> Dict[str, List[str]]:
+def __read_text_reactions(reactions: List[Union[str, Emoji]], message_content: str) -> Dict[str, List[str]]:
     """
     Read reactions from a message (reactions are stored in the message text)
 
     :param reactions: the allowed reactions
     :param message_content: the content of the message
-    :return: a dictionary reaction->[user mentions]
+    :return: a dictionary reaction->[user mentions], if reaction is an emoji object, the name will be used as identifier
     """
+
+    reaction_ids = [r if isinstance(r, str) else f"{r.name}" for r in reactions]
+
+    # Cleanup Emoji stuff
+    for emoji in reactions:
+        if isinstance(emoji, str):
+            continue
+        message_content = message_content.replace(f"{emoji}", emoji.name)
+
     result = {}
-    for reaction in reactions:
+    for reaction in reaction_ids:
         result[reaction] = []
 
     for line in message_content.split("\n"):
@@ -175,7 +241,7 @@ def __read_text_reactions(reactions: List[str], message_content: str) -> Dict[st
             continue
         split = line.split(":", 1)
 
-        mention_type = __find_mention_type(line, reactions)
+        mention_type = __find_mention_type(line, reaction_ids)
 
         if len(split) < 2 or mention_type is None:
             continue
@@ -199,7 +265,7 @@ async def __check_cancel(emoji: str, message: Message, update: dict, user: User,
     :param bot: the bot itself
     :return: indicator whether someone requested a cancel
     """
-    if emoji != __cancel_reaction[1]:
+    if emoji != __cancel_reaction:
         return False
 
     if user.id != update["uid"]:
@@ -222,7 +288,7 @@ async def __check_finish(emoji: str, message: Message, update: dict, user: User,
     :param bot: the bot itself
     :return: indicator whether someone requested a cancel
     """
-    if emoji != __finish_reaction[1]:
+    if emoji != __finish_reaction:
         return False
 
     if user.id != update["uid"]:
@@ -234,23 +300,23 @@ async def __check_finish(emoji: str, message: Message, update: dict, user: User,
     return True
 
 
-async def __update_message(user: User, selections: List[str], message: Message):
+async def __update_message(user: User, emoji_id: str, message: Message):
     """
     Update a message according to the user reactions.
 
     :param user: the user that reacted
-    :param selections: the selections of the user
+    :param emoji_id: the emoji the user has used
     :param message: the message to change
     """
     text = message.content
 
-    reactions: Dict[str, List[str]] = __read_text_reactions([r[1] for r in __summon_reactions], text)
+    all_reactions = await __get_summon_reactions(get_guild(message))
+    reactions: Dict[str, List[str]] = __read_text_reactions(all_reactions, text)
 
-    for emoji in reactions.keys():
-        if user.mention in reactions[emoji] and emoji not in selections:
-            reactions[emoji].remove(user.mention)
-        if user.mention not in reactions[emoji] and emoji in selections:
-            reactions[emoji].append(user.mention)
+    if user.mention in reactions[emoji_id]:
+        reactions[emoji_id].remove(user.mention)
+    else:
+        reactions[emoji_id].append(user.mention)
 
     result_msg = text.split("\n")[0].strip()
     summary = ""
@@ -259,11 +325,14 @@ async def __update_message(user: User, selections: List[str], message: Message):
         users = reactions[reaction]
         if len(users) == 0:
             continue
-        summary = f"{summary}\n{reaction} `({len(users)})`: {str.join(',', users)}"
+        emoji = reaction if reaction in all_reactions else next(
+            filter(lambda r: isinstance(r, Emoji) and r.name == reaction, all_reactions))
+        summary = f"{summary}\n{emoji} `({len(users)})`: {str.join(',', users)}"
 
     if len(summary) != 0:
         result_msg = f"{result_msg}\n\nAktuell:\n{summary.strip()}"
 
+    result_msg += f"\n\n{__poll_request}"
     await message.edit(content=result_msg)
 
 
@@ -331,10 +400,12 @@ async def __summon(message: Message, bot: BotBase) -> None:
     response = response.replace("###TIME###", 'zur gewohnten Zeit' if len(spec) == 0 else spec)
     response = response.replace("###DAY###", day)
 
+    response += f"\n\n{__poll_request}"
+
     channel: TextChannel = message.channel
     resp_message: Message = await channel.send(response)
 
-    await resp_message.edit(components=[Select(placeholder="Hier bitte wählen ..", options=__get_selections())])
+    await resp_message.edit(components=await __get_buttons(get_guild(message)))
     await resp_message.pin()
 
     # Delete "DeltaBot pinned a message to this channel. See pinned messages"
@@ -345,19 +416,16 @@ async def __summon(message: Message, bot: BotBase) -> None:
     __add_to_scheduler(bot, message.author.id, resp_message, offset, day)
 
 
-async def __handling_selection_summon(bot: BotBase, payload: dict, message: Message, selection_id: str,
-                                      selections: List[str],
-                                      user_id: int) -> bool:
+async def __handling_button_summon(bot: BotBase, payload: dict, message: Message, button_id: str, user_id: int) -> bool:
     """
-    Handle selections for summon user commands.
+    Handle pressed buttons for summon user commands.
 
     :param bot: the bot itself
     :param payload: the raw payload from discord
     :param message: the message which belongs to the button
-    :param selection_id: the id of the selection object
-    :param selections the list of selected elements
+    :param button_id: the id of the pressed button
     :param user_id: the id of the user who pressed the button
-    :return: indicator whether the button was related to a user command
+    :return: indicator whether the button was related to this command
     """
     if message.author != bot.user:
         return False
@@ -370,18 +438,17 @@ async def __handling_selection_summon(bot: BotBase, payload: dict, message: Mess
     update = update[0]
     user: User = await bot.fetch_user(user_id)
 
-    if len(selections) == 1 and await __check_cancel(selections[0], message, update, user, bot):
+    if await __check_cancel(button_id, message, update, user, bot):
         return True
 
-    if len(selections) == 1 and await __check_finish(selections[0], message, update, user, bot):
+    if await __check_finish(button_id, message, update, user, bot):
         return True
 
-    if any([s not in [v[1] for v in __summon_reactions] for s in selections]):
-        # Do anything to clear selection ..
-        await message.edit(content=message.content)
+    reactions = await __get_summon_reactions(get_guild(message))
+    if button_id not in __to_emoji_ids(reactions):
         return True
 
-    await __update_message(user, selections, message)
+    await __update_message(user, button_id, message)
     return True
 
 
