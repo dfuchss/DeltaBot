@@ -150,6 +150,14 @@ async def _find_roles(message: Message, spec: str, user: User, bot: BotBase) -> 
         return None
 
 
+def __find_mention_type(line: str, reactions: List[str]):
+    reactions_sorted = list(sorted(reactions, key=lambda r: len(r) if r else -1, reverse=True))
+    for reaction in reactions_sorted:
+        if line.startswith(reaction):
+            return reaction
+    return None
+
+
 def __read_text_reactions(reactions: List[str], message_content: str) -> Dict[str, List[str]]:
     """
     Read reactions from a message (reactions are stored in the message text)
@@ -167,9 +175,9 @@ def __read_text_reactions(reactions: List[str], message_content: str) -> Dict[st
             continue
         split = line.split(":", 1)
 
-        mention_type = line[0]
+        mention_type = __find_mention_type(line, reactions)
 
-        if len(split) < 2 or mention_type not in reactions:
+        if len(split) < 2 or mention_type is None:
             continue
 
         new_mentions = [m.strip() for m in split[1].split(",")]
