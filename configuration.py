@@ -24,12 +24,6 @@ class Configuration(Loadable):
         self.nlu_threshold = 0.7
         """The RASA classification threshold for intents"""
 
-        self.nlu_not_classified = "rasa-unknown/training-nc.md"
-        """The file to store not classified sentences"""
-
-        self.entity_file = "rasa-extra/entities.json"
-        """The file that contains the entity definitions"""
-
         self.ttl = 10.0
         """The time to live for a message that gonna be deleted"""
 

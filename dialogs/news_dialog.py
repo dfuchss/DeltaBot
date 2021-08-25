@@ -92,7 +92,7 @@ class News(Dialog):
                 if len(news_feed) != 0:
                     # response += "Nix, rein gar nichts .."
                     sent = True
-                await send(message.author, message.channel, self._bot, response)
+                    await send(message.author, message.channel, self._bot, response)
 
         if not sent:
             await send(message.author, message.channel, self._bot, "Keine neuen Nachrichten.")
