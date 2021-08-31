@@ -65,5 +65,7 @@ fun nextDayTS(days: Long = 1): Long {
     val tomorrow = LocalDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT).plusDays(days)
     // For Debugging ..
     // val tomorrow = LocalDateTime.of(LocalDate.now(), LocalTime.now()).plusSeconds(5)
-    return tomorrow.atZone(ZoneId.systemDefault()).toEpochSecond()
+    return tomorrow.timestamp()
 }
+
+fun LocalDateTime.timestamp(): Long = this.atZone(ZoneId.systemDefault()).toEpochSecond()

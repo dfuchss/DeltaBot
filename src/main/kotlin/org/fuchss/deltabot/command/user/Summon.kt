@@ -41,6 +41,12 @@ class Summon(private val scheduler: Scheduler) : BotCommand, EventListener {
 
     override fun registerJDA(jda: JDA) {
         jda.addEventListener(this)
+        initScheduler(jda)
+    }
+
+    private fun initScheduler(jda: JDA) {
+        for (update in summonState.summons)
+            scheduler.queue({ summonUpdate(update, jda) }, update.timestamp)
     }
 
     override fun onEvent(event: GenericEvent) {
@@ -109,7 +115,7 @@ class Summon(private val scheduler: Scheduler) : BotCommand, EventListener {
         val emojis = getEmojis(message.guild)
         val reactionsToUser: Map<String, List<String>> = data.userToReact.toMap().reverseMap()
         val reactions = emojis.map { e -> reactionsToUser.getOrDefault(e.name, emptyList()) }.zip(emojis).filter { (list, _) -> list.isNotEmpty() }
-            .map { (list, emoji) -> emoji to list.mapNotNull { u -> jda.getUserById(u)?.asMention } }
+            .map { (list, emoji) -> emoji to list.mapNotNull { u -> jda.retrieveUserById(u).complete()?.asMention } }
 
         val reactionText = reactions.filter { (_, l) -> l.isNotEmpty() }.joinToString("\n") { (emoji, list) -> "${emoji.asMention}: ${list.joinToString(" ")}" }
 
@@ -228,7 +234,7 @@ class Summon(private val scheduler: Scheduler) : BotCommand, EventListener {
 
 
     private data class SummonState(
-        private var summons: MutableList<SummonData> = mutableListOf()
+        var summons: MutableList<SummonData> = mutableListOf()
     ) : Storable() {
 
         fun getSummonMessage(messageId: String): SummonData? {

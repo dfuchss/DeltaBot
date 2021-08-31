@@ -8,6 +8,7 @@ RUN mvn clean package
 FROM azul/zulu-openjdk-alpine:11
 
 ENV DISCORD_TOKEN MY_TOKEN
+ENV TZ=Europe/Berlin
 ENV CONF_PATH /usr/src/bot/config/config.json
 
 WORKDIR /usr/src/bot

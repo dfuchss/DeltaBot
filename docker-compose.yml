@@ -21,6 +21,14 @@ services:
     networks:
       - deltabot
 
+  deltabot-duckling:
+    image: rasa/duckling
+    restart: unless-stopped
+    expose:
+      - 8000
+    networks:
+      - deltabot
+
 # Our docker network!
 networks:
   deltabot:

@@ -9,6 +9,7 @@ import org.fuchss.deltabot.utils.Storable
  */
 data class Configuration(
     var nluUrl: String = "http://localhost:5005",
+    var docklingUrl: String = "http://localhost:8000",
     var nluThreshold: Double = 0.7,
     private var admins: MutableList<String> = ArrayList(),
     var debug: Boolean = false,
@@ -30,7 +31,7 @@ data class Configuration(
     }
 
     fun getAdmins(jda: JDA): List<String> {
-        return admins.mapNotNull { u -> jda.getUserById(u)?.asMention }
+        return admins.mapNotNull { u -> jda.retrieveUserById(u).complete()?.asMention }
     }
 
     fun toggleDebug(): Boolean {
