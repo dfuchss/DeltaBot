@@ -27,7 +27,7 @@ class Summon(private val scheduler: Scheduler) : BotCommand, EventListener {
         private val summonReactionsDefault = listOf(":+1:", ":thinking:", ":question:", ":pensive:", ":-1").map { e -> e.toEmoji() }
         private val summonReactionsDefaultStyle = listOf(ButtonStyle.SUCCESS, ButtonStyle.SECONDARY, ButtonStyle.SECONDARY, ButtonStyle.SECONDARY, ButtonStyle.DANGER)
 
-        private val finish = ":checkered_flag:".toEmoji()
+        private val finish = ":octagonal_sign:".toEmoji()
         private val delete = ":put_litter_in_its_place:".toEmoji()
 
         private const val pollRequest = "Please use buttons to vote:"
@@ -65,12 +65,14 @@ class Summon(private val scheduler: Scheduler) : BotCommand, EventListener {
             return
         }
 
-        event.reply("I'll create the summon text ..").setEphemeral(true).complete()
+        val reply = event.deferReply().complete()
 
         val game = event.getOption("game")!!.asRole
         val time = event.getOption("time")?.asString ?: "today at the default time"
 
         createSummon(event.guild!!, event.user, event.channel, game, time, event.jda)
+
+        reply.deleteOriginal().complete()
     }
 
     private fun handleSummonButtonEvent(event: ButtonClickEvent, data: SummonData) {
@@ -189,12 +191,14 @@ class Summon(private val scheduler: Scheduler) : BotCommand, EventListener {
     private fun terminateSummon(msg: Message) {
         val newContent = msg.contentRaw.replace(pollRequest, pollFinished)
         msg.editMessage(newContent).setActionRows(listOf()).complete()
+        if (msg.isPinned)
+            msg.unpin().complete()
     }
 
     private fun getButtons(guild: Guild): List<ActionRow> {
         val emojis = getEmojis(guild)
-        val buttons = emojis.zip(summonReactionsDefaultStyle).map { e -> Button.of(e.second, e.first.name, e.first) }
-        val actions = listOf(Button.secondary(finish.name, finish), Button.secondary(delete.name, delete))
+        val buttons = emojis.zip(summonReactionsDefaultStyle).map { (emoji, style) -> Button.of(style, emoji.name, emoji) }
+        val actions = listOf(Button.secondary(finish.name + "", finish), Button.secondary(delete.name, delete))
         return listOf(ActionRow.of(buttons), ActionRow.of(actions))
     }
 
