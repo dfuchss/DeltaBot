@@ -27,6 +27,11 @@ open class Help(private val configuration: Configuration, protected val commands
         var message = ""
         for (cmd in commands) {
             message += "**/${cmd.name}**: ${cmd.description}\n"
+            val subcommands = cmd.subcommands
+            if (subcommands.isNotEmpty()) {
+                for (subcommand in subcommands)
+                    message += "→ **${subcommand.name}**: ${subcommand.description}\n"
+            }
         }
         return EmbedBuilder().setTitle(event.jda.selfUser.name + " Help").setDescription(message.trim()).setColor(Constants.BLUE).build()
     }

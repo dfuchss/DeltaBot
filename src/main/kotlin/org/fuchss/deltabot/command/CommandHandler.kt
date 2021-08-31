@@ -27,6 +27,7 @@ class CommandHandler(private val configuration: Configuration) : EventListener {
         commands.add(Admin(configuration))
         commands.add(State(configuration))
         commands.add(Erase())
+        commands.add(Roles())
 
         commands.add(Help(configuration, commands))
         commands.add(PersistentHelp(configuration, commands))
@@ -110,22 +111,13 @@ class CommandHandler(private val configuration: Configuration) : EventListener {
             if (cmd.name != cmdData.name)
                 continue
 
-            if (cmd.options.size != cmdData.options.size)
+            if (!cmd.options.optionEqualsData(cmdData.options))
                 continue
 
-            var optionEqual = true
-            for (i in 0 until cmd.options.size) {
-                val o1: Command.Option = cmd.options[i]
-                val o2: OptionData = cmdData.options[i]
+            val subcommandsEqual =
+                cmd.subcommands.size == cmdData.subcommands.size && cmd.subcommands.zip(cmdData.subcommands).all { (c1, c2) -> c1.name == c2.name && c1.options.optionEqualsData(c2.options) }
 
-                if (o1.name != o2.name || o1.isRequired != o2.isRequired || o1.type != o2.type || o1.description != o2.description || o1.choices != o2.choices) {
-                    optionEqual = false
-                    break
-                }
-
-            }
-
-            if (!optionEqual)
+            if (!subcommandsEqual)
                 continue
 
             return cmd
@@ -159,3 +151,8 @@ class CommandHandler(private val configuration: Configuration) : EventListener {
         }
     }
 }
+
+private fun MutableList<Command.Option>.optionEqualsData(options: List<OptionData>) = this.size == options.size && this.zip(options).all { (o1, o2) -> o1.optionEqualsData(o2) }
+
+private fun Command.Option.optionEqualsData(o2: OptionData) =
+    this.name == o2.name && this.isRequired == o2.isRequired && this.type == o2.type && this.description == o2.description && this.choices == o2.choices
