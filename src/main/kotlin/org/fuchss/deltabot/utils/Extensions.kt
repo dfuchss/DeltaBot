@@ -6,6 +6,9 @@ import com.fasterxml.jackson.databind.Module
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.vdurmont.emoji.EmojiManager
+import net.dv8tion.jda.api.entities.Emoji
+import net.dv8tion.jda.api.entities.Message
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -45,10 +48,35 @@ fun <L : Storable> L.load(path: String): L {
         } catch (e: Exception) {
             logger.error(e.message)
             // Try to overwrite corrupted data :)
-            mapper.writeValue(configFile, this)
+            this.store()
         }
     } else {
-        mapper.writeValue(configFile, this)
+        this.store()
     }
     return this
 }
+
+fun Message.pinAndDelete() {
+    try {
+        pin().complete()
+        val history = channel.history.retrievePast(1).complete()
+        if (history.isEmpty())
+            return
+
+        val pinned = history[0] ?: return
+        if (!pinned.author.isBot)
+            return
+        if (pinned.id == this.id)
+            return
+        if (pinned.messageReference?.messageId != this.id)
+            return
+
+        pinned.delete().complete()
+    } catch (e: Exception) {
+        logger.error(e.message)
+    }
+}
+
+fun String.toEmoji(): Emoji = Emoji.fromUnicode(EmojiManager.getForAlias(this).unicode)
+
+fun <K, V> Map<K, V>.reverseMap(): Map<V, List<K>> = entries.map { e -> e.value to e.key }.groupBy { e -> e.first }.map { e -> e.key to e.value.map { v -> v.second } }.toMap()

@@ -15,6 +15,7 @@ abstract class Storable {
         val configFile = File(path as String)
         val mapper = createObjectMapper()
         try {
+            configFile.parentFile.mkdirs()
             mapper.writeValue(configFile, this)
         } catch (e: Exception) {
             logger.error(e.message)

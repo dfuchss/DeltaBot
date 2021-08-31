@@ -1,0 +1,7 @@
+.git
+.gitignore
+.gitattributes
+
+rasa
+.idea
+target

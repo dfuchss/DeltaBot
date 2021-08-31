@@ -8,11 +8,10 @@ This repo contains my first [Discord](https://discordapp.com/) bot. It uses [RAS
 is located [here](https://github.com/dfuchss/DeltaBot-NLU).
 
 ## Requirements (Development):
-* maven 3 and java 11
-
-
+* maven 3 and Java 11
+  * `mvn clean package`
 * Python 3.8 with pip (NLU only)
-* `pip install -r rasa/requirements.txt`
+  * `pip install -r rasa/requirements.txt`
 
 ## Run the Bot (via Docker)
 

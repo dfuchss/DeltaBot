@@ -10,15 +10,14 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import org.fuchss.deltabot.Configuration
 import org.fuchss.deltabot.command.admin.*
-import org.fuchss.deltabot.command.user.Help
-import org.fuchss.deltabot.command.user.PersistentHelp
-import org.fuchss.deltabot.command.user.Roll
-import org.fuchss.deltabot.command.user.Teams
+import org.fuchss.deltabot.command.user.*
+import org.fuchss.deltabot.utils.Scheduler
 import org.fuchss.deltabot.utils.logger
 
 class CommandHandler(private val configuration: Configuration) : EventListener {
     private val commands: MutableList<BotCommand>
     private val nameToCommand: Map<String, BotCommand>
+    private var scheduler: Scheduler = Scheduler()
 
     init {
         commands = ArrayList()
@@ -33,6 +32,7 @@ class CommandHandler(private val configuration: Configuration) : EventListener {
         commands.add(PersistentHelp(configuration, commands))
         commands.add(Roll())
         commands.add(Teams())
+        commands.add(Summon(scheduler))
 
         nameToCommand = commands.associateBy { m -> m.name }
     }
@@ -40,6 +40,7 @@ class CommandHandler(private val configuration: Configuration) : EventListener {
     override fun onEvent(event: GenericEvent) {
         if (event is ReadyEvent) {
             initCommands(event)
+            this.scheduler.start()
             return
         }
 
@@ -62,6 +63,9 @@ class CommandHandler(private val configuration: Configuration) : EventListener {
             for (cmd in newCommandsGuild)
                 guild.upsertCommand(cmd).complete()
         }
+
+        for (cmd in commands)
+            cmd.registerJDA(event.jda)
     }
 
     private fun getCommands(guild: Guild): List<Command>? {

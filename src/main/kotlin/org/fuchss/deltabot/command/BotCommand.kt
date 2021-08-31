@@ -1,5 +1,6 @@
 package org.fuchss.deltabot.command
 
+import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 
@@ -15,4 +16,8 @@ interface BotCommand : Comparable<BotCommand> {
 
     fun createCommand(): CommandData
     fun handle(event: SlashCommandEvent)
+
+    fun registerJDA(jda: JDA) {
+        // NOP
+    }
 }
