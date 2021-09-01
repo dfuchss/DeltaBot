@@ -1,5 +1,5 @@
 discord.py==1.7.3
-discord-components==1.1.4
+discord-components==2.0.5
 feedparser==6.0.8
 requests==2.26.0
 datefinder==0.7.1
