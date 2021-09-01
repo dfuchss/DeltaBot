@@ -1,4 +1,4 @@
-FROM python:3.8-slim
+FROM python:3.9.7-slim
 ENV TZ=Europe/Berlin
 ENV DiscordToken "The_Discord_Token"
 
