@@ -2,11 +2,7 @@ package org.fuchss.deltabot.cognitive
 
 import org.fuchss.deltabot.utils.createObjectMapper
 import org.fuchss.deltabot.utils.logger
-import java.io.DataOutputStream
-import java.net.HttpURLConnection
-import java.net.URL
 import java.net.URLEncoder
-import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -31,7 +27,7 @@ class DucklingService(private val endpoint: String) {
         var foundTimes: Array<DucklingResponseData> = emptyArray()
         return try {
             val postData = getDataString(values).toByteArray(StandardCharsets.UTF_8)
-            val rawResponse = post(postData)
+            val rawResponse = post("$endpoint/parse", "application/x-www-form-urlencoded", postData)
             foundTimes = om.readValue(rawResponse, foundTimes.javaClass)
 
             val df = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
@@ -42,40 +38,6 @@ class DucklingService(private val endpoint: String) {
             emptyList()
         }
     }
-
-    private fun post(postData: ByteArray): String {
-        val url = URL("$endpoint/parse")
-        val urlConnection: HttpURLConnection = url.openConnection() as HttpURLConnection
-        urlConnection.requestMethod = "POST";
-        urlConnection.useCaches = false
-        urlConnection.doOutput = true
-
-        urlConnection.setRequestProperty("content-type", "application/x-www-form-urlencoded")
-        urlConnection.setRequestProperty("charset", "utf-8");
-        urlConnection.setRequestProperty("Content-Length", postData.size.toString())
-
-        DataOutputStream(urlConnection.outputStream).use { wr -> wr.write(postData) }
-
-        val inputStream = urlConnection.inputStream
-        val buffer = ByteArray(4096)
-        val sb = StringBuilder()
-        while (true) {
-            val read = inputStream.read(buffer)
-            if (read < 0)
-                break
-
-            if (read < buffer.size) {
-                val s = String(buffer.copyOfRange(0, read), Charset.forName("utf-8"))
-                sb.append(s)
-            } else {
-                val s = String(buffer, Charset.forName("utf-8"))
-                sb.append(s)
-            }
-        }
-        inputStream.close()
-        return sb.toString()
-    }
-
 
     private fun getDataString(params: Map<String, Any>): String {
         val result = StringBuilder()
