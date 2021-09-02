@@ -6,7 +6,6 @@ import java.io.DataOutputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
-import java.net.http.HttpClient
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
@@ -15,8 +14,6 @@ import java.time.format.DateTimeFormatter
 
 
 class DucklingService(private val endpoint: String) {
-
-    private val client = HttpClient.newBuilder().build()
 
     fun interpretTime(text: String): List<LocalDateTime> {
         val om = createObjectMapper()

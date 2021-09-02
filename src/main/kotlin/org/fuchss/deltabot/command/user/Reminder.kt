@@ -19,7 +19,7 @@ class Reminder(configuration: Configuration, private val scheduler: Scheduler) :
     override val isGlobal: Boolean get() = true
 
     private val reminderState = ReminderState().load("./states/reminder.json")
-    private val ducklingService: DucklingService = DucklingService(configuration.docklingUrl)
+    private val ducklingService: DucklingService = DucklingService(configuration.ducklingUrl)
 
     override fun createCommand(): CommandData {
         val command = CommandData("reminder", "create reminders for certain times")

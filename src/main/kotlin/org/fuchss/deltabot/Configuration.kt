@@ -9,7 +9,7 @@ import org.fuchss.deltabot.utils.Storable
  */
 data class Configuration(
     var nluUrl: String = "http://localhost:5005",
-    var docklingUrl: String = "http://localhost:8000",
+    var ducklingUrl: String = "http://localhost:8000",
     var nluThreshold: Double = 0.7,
     private var admins: MutableList<String> = ArrayList(),
     var debug: Boolean = false,
