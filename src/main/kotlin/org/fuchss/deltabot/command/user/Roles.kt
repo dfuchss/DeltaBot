@@ -90,8 +90,7 @@ class Roles : BotCommand, EventListener {
         val state = rolesState.getGuildState(guild)!!
         rolesState.removeRoleMessage(guild)
 
-        val channel = guild.getTextChannelById(state.channelId)
-        val message = channel?.retrieveMessageById(state.messageId)?.complete()
+        val message = guild.fetchMessage(state.channelId, state.messageId)
         message?.delete()?.complete()
 
         event.reply("Role message deleted ..").setEphemeral(true).complete()
@@ -208,7 +207,7 @@ class Roles : BotCommand, EventListener {
             buttons = guildState.emojiToRole.keys.map { e -> loadEmojiButton(guild, e) }
         }
 
-        val msg = guild.getTextChannelById(guildState.channelId)!!.retrieveMessageById(guildState.messageId).complete()!!
+        val msg = guild.fetchMessage(guildState.channelId, guildState.messageId)!!
         msg.editMessage(message).setActionRows(buttons.toActionRows()).complete()
 
     }

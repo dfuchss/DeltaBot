@@ -115,7 +115,7 @@ class Summon(private val scheduler: Scheduler) : BotCommand, EventListener {
         val emojis = getEmojis(message.guild)
         val reactionsToUser: Map<String, List<String>> = data.userToReact.toMap().reverseMap()
         val reactions = emojis.map { e -> reactionsToUser.getOrDefault(e.name, emptyList()) }.zip(emojis).filter { (list, _) -> list.isNotEmpty() }
-            .map { (list, emoji) -> emoji to list.mapNotNull { u -> jda.retrieveUserById(u).complete()?.asMention } }
+            .map { (list, emoji) -> emoji to list.mapNotNull { u -> jda.fetchUser(u)?.asMention } }
 
         val reactionText = reactions.filter { (_, l) -> l.isNotEmpty() }.joinToString("\n") { (emoji, list) -> "${emoji.asMention}: ${list.joinToString(" ")}" }
 
@@ -169,7 +169,7 @@ class Summon(private val scheduler: Scheduler) : BotCommand, EventListener {
             return
 
         val nextDay = nextDayTS()
-        val data = SummonData(nextDay, responseMessage.channel.id, responseMessage.id, authorId, dayOffset, dayValue)
+        val data = SummonData(nextDay, responseMessage.guild.id, responseMessage.channel.id, responseMessage.id, authorId, dayOffset, dayValue)
         summonState.add(data)
         scheduler.queue({ summonUpdate(data, jda) }, nextDay)
     }
@@ -177,8 +177,8 @@ class Summon(private val scheduler: Scheduler) : BotCommand, EventListener {
     private fun summonUpdate(data: SummonData, jda: JDA) {
         summonState.remove(data)
         try {
-            val channel = jda.getTextChannelById(data.cid)
-            val msg = channel!!.retrieveMessageById(data.mid).complete()
+            val channel = jda.fetchTextChannel(data.gid, data.cid)!!
+            val msg = channel.retrieveMessageById(data.mid).complete()
 
             val newDayOffset = data.dayOffset - 1
             if (newDayOffset < 0) {
@@ -254,6 +254,7 @@ class Summon(private val scheduler: Scheduler) : BotCommand, EventListener {
 
     private data class SummonData(
         var timestamp: Long,
+        var gid: String,
         var cid: String,
         var mid: String,
         var uid: String,
@@ -262,4 +263,6 @@ class Summon(private val scheduler: Scheduler) : BotCommand, EventListener {
         var userToReact: MutableMap<String, String> = mutableMapOf()
     )
 }
+
+
 

@@ -6,8 +6,9 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import org.fuchss.deltabot.Configuration
 import org.fuchss.deltabot.command.BotCommand
+import org.fuchss.deltabot.command.fixCommandPermissions
 
-class Admin(private val configuration: Configuration) : BotCommand {
+class Admin(private val configuration: Configuration, private val commands: List<BotCommand>) : BotCommand {
 
     override val isAdminCommand: Boolean get() = true
     override val isGlobal: Boolean get() = false
@@ -28,5 +29,8 @@ class Admin(private val configuration: Configuration) : BotCommand {
 
         val nowAdmin = configuration.toggleAdmin(user)
         event.reply("User ${user.asMention} is now ${if (nowAdmin) "an" else "no"} admin").complete()
+
+        // Fix Guild Commands ..
+        fixCommandPermissions(event.jda, configuration, commands, user)
     }
 }

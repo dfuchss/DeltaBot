@@ -1,9 +1,12 @@
 package org.fuchss.deltabot
 
 import net.dv8tion.jda.api.JDA
+import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.User
 import org.fuchss.deltabot.utils.Storable
-
+import org.fuchss.deltabot.utils.fetchMember
+import org.fuchss.deltabot.utils.fetchUser
+ 
 /**
  * The configuration of the bot.
  */
@@ -31,7 +34,7 @@ data class Configuration(
     }
 
     fun getAdmins(jda: JDA): List<String> {
-        return admins.mapNotNull { u -> jda.retrieveUserById(u).complete()?.asMention }
+        return admins.mapNotNull { u -> jda.fetchUser(u)?.asMention }
     }
 
     fun toggleDebug(): Boolean {
@@ -40,4 +43,20 @@ data class Configuration(
         return debug
     }
 
+    fun getAdminsMembersOfGuild(guild: Guild): List<User> {
+        val adminsOfGuild = mutableListOf<User>()
+        adminsOfGuild.add(guild.fetchMember(guild.ownerId)!!.user)
+
+        for (admin in admins) {
+            val member = guild.fetchMember(admin)
+            if (member != null && member.user !in adminsOfGuild) {
+                adminsOfGuild.add(member.user)
+            }
+        }
+
+        return adminsOfGuild
+    }
+
 }
+
+

@@ -9,10 +9,7 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import org.fuchss.deltabot.Configuration
 import org.fuchss.deltabot.cognitive.DucklingService
 import org.fuchss.deltabot.command.BotCommand
-import org.fuchss.deltabot.utils.Scheduler
-import org.fuchss.deltabot.utils.Storable
-import org.fuchss.deltabot.utils.load
-import org.fuchss.deltabot.utils.timestamp
+import org.fuchss.deltabot.utils.*
 
 class Reminder(configuration: Configuration, private val scheduler: Scheduler) : BotCommand {
     override val isAdminCommand: Boolean get() = false
@@ -58,9 +55,9 @@ class Reminder(configuration: Configuration, private val scheduler: Scheduler) :
         val ts = times[0].timestamp()
         val reminder =
             if (event.channelType == ChannelType.PRIVATE)
-                ReminderData(ts, "", true, event.user.id, message)
+                ReminderData(ts, "", "", true, event.user.id, message)
             else
-                ReminderData(ts, event.channel.id, false, event.user.id, message)
+                ReminderData(ts, event.guild!!.id, event.channel.id, false, event.user.id, message)
 
         reminderState.add(reminder)
         scheduler.queue({ remind(reminder, event.jda) }, ts)
@@ -70,8 +67,8 @@ class Reminder(configuration: Configuration, private val scheduler: Scheduler) :
     private fun remind(reminder: ReminderData, jda: JDA) {
         reminderState.remove(reminder)
 
-        val user = jda.retrieveUserById(reminder.uid).complete()
-        val channel = if (reminder.isDirectChannel) user.openPrivateChannel().complete() else jda.getTextChannelById(reminder.cid)!!
+        val user = jda.fetchUser(reminder.uid)!!
+        val channel = if (reminder.isDirectChannel) user.openPrivateChannel().complete() else jda.fetchTextChannel(reminder.gid, reminder.cid)!!
         channel.sendMessage("**Reminder ${user.asMention}**\n${reminder.message}").complete()
     }
 
@@ -93,6 +90,7 @@ class Reminder(configuration: Configuration, private val scheduler: Scheduler) :
 
     private data class ReminderData(
         var timestamp: Long,
+        var gid: String,
         var cid: String,
         var isDirectChannel: Boolean,
         var uid: String,

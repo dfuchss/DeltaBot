@@ -3,6 +3,7 @@ package org.fuchss.deltabot.command
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.ReadyEvent
+import net.dv8tion.jda.api.events.ShutdownEvent
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.hooks.EventListener
 import net.dv8tion.jda.api.interactions.commands.Command
@@ -24,10 +25,11 @@ class CommandHandler(private val configuration: Configuration) : EventListener {
 
         commands.add(Shutdown())
         commands.add(Echo())
-        commands.add(Admin(configuration))
+        commands.add(Admin(configuration, commands))
         commands.add(State(configuration))
         commands.add(Erase())
         commands.add(Roles())
+        commands.add(ResetStateAndCommands(configuration))
 
         commands.add(Help(configuration, commands))
         commands.add(PersistentHelp(configuration, commands))
@@ -46,25 +48,35 @@ class CommandHandler(private val configuration: Configuration) : EventListener {
             return
         }
 
+        if (event is ShutdownEvent) {
+            this.scheduler.stop()
+            return
+        }
+
         if (event !is SlashCommandEvent)
             return
         handleSlashCommand(event)
     }
 
     private fun initCommands(event: ReadyEvent) {
-        // TODO Enable Admin Commands for Admins!
-
         val activeCommands = event.jda.retrieveCommands().complete()
         val newCommands = findNewCommandsAndDeleteOldOnes(activeCommands, true)
-        for (cmd in newCommands)
-            event.jda.upsertCommand(cmd).complete()
+        for ((_, cmdData) in newCommands)
+            event.jda.upsertCommand(cmdData).complete()
 
         for (guild in event.jda.guilds) {
             val activeCommandsGuild = getCommands(guild) ?: continue
             val newCommandsGuild = findNewCommandsAndDeleteOldOnes(activeCommandsGuild, false)
-            for (cmd in newCommandsGuild)
-                guild.upsertCommand(cmd).complete()
+            for ((cmd, cmdData) in newCommandsGuild) {
+                if (!cmd.isAdminCommand) {
+                    guild.upsertCommand(cmdData).complete()
+                } else {
+                    guild.upsertCommand(cmdData.setDefaultEnabled(false)).complete()
+                }
+            }
         }
+
+        fixCommandPermissions(event.jda, configuration, commands)
 
         for (cmd in commands)
             cmd.registerJDA(event.jda)
@@ -79,8 +91,8 @@ class CommandHandler(private val configuration: Configuration) : EventListener {
         }
     }
 
-    private fun findNewCommandsAndDeleteOldOnes(activeCommands: List<Command>, global: Boolean): List<CommandData> {
-        val newCommands: MutableList<CommandData> = ArrayList()
+    private fun findNewCommandsAndDeleteOldOnes(activeCommands: List<Command>, global: Boolean): List<Pair<BotCommand, CommandData>> {
+        val newCommands: MutableList<Pair<BotCommand, CommandData>> = ArrayList()
         val oldCommands: MutableList<Command> = ArrayList()
 
         for (command in this.commands) {
@@ -93,7 +105,7 @@ class CommandHandler(private val configuration: Configuration) : EventListener {
             }
 
             if (global == command.isGlobal)
-                newCommands.add(cmdData)
+                newCommands.add(command to cmdData)
         }
 
         // Delete old commands
