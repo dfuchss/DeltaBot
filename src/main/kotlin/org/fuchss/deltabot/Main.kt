@@ -10,10 +10,16 @@ import net.dv8tion.jda.api.hooks.EventListener
 import org.fuchss.deltabot.command.CommandHandler
 import org.fuchss.deltabot.utils.load
 import org.fuchss.deltabot.utils.logger
+import org.fuchss.deltabot.utils.setLogLevel
+import org.slf4j.spi.LocationAwareLogger
 
 
-class LoggerListener : EventListener {
+class LoggerListener(private val configuration: Configuration) : EventListener {
     override fun onEvent(event: GenericEvent) {
+        if (configuration.debug) {
+            logger.debug(event.toString())
+        }
+
         if (event !is MessageReceivedEvent)
             return
 
@@ -34,10 +40,15 @@ fun main() {
     val configPath = System.getenv("CONF_PATH") ?: "./config.json"
     val config = Configuration().load(configPath)
 
+    if (config.debug) {
+        logger.setLogLevel(LocationAwareLogger.DEBUG_INT)
+    }
+
     val token = System.getenv("DISCORD_TOKEN") ?: error("DISCORD_TOKEN not set")
 
     logger.info("Creating Bot ..")
     val builder = JDABuilder.createDefault(token)
-    val jda = builder.addEventListeners(LoggerListener(), ActivityChanger(), CommandHandler(config)).build()
+    val jda = builder.addEventListeners(LoggerListener(config), ActivityChanger(), CommandHandler(config)).build()
     jda.awaitReady()
 }
+

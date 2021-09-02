@@ -18,6 +18,7 @@ class Scheduler {
 
 
     fun start() {
+        logger.debug("Start Scheduler")
         this.thread = Thread { -> loop() }
         this.thread!!.name = "BotScheduler"
         this.thread!!.isDaemon = true
@@ -25,6 +26,7 @@ class Scheduler {
     }
 
     fun stop() {
+        logger.debug("Terminate Scheduler")
         this.thread = null
     }
 

@@ -3,10 +3,9 @@ package org.fuchss.deltabot
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.User
-import org.fuchss.deltabot.utils.Storable
-import org.fuchss.deltabot.utils.fetchMember
-import org.fuchss.deltabot.utils.fetchUser
- 
+import org.fuchss.deltabot.utils.*
+import org.slf4j.spi.LocationAwareLogger
+
 /**
  * The configuration of the bot.
  */
@@ -39,6 +38,13 @@ data class Configuration(
 
     fun toggleDebug(): Boolean {
         debug = !debug
+
+        if (debug) {
+            logger.setLogLevel(LocationAwareLogger.DEBUG_INT)
+        } else {
+            logger.setLogLevel(LocationAwareLogger.INFO_INT)
+        }
+
         this.store()
         return debug
     }

@@ -15,11 +15,22 @@ import net.dv8tion.jda.api.interactions.components.Component
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
+import java.lang.reflect.Field
 import kotlin.math.max
 import kotlin.math.min
 
 
 val logger: Logger = LoggerFactory.getLogger("DeltaBot")
+
+fun Logger.setLogLevel(level: Int) {
+    try {
+        val f: Field = this.javaClass.getDeclaredField("currentLogLevel")
+        f.isAccessible = true
+        f.set(this, level)
+    } catch (e: Exception) {
+        println("Error while setting log level: ${e.message}")
+    }
+}
 
 fun createObjectMapper(): ObjectMapper {
     @Suppress("CAST_NEVER_SUCCEEDS") // IntelliJ says cast impossible .. but that's false!
@@ -112,7 +123,7 @@ fun <E : Component> List<E>.toActionRows(maxInRow: Int = 5, tryModZero: Boolean 
 fun String.toEmoji(): Emoji = Emoji.fromUnicode(EmojiManager.getForAlias(this).unicode)
 
 val discordEmojiRegex = Regex("<:[A-Za-z0-9-]+:\\d+>")
- 
+
 fun findAllEmojis(emoji: String): List<String> {
     val defaultEmojis = EmojiParser.extractEmojis(emoji)
     val discordEmojis = discordEmojiRegex.findAll(emoji).map { m -> m.value }

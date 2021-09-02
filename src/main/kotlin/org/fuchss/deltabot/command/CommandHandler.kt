@@ -24,6 +24,7 @@ class CommandHandler(private val configuration: Configuration) : EventListener {
     init {
         commands = ArrayList()
 
+        commands.add(Debug(configuration))
         commands.add(Shutdown())
         commands.add(Echo())
         commands.add(Admin(configuration, commands))
