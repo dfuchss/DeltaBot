@@ -61,14 +61,20 @@ class CommandHandler(private val configuration: Configuration) : EventListener {
     }
 
     private fun initCommands(event: ReadyEvent) {
+        var needFix = false
+
         val activeCommands = event.jda.retrieveCommands().complete()
         val newCommands = findNewCommandsAndDeleteOldOnes(activeCommands, true)
+        needFix = needFix || newCommands.isNotEmpty()
+
         for ((_, cmdData) in newCommands)
             event.jda.upsertCommand(cmdData).complete()
 
         for (guild in event.jda.guilds) {
             val activeCommandsGuild = getCommands(guild) ?: continue
             val newCommandsGuild = findNewCommandsAndDeleteOldOnes(activeCommandsGuild, false)
+            needFix = needFix || newCommandsGuild.isNotEmpty()
+
             for ((cmd, cmdData) in newCommandsGuild) {
                 if (!cmd.isAdminCommand) {
                     guild.upsertCommand(cmdData).complete()
@@ -77,8 +83,10 @@ class CommandHandler(private val configuration: Configuration) : EventListener {
                 }
             }
         }
-
-        fixCommandPermissions(event.jda, configuration, commands)
+        if (needFix) {
+            logger.info("Fixing command permissions ..")
+            fixCommandPermissions(event.jda, configuration, commands)
+        }
 
         for (cmd in commands)
             cmd.registerJDA(event.jda)

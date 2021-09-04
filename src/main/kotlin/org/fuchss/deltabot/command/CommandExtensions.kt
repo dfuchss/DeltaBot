@@ -13,11 +13,11 @@ fun fixCommandPermissions(jda: JDA, configuration: Configuration, commands: List
 
         if (changedUser == null) {
             for (admin in admins) {
-                guildCommands.forEach { c -> guild.updateCommandPrivilegesById(c.id, CommandPrivilege.enable(admin)).complete() }
+                guildCommands.forEach { c -> guild.updateCommandPrivilegesById(c.id, CommandPrivilege.enable(admin)).queue() }
             }
         } else {
             val privilege = if (changedUser in admins) CommandPrivilege.enable(changedUser) else CommandPrivilege.disable(changedUser)
-            guildCommands.forEach { c -> guild.updateCommandPrivilegesById(c.id, privilege).complete() }
+            guildCommands.forEach { c -> guild.updateCommandPrivilegesById(c.id, privilege).queue() }
         }
     }
 }
