@@ -11,15 +11,7 @@ services:
     networks:
       - deltabot
     depends_on:
-      - deltabot-nlu
-
-  deltabot-nlu:
-    image: ghcr.io/dfuchss/deltabot-nlu
-    restart: unless-stopped
-    expose:
-      - 5005
-    networks:
-      - deltabot
+      - deltabot-duckling
 
   deltabot-duckling:
     image: rasa/duckling
