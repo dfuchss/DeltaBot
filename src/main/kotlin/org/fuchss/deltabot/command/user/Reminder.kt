@@ -39,21 +39,21 @@ class Reminder(configuration: Configuration, private val scheduler: Scheduler) :
 
     override fun handle(event: SlashCommandEvent) {
         val message = event.getOption("message")?.asString ?: ""
-        val time = event.getOption("time")?.asString ?: ""
+        val timeText = event.getOption("time")?.asString ?: ""
 
-        if (message.isBlank() || time.isBlank()) {
+        if (message.isBlank() || timeText.isBlank()) {
             event.reply("I need both .. message and time ..").setEphemeral(true).complete()
             return
         }
 
-        val times = ducklingService.interpretTime(time)
+        val times = ducklingService.interpretTime(timeText)
         if (times.size != 1) {
             event.reply("I've found ${times.size} time(s) in your message :(").setEphemeral(true).complete()
             return
         }
 
-
-        val ts = times[0].first.timestamp()
+        val (time, _) = times[0]
+        val ts = time.timestamp()
         val reminder =
             if (event.channelType == ChannelType.PRIVATE)
                 ReminderData(ts, "", "", true, event.user.id, message)
@@ -62,7 +62,7 @@ class Reminder(configuration: Configuration, private val scheduler: Scheduler) :
 
         reminderState.add(reminder)
         scheduler.queue({ remind(reminder, event.jda) }, ts)
-        event.reply("I'll remind you at ${times[0]}: '$message'").setEphemeral(true).complete()
+        event.reply("I'll remind you at ${time}: '$message'").setEphemeral(true).complete()
     }
 
     private fun remind(reminder: ReminderData, jda: JDA) {
