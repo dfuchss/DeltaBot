@@ -40,17 +40,20 @@ class Reminder(configuration: Configuration, private val scheduler: Scheduler) :
 
 
     override fun handle(event: SlashCommandEvent) {
+        // Use Language of the user for reminders ..
+        val language = event.user.language() ?: event.language()
+
         val message = event.getOption("message")?.asString ?: ""
         val timeText = event.getOption("time")?.asString ?: ""
 
         if (message.isBlank() || timeText.isBlank()) {
-            event.reply("I need both .. message and time ..".translate(event)).setEphemeral(true).complete()
+            event.reply("I need both .. message and time ..".translate(language)).setEphemeral(true).complete()
             return
         }
 
-        val times = ducklingService.interpretTime(timeText, event.language())
+        val times = ducklingService.interpretTime(timeText, language)
         if (times.size != 1) {
-            event.reply("I've found # time(s) in your message :(".translate(event, times.size)).setEphemeral(true).complete()
+            event.reply("I've found # time(s) in your message :(".translate(language, times.size)).setEphemeral(true).complete()
             return
         }
 
@@ -64,7 +67,7 @@ class Reminder(configuration: Configuration, private val scheduler: Scheduler) :
 
         reminderState.add(reminder)
         scheduler.queue({ remind(reminder, event.jda) }, ts)
-        event.reply("I'll remind you at #: '#'".translate(event, time, message)).setEphemeral(true).complete()
+        event.reply("I'll remind you <t:#:R>: '#'".translate(language, ts, message)).setEphemeral(true).complete()
     }
 
     private fun remind(reminder: ReminderData, jda: JDA) {
