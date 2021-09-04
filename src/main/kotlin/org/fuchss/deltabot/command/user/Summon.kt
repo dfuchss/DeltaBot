@@ -125,7 +125,7 @@ class Summon(configuration: Configuration, private val scheduler: Scheduler) : B
 
         var finalMessage = intro
         if (reactionText.isNotBlank())
-            finalMessage += "\n\nCurrently:\n${reactionText.trim()}"
+            finalMessage += "\n\n${reactionText.trim()}"
 
         message.editMessage(finalMessage).complete()
     }
