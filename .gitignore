@@ -269,4 +269,5 @@ rasa-unknown
 
 config.json*
 states
+config
 target/

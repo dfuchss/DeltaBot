@@ -7,7 +7,7 @@ services:
       - ./config:/usr/src/bot/config
       - ./states:/usr/src/bot/states
     environment:
-      - DISCORD_TOKEN=$DiscordToken
+      - DISCORD_TOKEN=$DISCORD_TOKEN
     networks:
       - deltabot
     depends_on:
