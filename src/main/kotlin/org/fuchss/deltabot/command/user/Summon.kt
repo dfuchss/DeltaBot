@@ -33,7 +33,6 @@ class Summon(configuration: Configuration, private val scheduler: Scheduler) : B
         private val finish = ":octagonal_sign:".toEmoji()
         private val delete = ":put_litter_in_its_place:".toEmoji()
 
-        private const val pollRequest = "Please use buttons to vote:"
         private const val pollFinished = "*Poll finished. You can't vote anymore :)*"
     }
 
@@ -79,7 +78,7 @@ class Summon(configuration: Configuration, private val scheduler: Scheduler) : B
         val reply = event.deferReply().complete()
 
         val game = event.getOption("game")!!.asRole
-        val time = event.getOption("time")?.asString ?: "today at the default time"
+        val time = event.getOption("time")?.asString ?: "today at the usual time"
 
         createSummon(event.guild!!, event.user, event.channel, game, time, event.jda)
 
@@ -127,7 +126,6 @@ class Summon(configuration: Configuration, private val scheduler: Scheduler) : B
         var finalMessage = intro
         if (reactionText.isNotBlank())
             finalMessage += "\n\nCurrently:\n${reactionText.trim()}"
-        finalMessage += "\n\n$pollRequest"
 
         message.editMessage(finalMessage).complete()
     }
@@ -159,8 +157,6 @@ class Summon(configuration: Configuration, private val scheduler: Scheduler) : B
         response = response.replace("###MENTION###", game.asMention)
         response = response.replace("###TIME###", timeString)
         response = response.replace("###DAY###", day)
-
-        response += "\n\n$pollRequest"
 
         val components = getButtons(guild)
         val msg = channel.sendMessage(response).setActionRows(components).complete()
@@ -200,7 +196,7 @@ class Summon(configuration: Configuration, private val scheduler: Scheduler) : B
     }
 
     private fun terminateSummon(msg: Message) {
-        val newContent = msg.contentRaw.replace(pollRequest, pollFinished)
+        val newContent = msg.contentRaw + "\n\n$pollFinished"
         msg.editMessage(newContent).setActionRows(listOf()).complete()
         if (msg.isPinned)
             msg.unpin().complete()
