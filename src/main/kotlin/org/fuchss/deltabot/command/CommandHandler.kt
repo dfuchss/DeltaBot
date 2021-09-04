@@ -38,7 +38,6 @@ class CommandHandler(private val configuration: Configuration) : EventListener {
         commands.add(Teams())
         commands.add(Summon(configuration, scheduler))
         commands.add(Reminder(configuration, scheduler))
-        // commands.add(DialogEntrypoint(configuration))
 
         nameToCommand = commands.associateBy { m -> m.name }
     }

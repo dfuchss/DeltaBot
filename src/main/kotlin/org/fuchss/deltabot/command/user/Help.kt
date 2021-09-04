@@ -1,6 +1,7 @@
 package org.fuchss.deltabot.command.user
 
 import net.dv8tion.jda.api.EmbedBuilder
+import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
@@ -20,19 +21,23 @@ open class Help(private val configuration: Configuration, protected val commands
     override fun handle(event: SlashCommandEvent) {
         val admin = configuration.isAdmin(event.user)
         val commands = commands.sorted().filter { c -> admin || !c.isAdminCommand }
-        event.replyEmbeds(generateText(event, commands)).setEphemeral(admin).complete()
+        event.replyEmbeds(generateText(event.jda, commands)).setEphemeral(admin).complete()
     }
 
-    protected fun generateText(event: SlashCommandEvent, commands: List<BotCommand>): MessageEmbed {
-        var message = ""
-        for (cmd in commands) {
-            message += "**/${cmd.name}**: ${cmd.description}\n"
-            val subcommands = cmd.subcommands
-            if (subcommands.isNotEmpty()) {
-                for (subcommand in subcommands)
-                    message += "→ **${subcommand.name}**: ${subcommand.description}\n"
+    companion object {
+        fun generateText(jda: JDA, commands: List<BotCommand>): MessageEmbed {
+            var message = ""
+            for (cmd in commands) {
+                message += "**/${cmd.name}**: ${cmd.description}\n"
+                val subcommands = cmd.subcommands
+                if (subcommands.isNotEmpty()) {
+                    for (subcommand in subcommands)
+                        message += "→ **${subcommand.name}**: ${subcommand.description}\n"
+                }
             }
+            return EmbedBuilder().setTitle(jda.selfUser.name + " Help").setDescription(message.trim()).setColor(Constants.BLUE).build()
         }
-        return EmbedBuilder().setTitle(event.jda.selfUser.name + " Help").setDescription(message.trim()).setColor(Constants.BLUE).build()
     }
+
+
 }

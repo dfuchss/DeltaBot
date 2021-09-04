@@ -23,7 +23,8 @@ class Summon(configuration: Configuration, private val scheduler: Scheduler) : B
 
     companion object {
         private val summonMsgs = listOf(
-            "###USER###: Who would be with us ###DAY### ###TIME###? ###MENTION###",
+            "###USER###: Who wants to play ###MENTION### ###DAY### ###TIME###?",
+            "###USER###: Who would be up for playing ###MENTION### ###DAY### ###TIME###?"
         )
 
         private val summonReactionsDefault = listOf(":+1:", ":thinking:", ":question:", ":pensive:", ":-1").map { e -> e.toEmoji() }
