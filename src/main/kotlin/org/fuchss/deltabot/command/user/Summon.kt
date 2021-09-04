@@ -18,15 +18,17 @@ import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.language
 import org.fuchss.deltabot.translate
 import org.fuchss.deltabot.utils.*
-import java.time.Duration
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 import kotlin.random.Random
 
 class Summon(configuration: Configuration, private val scheduler: Scheduler) : BotCommand, EventListener {
 
     companion object {
         private val summonMsgs = listOf(
-            "###USER###: Who wants to play ###MENTION### ###DAY### ###TIME###?",
-            "###USER###: Who would be up for playing ###MENTION### ###DAY### ###TIME###?"
+            "###USER###: Who wants to play ###MENTION### ###TIME###?",
+            "###USER###: Who would be up for playing ###MENTION### ###TIME###?"
         )
 
         private val summonReactionsDefault = listOf(":+1:", ":thinking:", ":question:", ":pensive:", ":-1").map { e -> e.toEmoji() }
@@ -52,7 +54,7 @@ class Summon(configuration: Configuration, private val scheduler: Scheduler) : B
 
     private fun initScheduler(jda: JDA) {
         for (update in summonState.summons)
-            scheduler.queue({ summonUpdate(update, jda) }, update.timestamp)
+            scheduler.queue({ terminateSummon(jda.getGuildById(update.gid)!!.fetchMessage(update.cid, update.mid)!!, jda.fetchUser(update.uid)!!) }, update.timestamp)
     }
 
     override fun onEvent(event: GenericEvent) {
@@ -80,9 +82,9 @@ class Summon(configuration: Configuration, private val scheduler: Scheduler) : B
         val reply = event.deferReply().complete()
 
         val game = event.getOption("game")!!.asRole
-        val time = event.getOption("time")?.asString ?: "today at the usual time".translate(event)
+        val time = event.getOption("time")?.asString ?: "today at 20:00".translate(event)
 
-        createSummon(event, event.guild!!, event.user, event.channel, game, time, event.jda)
+        createSummon(event, event.guild!!, event.user, event.channel, game, time)
 
         reply.deleteOriginal().complete()
     }
@@ -132,73 +134,28 @@ class Summon(configuration: Configuration, private val scheduler: Scheduler) : B
         message.editMessage(finalMessage).complete()
     }
 
-    private fun createSummon(event: SlashCommandEvent, guild: Guild, user: User, channel: MessageChannel, game: Role, time: String, jda: JDA) {
-        var timeString = time
-        var day = "today"
-        var offset = 0
-
-        val extractedDay = findGenericDayTimespan(time, event.language(), ducklingService)
-
-        if (extractedDay != null) {
-            val range = extractedDay.second.first
-
-            timeString = ""
-            if (range.first - 1 > 0)
-                timeString += time.substring(0, range.first - 1)
-            if (range.last + 1 < time.length)
-                timeString += time.substring(range.last + 1)
-
-            timeString = timeString.trim()
-            day = extractedDay.second.second
-            offset = extractedDay.first.toDays().toInt()
-        }
-        day = "**$day**"
+    private fun createSummon(event: SlashCommandEvent, guild: Guild, user: User, channel: MessageChannel, game: Role, time: String) {
+        val extractedTime = findGenericTimespan(time, event.language(), ducklingService)?.first ?: LocalDateTime.of(LocalDate.now(), LocalTime.of(20, 0))
 
         var response = summonMsgs[Random.nextInt(summonMsgs.size)].translate(event.language())
         response = response.replace("###USER###", user.asMention)
         response = response.replace("###MENTION###", game.asMention)
-        response = response.replace("###TIME###", timeString)
-        response = response.replace("###DAY###", day)
+        response = response.replace("###TIME###", "<t:${extractedTime.timestamp()}:R>")
 
         val components = getButtons(guild)
         val msg = channel.sendMessage(response).setActionRows(components).complete()
         msg.pinAndDelete()
 
-        addToScheduler(user.id, msg, offset, day, jda)
-    }
-
-    private fun addToScheduler(authorId: String, responseMessage: Message, dayOffset: Int, dayValue: String, jda: JDA) {
-        if (dayOffset <= -1)
-            return
-
-        val nextDay = nextDayTS()
-        val data = SummonData(nextDay, responseMessage.guild.id, responseMessage.channel.id, responseMessage.id, authorId, dayOffset, dayValue)
+        val data = SummonData(extractedTime.timestamp(), msg.guild.id, msg.channel.id, msg.id, user.id)
         summonState.add(data)
-        scheduler.queue({ summonUpdate(data, jda) }, nextDay)
-    }
-
-    private fun summonUpdate(data: SummonData, jda: JDA) {
-        summonState.remove(data)
-        try {
-            val user = jda.fetchUser(data.uid)!!
-            val channel = jda.fetchTextChannel(data.gid, data.cid)!!
-            val msg = channel.retrieveMessageById(data.mid).complete()
-
-            val newDayOffset = data.dayOffset - 1
-            if (newDayOffset < 0) {
-                terminateSummon(msg, user)
-                return
-            }
-            val newDayValue = "**${daysText(Duration.ofDays(newDayOffset.toLong()), language(msg.guild, user))}**"
-            val newContent = msg.contentRaw.replace(data.dayValue, newDayValue)
-            msg.editMessage(newContent).complete()
-            addToScheduler(data.uid, msg, newDayOffset, newDayValue, jda)
-        } catch (e: Exception) {
-            logger.error(e.message)
-        }
+        scheduler.queue({ terminateSummon(msg, user) }, extractedTime.timestamp())
     }
 
     private fun terminateSummon(msg: Message, user: User) {
+        val data = summonState.getSummonMessage(msg.id)
+        if (data != null)
+            summonState.remove(data)
+
         val newContent = msg.contentRaw + "\n\n${pollFinished.translate(language(msg.guild, user))}"
         msg.editMessage(newContent).setActionRows(listOf()).complete()
         if (msg.isPinned)
@@ -263,8 +220,6 @@ class Summon(configuration: Configuration, private val scheduler: Scheduler) : B
         var cid: String,
         var mid: String,
         var uid: String,
-        var dayOffset: Int,
-        var dayValue: String,
         var userToReact: MutableMap<String, String> = mutableMapOf()
     )
 }

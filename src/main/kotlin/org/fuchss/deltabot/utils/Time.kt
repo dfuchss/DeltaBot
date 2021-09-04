@@ -58,12 +58,18 @@ private fun nextWeekend(): Int {
     return if (diffToSaturday == 0) 7 else diffToSaturday
 }
 
-fun findGenericDayTimespan(message: String, language: Language, ducklingService: DucklingService? = null): Pair<Duration, Pair<IntRange, String>>? {
+fun findGenericTimespan(message: String, language: Language, ducklingService: DucklingService? = null): Pair<LocalDateTime, IntRange>? {
+    if (ducklingService != null) {
+        val times = ducklingService.interpretTime(message, language)
+        if (times.size != 1)
+            return null
+
+        val (time, range) = times[0]
+        return time to range
+    }
+
     for (timespan in genericTimeSpans[language] ?: listOf()) {
         // Only consider timespans >= 1 day
-        if (unit(timespan) < Duration.ofDays(1)) {
-            continue
-        }
         val rgx = Regex(regex(timespan))
         val match = rgx.findAll(message).toList()
 
@@ -71,20 +77,10 @@ fun findGenericDayTimespan(message: String, language: Language, ducklingService:
             continue
 
         val multiply = extractor(timespan)(match[0].value)
-        val days = unit(timespan).multipliedBy(multiply.toLong())
-        return days to (match[0].range to daysText(days, language))
+        val time = LocalDateTime.now() + unit(timespan).multipliedBy(multiply.toLong())
+        return time to match[0].range
     }
-
-    if (ducklingService != null) {
-        val times = ducklingService.interpretTime(message, language)
-        if (times.size != 1)
-            return null
-
-        val (time, range) = times[0]
-        val days = Duration.between(LocalDateTime.now(), time).abs()
-        return days to (range to daysText(days, language))
-    }
-
+    
     return null
 }
 
