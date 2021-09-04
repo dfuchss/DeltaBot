@@ -4,10 +4,12 @@ services:
     image: ghcr.io/dfuchss/deltabot
     restart: unless-stopped
     volumes:
-      - ./config:/usr/src/bot/config
-      - ./states:/usr/src/bot/states
+      - ./config.json:/config.json
+      - ./states:/usr/src/app/states
+      - ./rasa-unknown:/usr/src/app/rasa-unknown
     environment:
-      - DISCORD_TOKEN=$DiscordToken
+      - CONF_FILE=/config.json
+      - DiscordToken=$DiscordToken
     networks:
       - deltabot
     depends_on:
@@ -18,14 +20,6 @@ services:
     restart: unless-stopped
     expose:
       - 5005
-    networks:
-      - deltabot
-
-  deltabot-duckling:
-    image: rasa/duckling
-    restart: unless-stopped
-    expose:
-      - 8000
     networks:
       - deltabot
 

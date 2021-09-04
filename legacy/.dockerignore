@@ -1,7 +1,9 @@
 .git
 .gitignore
 .gitattributes
+.environment.env
 
 rasa
+.venv
 .idea
-target
+__pycache__

@@ -1,24 +1,19 @@
-FROM python:3.8-slim
+FROM maven:3-jdk-11 as builder
+
+WORKDIR /usr/src/bot
+COPY src src
+COPY pom.xml pom.xml
+RUN mvn clean package
+
+FROM azul/zulu-openjdk-alpine:11
+
+ENV DISCORD_TOKEN MY_TOKEN
 ENV TZ=Europe/Berlin
-ENV DiscordToken "The_Discord_Token"
+ENV CONF_PATH /usr/src/bot/config/config.json
 
-# WORKDIR /usr/src/
+WORKDIR /usr/src/bot
+COPY --from=builder /usr/src/bot/target/deltabot-*-jar-with-dependencies.jar deltabot.jar
 
-# FFMPEG (Voice)
-# RUN wget https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz
-# RUN tar xJf ffmpeg-release-amd64-static.tar.xz
-# RUN rm ffmpeg-release-amd64-static.tar.xz
-# RUN mv ffmpeg* ffmpeg
-# RUN ln -s /usr/src/ffmpeg/ffmpeg /usr/bin/ffmpeg
-
-# OPUS (Voice)
-# RUN apt update && apt install libopus0 opus-tools -y && apt clean
-
-WORKDIR /usr/src/app
-
-COPY ./requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY ./ ./
-
-CMD ["python", "-u", "./deltabot.py"]
+VOLUME /usr/src/bot/config
+VOLUME /usr/src/bot/states
+ENTRYPOINT java -jar /usr/src/bot/deltabot.jar

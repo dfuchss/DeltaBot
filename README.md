@@ -1,18 +1,17 @@
-# DeltaBot - My simple Discord Bot
+# DeltaBot - My simple Discord Bot (Version 2)
 
 **Important:**
 
-*Since discord.py will be discontinued, this commit will be the last maintenance commit of the DeltaBot using python. I
-will create a reimplementation of the bot and merge it as soon as the bot is usable.*
+*Since discord.py will be discontinued, I've recreated DeltaBot using Kotlin and JDA. You can find the old version of DeltaBot [here](https://github.com/dfuchss/DeltaBot/releases/tag/v1.0) and its source code [here](./legacy)*
 
 This repo contains my first [Discord](https://discordapp.com/) bot. It uses [RASA]("https://rasa.com") for NLP. The NLU
 is located [here](https://github.com/dfuchss/DeltaBot-NLU).
 
 ## Requirements (Development):
-
-* Python 3.8 with pip
-* `pip install -r requirements.txt`
-* `pip install -r rasa/requirements.txt`
+* maven 3 and Java 11
+  * `mvn clean package`
+* Python 3.8 with pip (NLU only)
+  * `pip install -r rasa/requirements.txt`
 
 ## Run the Bot (via Docker)
 
@@ -23,7 +22,7 @@ You'll need the following two things:
 
 To start the bot simply run:
 
-* Create empty configuration: `touch config.json`
-* Store token to environment: `echo "DiscordToken=YOUR-Discord-TOKEN" > .env`
+* Create volume mappings (see dockerfile)
+* Store token to environment: `echo "DISCORD_TOKEN=YOUR-Discord-TOKEN" > .env`
 * Start the Bot: `docker-compose up -d`
 
