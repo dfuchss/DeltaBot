@@ -1,5 +1,6 @@
 package org.fuchss.deltabot.utils
 
+import org.fuchss.deltabot.cognitive.DucklingService
 import java.time.*
 import java.util.*
 
@@ -34,7 +35,7 @@ private fun nextWeekend(): Int {
     return if (diffToSaturday == 0) 7 else diffToSaturday
 }
 
-fun findGenericDayTimespan(message: String): Pair<Duration, Pair<IntRange, String>>? {
+fun findGenericDayTimespan(message: String, ducklingService: DucklingService? = null): Pair<Duration, Pair<IntRange, String>>? {
     for (timespan in genericTimeSpans) {
         // Only consider timespans >= 1 day
         if (unit(timespan) < Duration.ofDays(1)) {
@@ -50,6 +51,17 @@ fun findGenericDayTimespan(message: String): Pair<Duration, Pair<IntRange, Strin
         val days = unit(timespan).multipliedBy(multiply.toLong())
         return days to (match[0].range to daysText(days))
     }
+
+    if (ducklingService != null) {
+        val times = ducklingService.interpretTime(message)
+        if (times.size != 1)
+            return null
+
+        val (time, range) = times[0]
+        val days = Duration.between(LocalDateTime.now(), time).abs()
+        return days to (range to daysText(days))
+    }
+
     return null
 }
 

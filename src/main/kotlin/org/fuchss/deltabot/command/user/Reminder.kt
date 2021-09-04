@@ -49,10 +49,11 @@ class Reminder(configuration: Configuration, private val scheduler: Scheduler) :
         val times = ducklingService.interpretTime(time)
         if (times.size != 1) {
             event.reply("I've found ${times.size} time(s) in your message :(").setEphemeral(true).complete()
+            return
         }
 
 
-        val ts = times[0].timestamp()
+        val ts = times[0].first.timestamp()
         val reminder =
             if (event.channelType == ChannelType.PRIVATE)
                 ReminderData(ts, "", "", true, event.user.id, message)

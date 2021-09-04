@@ -12,12 +12,14 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.interactions.components.Button
 import net.dv8tion.jda.api.interactions.components.ButtonStyle
+import org.fuchss.deltabot.Configuration
+import org.fuchss.deltabot.cognitive.DucklingService
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.utils.*
 import java.time.Duration
 import kotlin.random.Random
 
-class Summon(private val scheduler: Scheduler) : BotCommand, EventListener {
+class Summon(configuration: Configuration, private val scheduler: Scheduler) : BotCommand, EventListener {
 
     companion object {
         private val summonMsgs = listOf(
@@ -38,6 +40,8 @@ class Summon(private val scheduler: Scheduler) : BotCommand, EventListener {
     override val isGlobal: Boolean get() = false
 
     private val summonState: SummonState = SummonState().load("./states/summon.json")
+
+    private val ducklingService: DucklingService = DucklingService(configuration.ducklingUrl)
 
     override fun registerJDA(jda: JDA) {
         jda.addEventListener(this)
@@ -132,7 +136,7 @@ class Summon(private val scheduler: Scheduler) : BotCommand, EventListener {
         var day = "today"
         var offset = 0
 
-        val extractedDay = findGenericDayTimespan(time)
+        val extractedDay = findGenericDayTimespan(time, ducklingService)
 
         if (extractedDay != null) {
             val range = extractedDay.second.first

@@ -19,7 +19,7 @@ import org.fuchss.deltabot.utils.logger
 class CommandHandler(private val configuration: Configuration) : EventListener {
     private val commands: MutableList<BotCommand>
     private val nameToCommand: Map<String, BotCommand>
-    private var scheduler: Scheduler = Scheduler()
+    private val scheduler: Scheduler = Scheduler()
 
     init {
         commands = ArrayList()
@@ -37,7 +37,7 @@ class CommandHandler(private val configuration: Configuration) : EventListener {
         commands.add(PersistentHelp(configuration, commands))
         commands.add(Roll())
         commands.add(Teams())
-        commands.add(Summon(scheduler))
+        commands.add(Summon(configuration, scheduler))
         commands.add(Reminder(configuration, scheduler))
         commands.add(DialogEntrypoint(configuration))
 

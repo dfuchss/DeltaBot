@@ -11,7 +11,7 @@ import java.time.format.DateTimeFormatter
 
 class DucklingService(private val endpoint: String) {
 
-    fun interpretTime(text: String): List<LocalDateTime> {
+    fun interpretTime(text: String): List<Pair<LocalDateTime, IntRange>> {
         val om = createObjectMapper()
         val tz = ZoneId.systemDefault().id
         val locale = "en_GB"
@@ -31,12 +31,20 @@ class DucklingService(private val endpoint: String) {
             foundTimes = om.readValue(rawResponse, foundTimes.javaClass)
 
             val df = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
-            val time = foundTimes.map { t -> LocalDateTime.parse(t.value.value, df) }
-            logger.debug("Found times: $time")
-            time
+            val times = foundTimes.map { t -> extractTime(t.value) to IntRange(t.start, t.end - 1) }.map { (t, r) -> LocalDateTime.parse(t, df) to r }
+            logger.debug("Found times: $times")
+            times
         } catch (e: Exception) {
             emptyList()
         }
+    }
+
+    private fun extractTime(t: DucklingResponseValue): String {
+        return if (t.value == null) {
+            // From & To are set ..
+            t.from!!.value!!
+        } else
+            t.value!!
     }
 
     private fun getDataString(params: Map<String, Any>): String {
@@ -60,8 +68,11 @@ class DucklingService(private val endpoint: String) {
     )
 
     private data class DucklingResponseValue(
+        var grain: String? = null,
         // E.g. 2021-09-01T10:00:00.000+02:00
-        var value: String
+        var value: String? = null,
+        var from: DucklingResponseValue? = null,
+        var to: DucklingResponseValue? = null
     )
 
 }
