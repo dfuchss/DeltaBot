@@ -11,7 +11,6 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import org.fuchss.deltabot.Configuration
 import org.fuchss.deltabot.command.admin.*
-import org.fuchss.deltabot.command.cognitive.DialogEntrypoint
 import org.fuchss.deltabot.command.user.*
 import org.fuchss.deltabot.utils.Scheduler
 import org.fuchss.deltabot.utils.logger
@@ -39,7 +38,7 @@ class CommandHandler(private val configuration: Configuration) : EventListener {
         commands.add(Teams())
         commands.add(Summon(configuration, scheduler))
         commands.add(Reminder(configuration, scheduler))
-        commands.add(DialogEntrypoint(configuration))
+        // commands.add(DialogEntrypoint(configuration))
 
         nameToCommand = commands.associateBy { m -> m.name }
     }
