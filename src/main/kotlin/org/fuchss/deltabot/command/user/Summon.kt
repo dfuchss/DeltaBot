@@ -15,6 +15,8 @@ import net.dv8tion.jda.api.interactions.components.ButtonStyle
 import org.fuchss.deltabot.Configuration
 import org.fuchss.deltabot.cognitive.DucklingService
 import org.fuchss.deltabot.command.BotCommand
+import org.fuchss.deltabot.language
+import org.fuchss.deltabot.translate
 import org.fuchss.deltabot.utils.*
 import java.time.Duration
 import kotlin.random.Random
@@ -78,7 +80,7 @@ class Summon(configuration: Configuration, private val scheduler: Scheduler) : B
         val reply = event.deferReply().complete()
 
         val game = event.getOption("game")!!.asRole
-        val time = event.getOption("time")?.asString ?: "today at the usual time"
+        val time = event.getOption("time")?.asString ?: "today at the usual time".translate(event)
 
         createSummon(event.guild!!, event.user, event.channel, game, time, event.jda)
 
@@ -91,7 +93,7 @@ class Summon(configuration: Configuration, private val scheduler: Scheduler) : B
         val buttonId = event.button?.id ?: ""
         if (finish.name == buttonId) {
             summonState.remove(data)
-            terminateSummon(event.message!!)
+            terminateSummon(event.message!!, event.jda.fetchUser(data.uid)!!)
             return
         }
 
@@ -135,7 +137,7 @@ class Summon(configuration: Configuration, private val scheduler: Scheduler) : B
         var day = "today"
         var offset = 0
 
-        val extractedDay = findGenericDayTimespan(time, ducklingService)
+        val extractedDay = findGenericDayTimespan(time, user.language(), ducklingService)
 
         if (extractedDay != null) {
             val range = extractedDay.second.first
@@ -152,7 +154,7 @@ class Summon(configuration: Configuration, private val scheduler: Scheduler) : B
         }
         day = "**$day**"
 
-        var response = summonMsgs[Random.nextInt(summonMsgs.size)]
+        var response = summonMsgs[Random.nextInt(summonMsgs.size)].translate(user)
         response = response.replace("###USER###", user.asMention)
         response = response.replace("###MENTION###", game.asMention)
         response = response.replace("###TIME###", timeString)
@@ -178,15 +180,16 @@ class Summon(configuration: Configuration, private val scheduler: Scheduler) : B
     private fun summonUpdate(data: SummonData, jda: JDA) {
         summonState.remove(data)
         try {
+            val user = jda.fetchUser(data.uid)!!
             val channel = jda.fetchTextChannel(data.gid, data.cid)!!
             val msg = channel.retrieveMessageById(data.mid).complete()
 
             val newDayOffset = data.dayOffset - 1
             if (newDayOffset < 0) {
-                terminateSummon(msg)
+                terminateSummon(msg, user)
                 return
             }
-            val newDayValue = "**${daysText(Duration.ofDays(newDayOffset.toLong()))}**"
+            val newDayValue = "**${daysText(Duration.ofDays(newDayOffset.toLong()), user.language())}**"
             val newContent = msg.contentRaw.replace(data.dayValue, newDayValue)
             msg.editMessage(newContent).complete()
             addToScheduler(data.uid, msg, newDayOffset, newDayValue, jda)
@@ -195,8 +198,8 @@ class Summon(configuration: Configuration, private val scheduler: Scheduler) : B
         }
     }
 
-    private fun terminateSummon(msg: Message) {
-        val newContent = msg.contentRaw + "\n\n$pollFinished"
+    private fun terminateSummon(msg: Message, user: User) {
+        val newContent = msg.contentRaw + "\n\n${pollFinished.translate(user)}"
         msg.editMessage(newContent).setActionRows(listOf()).complete()
         if (msg.isPinned)
             msg.unpin().complete()

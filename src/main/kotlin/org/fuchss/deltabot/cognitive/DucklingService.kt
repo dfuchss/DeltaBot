@@ -1,5 +1,6 @@
 package org.fuchss.deltabot.cognitive
 
+import org.fuchss.deltabot.Language
 import org.fuchss.deltabot.utils.createObjectMapper
 import org.fuchss.deltabot.utils.logger
 import java.net.URLEncoder
@@ -11,10 +12,10 @@ import java.time.format.DateTimeFormatter
 
 class DucklingService(private val endpoint: String) {
 
-    fun interpretTime(text: String): List<Pair<LocalDateTime, IntRange>> {
+    fun interpretTime(text: String, language: Language): List<Pair<LocalDateTime, IntRange>> {
         val om = createObjectMapper()
         val tz = ZoneId.systemDefault().id
-        val locale = "en_GB"
+        val locale = language.locale
         val dims = "[\"time\"]"
 
         val values = mapOf(

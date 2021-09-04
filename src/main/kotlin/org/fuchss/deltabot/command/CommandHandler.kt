@@ -32,6 +32,7 @@ class CommandHandler(private val configuration: Configuration) : EventListener {
         commands.add(Roles())
         commands.add(ResetStateAndCommands(configuration))
 
+        commands.add(Language())
         commands.add(Help(configuration, commands))
         commands.add(PersistentHelp(configuration, commands))
         commands.add(Roll())

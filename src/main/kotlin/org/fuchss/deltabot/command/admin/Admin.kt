@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import org.fuchss.deltabot.Configuration
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.fixCommandPermissions
+import org.fuchss.deltabot.translate
 
 class Admin(private val configuration: Configuration, private val commands: List<BotCommand>) : BotCommand {
 
@@ -21,7 +22,7 @@ class Admin(private val configuration: Configuration, private val commands: List
 
     override fun handle(event: SlashCommandEvent) {
         if (!configuration.isAdmin(event.user)) {
-            event.reply("You are not a global admin!").setEphemeral(true).complete()
+            event.reply("You are not a global admin!".translate(event)).setEphemeral(true).complete()
             return
         }
 
