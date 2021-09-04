@@ -20,6 +20,12 @@ class Admin(private val configuration: Configuration, private val commands: List
     }
 
     override fun handle(event: SlashCommandEvent) {
+        if (!configuration.isAdmin(event.user)) {
+            event.reply("You are not a global admin!").setEphemeral(true).complete()
+            return
+        }
+
+
         val user = event.getOption("user")?.asUser
 
         if (user == null || user.isBot) {
