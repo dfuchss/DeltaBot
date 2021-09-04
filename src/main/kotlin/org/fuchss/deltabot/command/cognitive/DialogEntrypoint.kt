@@ -35,10 +35,10 @@ class DialogEntrypoint(private val configuration: Configuration) : BotCommand {
             return
         }
 
+        val defer = event.deferReply().complete()
+
         val response = rasa.recognize(msg)
         logger.debug("RASA Response: $response")
-
-        // TODO Handle it ..
-        event.reply("The dialog system is currently work in progress .. please ask my admin for further information").setEphemeral(true).complete()
+        
     }
 }
