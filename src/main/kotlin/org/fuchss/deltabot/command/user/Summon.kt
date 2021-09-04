@@ -199,6 +199,7 @@ class Summon(private val scheduler: Scheduler) : BotCommand, EventListener {
         msg.editMessage(newContent).setActionRows(listOf()).complete()
         if (msg.isPinned)
             msg.unpin().complete()
+        msg.hide()
     }
 
     private fun getButtons(guild: Guild): List<ActionRow> {

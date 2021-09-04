@@ -8,6 +8,7 @@ import net.dv8tion.jda.api.events.ReadyEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.EventListener
 import org.fuchss.deltabot.command.CommandHandler
+import org.fuchss.deltabot.utils.initHiddenMessages
 import org.fuchss.deltabot.utils.load
 import org.fuchss.deltabot.utils.logger
 import org.fuchss.deltabot.utils.setLogLevel
@@ -48,7 +49,10 @@ fun main() {
 
     logger.info("Creating Bot ..")
     val builder = JDABuilder.createDefault(token)
+
     val jda = builder.addEventListeners(LoggerListener(config), ActivityChanger(), CommandHandler(config)).build()
+    initHiddenMessages(jda)
+
     jda.awaitReady()
 }
 
