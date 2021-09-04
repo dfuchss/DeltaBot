@@ -12,12 +12,12 @@ import org.fuchss.deltabot.setLanguage
 import org.fuchss.deltabot.translate
 import org.fuchss.deltabot.utils.withFirst
 
-class Language : BotCommand {
-    override val isAdminCommand: Boolean get() = false
-    override val isGlobal: Boolean get() = true
+class GuildLanguage : BotCommand {
+    override val isAdminCommand: Boolean get() = true
+    override val isGlobal: Boolean get() = false
 
     override fun createCommand(): CommandData {
-        val command = CommandData("language", "set your bot language")
+        val command = CommandData("guild-language", "set the bot language of your guild")
         command.addOptions(
             OptionData(OptionType.STRING, "lang", "your language").setRequired(true).addChoices(
                 Language.values().map { l -> Command.Choice(l.toString(), l.locale) }.withFirst(Command.Choice("None", "None"))
@@ -27,9 +27,17 @@ class Language : BotCommand {
     }
 
     override fun handle(event: SlashCommandEvent) {
+        val guild = event.guild
+        if (guild == null) {
+            event.reply("You have to execute the command in a guild".translate(event)).setEphemeral(true).complete()
+            return
+        }
+
         val locale = event.getOption("lang")?.asString ?: ""
         val language = Language.values().find { l -> l.locale == locale }
-        event.user.setLanguage(language)
-        event.reply("Your new language is #".translate(event.user.language(), language ?: "--")).setEphemeral(true).complete()
+        guild.setLanguage(language)
+        event.reply("Your new guild language is #".translate(guild.language(), language ?: "--")).setEphemeral(true).complete()
     }
 }
+
+

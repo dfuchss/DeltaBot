@@ -48,7 +48,7 @@ class Reminder(configuration: Configuration, private val scheduler: Scheduler) :
             return
         }
 
-        val times = ducklingService.interpretTime(timeText, event.user.language())
+        val times = ducklingService.interpretTime(timeText, event.language())
         if (times.size != 1) {
             event.reply("I've found # time(s) in your message :(".translate(event, times.size)).setEphemeral(true).complete()
             return
@@ -72,7 +72,7 @@ class Reminder(configuration: Configuration, private val scheduler: Scheduler) :
 
         val user = jda.fetchUser(reminder.uid)!!
         val channel = if (reminder.isDirectChannel) user.openPrivateChannel().complete() else jda.fetchTextChannel(reminder.gid, reminder.cid)!!
-        channel.sendMessage("**Reminder #**\n#".translate(user, user.asMention, reminder.message)).complete()
+        channel.sendMessage("**Reminder ${user.asMention}**\n${reminder.message}").complete()
     }
 
 

@@ -81,3 +81,9 @@ fun JDA.fetchUser(uid: String): User? {
         return null
     }
 }
+
+fun <E> List<E>.withFirst(e: E): List<E> {
+    val newList = mutableListOf(e)
+    newList.addAll(this)
+    return newList
+}

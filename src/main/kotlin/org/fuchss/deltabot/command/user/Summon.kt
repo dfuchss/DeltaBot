@@ -82,7 +82,7 @@ class Summon(configuration: Configuration, private val scheduler: Scheduler) : B
         val game = event.getOption("game")!!.asRole
         val time = event.getOption("time")?.asString ?: "today at the usual time".translate(event)
 
-        createSummon(event.guild!!, event.user, event.channel, game, time, event.jda)
+        createSummon(event, event.guild!!, event.user, event.channel, game, time, event.jda)
 
         reply.deleteOriginal().complete()
     }
@@ -132,12 +132,12 @@ class Summon(configuration: Configuration, private val scheduler: Scheduler) : B
         message.editMessage(finalMessage).complete()
     }
 
-    private fun createSummon(guild: Guild, user: User, channel: MessageChannel, game: Role, time: String, jda: JDA) {
+    private fun createSummon(event: SlashCommandEvent, guild: Guild, user: User, channel: MessageChannel, game: Role, time: String, jda: JDA) {
         var timeString = time
         var day = "today"
         var offset = 0
 
-        val extractedDay = findGenericDayTimespan(time, user.language(), ducklingService)
+        val extractedDay = findGenericDayTimespan(time, event.language(), ducklingService)
 
         if (extractedDay != null) {
             val range = extractedDay.second.first
@@ -154,7 +154,7 @@ class Summon(configuration: Configuration, private val scheduler: Scheduler) : B
         }
         day = "**$day**"
 
-        var response = summonMsgs[Random.nextInt(summonMsgs.size)].translate(user)
+        var response = summonMsgs[Random.nextInt(summonMsgs.size)].translate(event.language())
         response = response.replace("###USER###", user.asMention)
         response = response.replace("###MENTION###", game.asMention)
         response = response.replace("###TIME###", timeString)
@@ -189,7 +189,7 @@ class Summon(configuration: Configuration, private val scheduler: Scheduler) : B
                 terminateSummon(msg, user)
                 return
             }
-            val newDayValue = "**${daysText(Duration.ofDays(newDayOffset.toLong()), user.language())}**"
+            val newDayValue = "**${daysText(Duration.ofDays(newDayOffset.toLong()), language(msg.guild, user))}**"
             val newContent = msg.contentRaw.replace(data.dayValue, newDayValue)
             msg.editMessage(newContent).complete()
             addToScheduler(data.uid, msg, newDayOffset, newDayValue, jda)
@@ -199,7 +199,7 @@ class Summon(configuration: Configuration, private val scheduler: Scheduler) : B
     }
 
     private fun terminateSummon(msg: Message, user: User) {
-        val newContent = msg.contentRaw + "\n\n${pollFinished.translate(user)}"
+        val newContent = msg.contentRaw + "\n\n${pollFinished.translate(language(msg.guild, user))}"
         msg.editMessage(newContent).setActionRows(listOf()).complete()
         if (msg.isPinned)
             msg.unpin().complete()

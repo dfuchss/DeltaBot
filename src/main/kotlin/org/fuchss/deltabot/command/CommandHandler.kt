@@ -25,6 +25,7 @@ class CommandHandler(private val configuration: Configuration) : EventListener {
 
         commands.add(Debug(configuration))
         commands.add(Shutdown())
+        commands.add(GuildLanguage())
         commands.add(Echo())
         commands.add(Admin(configuration, commands))
         commands.add(State(configuration))
