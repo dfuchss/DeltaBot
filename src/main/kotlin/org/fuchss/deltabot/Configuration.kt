@@ -65,6 +65,8 @@ data class Configuration(
         return adminsOfGuild
     }
 
+    fun hasAdmins() = admins.isNotEmpty()
+
 }
 
 

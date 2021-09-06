@@ -1,6 +1,8 @@
 package org.fuchss.deltabot.command
 
+import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.ReadyEvent
 import net.dv8tion.jda.api.events.ShutdownEvent
@@ -13,11 +15,12 @@ import org.fuchss.deltabot.Configuration
 import org.fuchss.deltabot.command.admin.*
 import org.fuchss.deltabot.command.user.*
 import org.fuchss.deltabot.utils.Scheduler
+import org.fuchss.deltabot.utils.fetchCommands
 import org.fuchss.deltabot.utils.logger
 
 class CommandHandler(private val configuration: Configuration) : EventListener {
     private val commands: MutableList<BotCommand>
-    private val nameToCommand: Map<String, BotCommand>
+    private val nameToCommand: MutableMap<String, BotCommand>
     private val scheduler: Scheduler = Scheduler()
 
     init {
@@ -41,12 +44,25 @@ class CommandHandler(private val configuration: Configuration) : EventListener {
         commands.add(Summon(configuration, scheduler))
         commands.add(Reminder(configuration, scheduler))
 
-        nameToCommand = commands.associateBy { m -> m.name }
+        if (!configuration.hasAdmins()) {
+            commands.add(InitialAdminCommand(configuration, { jda, u -> initialUser(jda, u) }))
+        }
+
+        nameToCommand = commands.associateBy { m -> m.name }.toMutableMap()
+    }
+
+    private fun initialUser(jda: JDA, u: User) {
+        val command = commands.find { c -> c is InitialAdminCommand } ?: return
+        commands.remove(command)
+        nameToCommand.remove(command.name)
+
+        jda.fetchCommands().find { c -> c.name == command.name }?.delete()?.complete()
+        fixCommandPermissions(jda, configuration, commands, u)
     }
 
     override fun onEvent(event: GenericEvent) {
         if (event is ReadyEvent) {
-            initCommands(event)
+            initCommands(event.jda)
             this.scheduler.start()
             return
         }
@@ -61,17 +77,17 @@ class CommandHandler(private val configuration: Configuration) : EventListener {
         handleSlashCommand(event)
     }
 
-    private fun initCommands(event: ReadyEvent) {
+    private fun initCommands(jda: JDA) {
         var needFix = false
 
-        val activeCommands = event.jda.retrieveCommands().complete()
+        val activeCommands = jda.retrieveCommands().complete()
         val newCommands = findNewCommandsAndDeleteOldOnes(activeCommands, true)
         needFix = needFix || newCommands.isNotEmpty()
 
         for ((_, cmdData) in newCommands)
-            event.jda.upsertCommand(cmdData).complete()
+            jda.upsertCommand(cmdData).complete()
 
-        for (guild in event.jda.guilds) {
+        for (guild in jda.guilds) {
             val activeCommandsGuild = getCommands(guild) ?: continue
             val newCommandsGuild = findNewCommandsAndDeleteOldOnes(activeCommandsGuild, false)
             needFix = needFix || newCommandsGuild.isNotEmpty()
@@ -86,11 +102,11 @@ class CommandHandler(private val configuration: Configuration) : EventListener {
         }
         if (needFix) {
             logger.info("Fixing command permissions ..")
-            fixCommandPermissions(event.jda, configuration, commands)
+            fixCommandPermissions(jda, configuration, commands)
         }
 
         for (cmd in commands)
-            cmd.registerJDA(event.jda)
+            cmd.registerJDA(jda)
     }
 
     private fun getCommands(guild: Guild): List<Command>? {
