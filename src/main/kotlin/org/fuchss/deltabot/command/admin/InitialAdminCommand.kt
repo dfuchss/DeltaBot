@@ -16,7 +16,7 @@ class InitialAdminCommand(private val configuration: Configuration, private val 
     override fun createCommand(): CommandData = CommandData("initial-admin", "create an initial admin user")
 
     override fun handle(event: SlashCommandEvent) {
-        if (configuration.getAdmins(event.jda).isNotEmpty()) {
+        if (configuration.hasAdmins()) {
             event.reply("This shall not happen .. an admin already exist ..").setEphemeral(true).queue()
             return
         }

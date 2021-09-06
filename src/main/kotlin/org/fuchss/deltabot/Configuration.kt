@@ -19,7 +19,7 @@ data class Configuration(
 ) : Storable() {
 
     fun isAdmin(user: User): Boolean {
-        return admins.isEmpty() || admins.contains(user.id)
+        return admins.contains(user.id)
     }
 
     fun toggleAdmin(user: User): Boolean {
@@ -32,8 +32,8 @@ data class Configuration(
         return admins.contains(user.id)
     }
 
-    fun getAdmins(jda: JDA): List<String> {
-        return admins.mapNotNull { u -> jda.fetchUser(u)?.asMention }
+    fun getAdmins(jda: JDA): List<User> {
+        return admins.mapNotNull { u -> jda.fetchUser(u) }
     }
 
     fun toggleDebug(): Boolean {

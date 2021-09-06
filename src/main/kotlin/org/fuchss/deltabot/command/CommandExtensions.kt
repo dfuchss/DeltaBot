@@ -6,14 +6,13 @@ import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.interactions.commands.Command
 import net.dv8tion.jda.api.interactions.commands.privileges.CommandPrivilege
 import org.fuchss.deltabot.Configuration
-import org.fuchss.deltabot.utils.fetchUser
 
 fun fixCommandPermissions(jda: JDA, configuration: Configuration, commands: List<BotCommand>, changedUser: User? = null) {
     val globalAdminCommands = commands.filter { c -> c.permissions == CommandPermissions.ADMIN && !c.isGlobal }
     val guildAdminCommands = commands.filter { c -> c.permissions == CommandPermissions.GUILD_ADMIN && !c.isGlobal }
 
-    val globalAdmins = configuration.getAdmins(jda).mapNotNull { uid -> jda.fetchUser(uid) }
-    
+    val globalAdmins = configuration.getAdmins(jda)
+
     for (guild in jda.guilds) {
         val guildCommands = guild.retrieveCommands().complete()
         val guildAdmins = configuration.getAdminsMembersOfGuild(guild)

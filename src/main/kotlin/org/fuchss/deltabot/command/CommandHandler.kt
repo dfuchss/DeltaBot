@@ -45,13 +45,15 @@ class CommandHandler(private val configuration: Configuration) : EventListener {
         commands.add(Reminder(configuration, scheduler))
 
         if (!configuration.hasAdmins()) {
-            commands.add(InitialAdminCommand(configuration, { jda, u -> initialUser(jda, u) }))
+            logger.info("Missing initial admin .. adding initial admin command ..")
+            commands.add(InitialAdminCommand(configuration) { jda, u -> initialUser(jda, u) })
         }
 
         nameToCommand = commands.associateBy { m -> m.name }.toMutableMap()
     }
 
     private fun initialUser(jda: JDA, u: User) {
+        logger.info("Added initial admin $u")
         val command = commands.find { c -> c is InitialAdminCommand } ?: return
         commands.remove(command)
         nameToCommand.remove(command.name)
