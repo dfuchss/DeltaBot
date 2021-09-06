@@ -8,10 +8,11 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import org.fuchss.deltabot.Configuration
 import org.fuchss.deltabot.Constants
 import org.fuchss.deltabot.command.BotCommand
+import org.fuchss.deltabot.command.CommandPermissions
 
 open class Help(private val configuration: Configuration, protected val commands: List<BotCommand>) : BotCommand {
 
-    override val isAdminCommand: Boolean get() = false
+    override val permissions: CommandPermissions get() = CommandPermissions.ALL
     override val isGlobal: Boolean get() = true
 
     override fun createCommand(): CommandData {
@@ -19,9 +20,16 @@ open class Help(private val configuration: Configuration, protected val commands
     }
 
     override fun handle(event: SlashCommandEvent) {
-        val admin = configuration.isAdmin(event.user)
-        val commands = commands.sorted().filter { c -> admin || !c.isAdminCommand }
-        event.replyEmbeds(generateText(event.jda, commands)).setEphemeral(admin).complete()
+        val visibilities = mutableListOf(CommandPermissions.ALL)
+        if (configuration.isAdmin(event.user)) {
+            visibilities.add(CommandPermissions.ALL)
+            visibilities.add(CommandPermissions.GUILD_ADMIN)
+        } else if (event.user in configuration.getAdminsMembersOfGuild(event.guild)) {
+            visibilities.add(CommandPermissions.GUILD_ADMIN)
+        }
+
+        val commands = commands.sorted().filter { c -> c.permissions in visibilities }
+        event.replyEmbeds(generateText(event.jda, commands)).setEphemeral(visibilities.size > 1).queue()
     }
 
     companion object {

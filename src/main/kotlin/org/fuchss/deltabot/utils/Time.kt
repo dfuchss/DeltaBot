@@ -2,8 +2,9 @@ package org.fuchss.deltabot.utils
 
 import org.fuchss.deltabot.Language
 import org.fuchss.deltabot.cognitive.DucklingService
-import org.fuchss.deltabot.translate
-import java.time.*
+import java.time.Duration
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.*
 
 // 'Regex' X 'Value in String' X 'Time Units'
@@ -59,6 +60,9 @@ private fun nextWeekend(): Int {
 }
 
 fun findGenericTimespan(message: String, language: Language, ducklingService: DucklingService? = null): Pair<LocalDateTime, IntRange>? {
+    if (message.isBlank())
+        return null
+
     if (ducklingService != null) {
         val times = ducklingService.interpretTime(message, language)
         if (times.size != 1)
@@ -80,24 +84,8 @@ fun findGenericTimespan(message: String, language: Language, ducklingService: Du
         val time = LocalDateTime.now() + unit(timespan).multipliedBy(multiply.toLong())
         return time to match[0].range
     }
-    
+
     return null
-}
-
-fun daysText(days: Duration, language: Language): String {
-    return when (days.toDays()) {
-        2L -> "in 3 days".translate(language)
-        1L -> "tomorrow".translate(language)
-        0L -> "today".translate(language)
-        else -> "in # days".translate(language, days.toDays())
-    }
-}
-
-fun nextDayTS(days: Long = 1): Long {
-    val tomorrow = LocalDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT).plusDays(days)
-    // For Debugging ..
-    // val tomorrow = LocalDateTime.of(LocalDate.now(), LocalTime.now()).plusSeconds(5)
-    return tomorrow.timestamp()
 }
 
 fun LocalDateTime.timestamp(): Long = this.atZone(ZoneId.systemDefault()).toEpochSecond()

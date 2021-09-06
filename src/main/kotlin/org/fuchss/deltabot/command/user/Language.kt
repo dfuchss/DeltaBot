@@ -7,13 +7,14 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import org.fuchss.deltabot.Language
 import org.fuchss.deltabot.command.BotCommand
+import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.language
 import org.fuchss.deltabot.setLanguage
 import org.fuchss.deltabot.translate
 import org.fuchss.deltabot.utils.withFirst
 
 class Language : BotCommand {
-    override val isAdminCommand: Boolean get() = false
+    override val permissions: CommandPermissions get() = CommandPermissions.GUILD_ADMIN
     override val isGlobal: Boolean get() = true
 
     override fun createCommand(): CommandData {
@@ -30,6 +31,6 @@ class Language : BotCommand {
         val locale = event.getOption("lang")?.asString ?: ""
         val language = Language.values().find { l -> l.locale == locale }
         event.user.setLanguage(language)
-        event.reply("Your new language is #".translate(event.user.language(), language ?: "--")).setEphemeral(true).complete()
+        event.reply("Your new language is #".translate(event.user.language(), language ?: "--")).setEphemeral(true).queue()
     }
 }

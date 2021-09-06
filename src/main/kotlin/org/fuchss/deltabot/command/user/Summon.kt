@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.hooks.EventListener
+import net.dv8tion.jda.api.interactions.InteractionHook
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
@@ -15,6 +16,7 @@ import net.dv8tion.jda.api.interactions.components.ButtonStyle
 import org.fuchss.deltabot.Configuration
 import org.fuchss.deltabot.cognitive.DucklingService
 import org.fuchss.deltabot.command.BotCommand
+import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.language
 import org.fuchss.deltabot.translate
 import org.fuchss.deltabot.utils.*
@@ -40,7 +42,7 @@ class Summon(configuration: Configuration, private val scheduler: Scheduler) : B
         private const val pollFinished = "*Poll finished. You can't vote anymore :)*"
     }
 
-    override val isAdminCommand: Boolean get() = false
+    override val permissions: CommandPermissions get() = CommandPermissions.ALL
     override val isGlobal: Boolean get() = false
 
     private val summonState: SummonState = SummonState().load("./states/summon.json")
@@ -75,22 +77,20 @@ class Summon(configuration: Configuration, private val scheduler: Scheduler) : B
 
     override fun handle(event: SlashCommandEvent) {
         if (event.guild == null) {
-            event.reply("No Server found .. this should not happen ..").setEphemeral(true).complete()
+            event.reply("No Server found .. this should not happen ..").setEphemeral(true).queue()
             return
         }
 
         val reply = event.deferReply().complete()
 
         val game = event.getOption("game")!!.asRole
-        val time = event.getOption("time")?.asString ?: "today at 20:00".translate(event)
+        val time = event.getOption("time")?.asString ?: ""
 
-        createSummon(event, event.guild!!, event.user, event.channel, game, time)
-
-        reply.deleteOriginal().complete()
+        createSummon(event, event.guild!!, event.user, event.channel, game, time, reply)
     }
 
     private fun handleSummonButtonEvent(event: ButtonClickEvent, data: SummonData) {
-        event.deferEdit().complete()
+        event.deferEdit().queue()
 
         val buttonId = event.button?.id ?: ""
         if (finish.name == buttonId) {
@@ -101,7 +101,7 @@ class Summon(configuration: Configuration, private val scheduler: Scheduler) : B
 
         if (delete.name == buttonId) {
             summonState.remove(data)
-            event.message!!.delete().complete()
+            event.message!!.delete().queue()
             return
         }
 
@@ -131,11 +131,17 @@ class Summon(configuration: Configuration, private val scheduler: Scheduler) : B
         if (reactionText.isNotBlank())
             finalMessage += "\n\n${reactionText.trim()}"
 
-        message.editMessage(finalMessage).complete()
+        message.editMessage(finalMessage).queue()
     }
 
-    private fun createSummon(event: SlashCommandEvent, guild: Guild, user: User, channel: MessageChannel, game: Role, time: String) {
+    private fun createSummon(event: SlashCommandEvent, guild: Guild, user: User, channel: MessageChannel, game: Role, time: String, reply: InteractionHook) {
+        // TODO maybe specify default time to another time ..
         val extractedTime = findGenericTimespan(time, event.language(), ducklingService)?.first ?: LocalDateTime.of(LocalDate.now(), LocalTime.of(20, 0))
+
+        if (extractedTime < LocalDateTime.now()) {
+            reply.setEphemeral(true).editOriginal("Your point in time shall be in the future :)".translate(event.language())).queue()
+            return
+        }
 
         var response = summonMsgs[Random.nextInt(summonMsgs.size)].translate(event.language())
         response = response.replace("###USER###", user.asMention)
@@ -149,6 +155,7 @@ class Summon(configuration: Configuration, private val scheduler: Scheduler) : B
         val data = SummonData(extractedTime.timestamp(), msg.guild.id, msg.channel.id, msg.id, user.id)
         summonState.add(data)
         scheduler.queue({ terminateSummon(msg, user) }, extractedTime.timestamp())
+        reply.deleteOriginal().queue()
     }
 
     private fun terminateSummon(msg: Message, user: User) {

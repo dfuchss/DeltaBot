@@ -7,13 +7,14 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import org.fuchss.deltabot.Language
 import org.fuchss.deltabot.command.BotCommand
+import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.language
 import org.fuchss.deltabot.setLanguage
 import org.fuchss.deltabot.translate
 import org.fuchss.deltabot.utils.withFirst
 
 class GuildLanguage : BotCommand {
-    override val isAdminCommand: Boolean get() = true
+    override val permissions: CommandPermissions get() = CommandPermissions.GUILD_ADMIN
     override val isGlobal: Boolean get() = false
 
     override fun createCommand(): CommandData {
@@ -29,14 +30,14 @@ class GuildLanguage : BotCommand {
     override fun handle(event: SlashCommandEvent) {
         val guild = event.guild
         if (guild == null) {
-            event.reply("You have to execute the command in a guild".translate(event)).setEphemeral(true).complete()
+            event.reply("You have to execute the command in a guild".translate(event)).setEphemeral(true).queue()
             return
         }
 
         val locale = event.getOption("lang")?.asString ?: ""
         val language = Language.values().find { l -> l.locale == locale }
         guild.setLanguage(language)
-        event.reply("Your new guild language is #".translate(guild.language(), language ?: "--")).setEphemeral(true).complete()
+        event.reply("Your new guild language is #".translate(guild.language(), language ?: "--")).setEphemeral(true).queue()
     }
 }
 

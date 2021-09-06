@@ -77,7 +77,7 @@ class CommandHandler(private val configuration: Configuration) : EventListener {
             needFix = needFix || newCommandsGuild.isNotEmpty()
 
             for ((cmd, cmdData) in newCommandsGuild) {
-                if (!cmd.isAdminCommand) {
+                if (cmd.permissions == CommandPermissions.ALL) {
                     guild.upsertCommand(cmdData).complete()
                 } else {
                     guild.upsertCommand(cmdData.setDefaultEnabled(false)).complete()
@@ -152,8 +152,13 @@ class CommandHandler(private val configuration: Configuration) : EventListener {
         logger.debug(event.toString())
         val command = nameToCommand[event.name] ?: UnknownCommand()
 
-        if (command.isAdminCommand && !isAdmin(event)) {
-            event.reply("You are not an admin!").setEphemeral(true).complete()
+        if (command.permissions == CommandPermissions.ADMIN && !isAdmin(event)) {
+            event.reply("You are not an admin!").setEphemeral(true).queue()
+            return
+        }
+
+        if (event.guild != null && command.permissions == CommandPermissions.GUILD_ADMIN && event.user !in configuration.getAdminsMembersOfGuild(event.guild!!)) {
+            event.reply("You are not an admin!").setEphemeral(true).queue()
             return
         }
 
@@ -165,7 +170,7 @@ class CommandHandler(private val configuration: Configuration) : EventListener {
     }
 
     private class UnknownCommand : BotCommand {
-        override val isAdminCommand: Boolean get() = false
+        override val permissions: CommandPermissions get() = CommandPermissions.ALL
         override val isGlobal: Boolean get() = error("Command shall only be used internally")
         override fun createCommand(): CommandData = error("Command shall only be used internally")
 

@@ -14,12 +14,13 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 import net.dv8tion.jda.api.interactions.components.Button
 import org.fuchss.deltabot.command.BotCommand
+import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.language
 import org.fuchss.deltabot.translate
 import org.fuchss.deltabot.utils.*
 
 class Roles : BotCommand, EventListener {
-    override val isAdminCommand: Boolean get() = true
+    override val permissions: CommandPermissions get() = CommandPermissions.ALL
     override val isGlobal: Boolean get() = false
 
     private val rolesState = RolesState().load("./states/roles.json")
@@ -65,27 +66,27 @@ class Roles : BotCommand, EventListener {
             "add" -> handleAdd(event)
             "del" -> handleDel(event)
             "purge" -> handlePurge(event)
-            else -> event.reply("You must use a subcommand".translate(event)).setEphemeral(true).complete()
+            else -> event.reply("You must use a subcommand".translate(event)).setEphemeral(true).queue()
         }
     }
 
     private fun handleInit(event: SlashCommandEvent) {
         val guild = event.guild!!
         if (rolesState.hasRoleMessage(guild)) {
-            event.reply("Role message already found".translate(event)).setEphemeral(true).complete()
+            event.reply("Role message already found".translate(event)).setEphemeral(true).queue()
             return
         }
 
         val initialText = "$switcherText\n$noRoles"
         val msg = event.channel.sendMessage(initialText).complete()
         rolesState.addRoleMessage(guild, msg)
-        event.reply("Role message created ..".translate(event)).setEphemeral(true).complete()
+        event.reply("Role message created ..".translate(event)).setEphemeral(true).queue()
     }
 
     private fun handlePurge(event: SlashCommandEvent) {
         val guild = event.guild!!
         if (!rolesState.hasRoleMessage(guild)) {
-            event.reply("No role message found".translate(event)).setEphemeral(true).complete()
+            event.reply("No role message found".translate(event)).setEphemeral(true).queue()
             return
         }
 
@@ -93,39 +94,39 @@ class Roles : BotCommand, EventListener {
         rolesState.removeRoleMessage(guild)
 
         val message = guild.fetchMessage(state.channelId, state.messageId)
-        message?.delete()?.complete()
+        message?.delete()?.queue()
 
-        event.reply("Role message deleted ..".translate(event)).setEphemeral(true).complete()
+        event.reply("Role message deleted ..".translate(event)).setEphemeral(true).queue()
     }
 
     private fun handleAdd(event: SlashCommandEvent) {
         val guild = event.guild!!
         if (!rolesState.hasRoleMessage(guild)) {
-            event.reply("No role message found".translate(event)).setEphemeral(true).complete()
+            event.reply("No role message found".translate(event)).setEphemeral(true).queue()
             return
         }
 
         val emoji = event.getOption("emoji")?.asString
         val role = event.getOption("role")?.asRole
         if (emoji == null || role == null) {
-            event.reply("You must provide both .. role and emoji ..".translate(event)).setEphemeral(true).complete()
+            event.reply("You must provide both .. role and emoji ..".translate(event)).setEphemeral(true).queue()
             return
         }
         val guildState = rolesState.getGuildState(guild)!!
 
         if (role.asMention in guildState.emojiToRole.values) {
-            event.reply("Role already mapped ..".translate(event)).setEphemeral(true).complete()
+            event.reply("Role already mapped ..".translate(event)).setEphemeral(true).queue()
             return
         }
 
         val emojis = findAllEmojis(emoji)
         if (emojis.size != 1) {
-            event.reply("I've found # emojis :(".translate(event, emojis.size)).setEphemeral(true).complete()
+            event.reply("I've found # emojis :(".translate(event, emojis.size)).setEphemeral(true).queue()
             return
         }
 
         if (guildState.emojiToRole.containsKey(emojis[0])) {
-            event.reply("Emoji already used ..".translate(event)).setEphemeral(true).complete()
+            event.reply("Emoji already used ..".translate(event)).setEphemeral(true).queue()
             return
         }
 
@@ -133,33 +134,33 @@ class Roles : BotCommand, EventListener {
         rolesState.store()
 
         updateGuild(guild, guildState)
-        event.reply("Updated role message".translate(event)).setEphemeral(true).complete()
+        event.reply("Updated role message".translate(event)).setEphemeral(true).queue()
     }
 
 
     private fun handleDel(event: SlashCommandEvent) {
         val guild = event.guild!!
         if (!rolesState.hasRoleMessage(guild)) {
-            event.reply("No role message found".translate(event)).setEphemeral(true).complete()
+            event.reply("No role message found".translate(event)).setEphemeral(true).queue()
             return
         }
         val emoji = event.getOption("emoji")?.asString
 
 
         if (emoji == null) {
-            event.reply("You must provide an emoji ..".translate(event)).setEphemeral(true).complete()
+            event.reply("You must provide an emoji ..".translate(event)).setEphemeral(true).queue()
             return
         }
 
         val emojis = findAllEmojis(emoji)
         if (emojis.size != 1) {
-            event.reply("I've found # emojis :(".translate(event, emojis.size)).setEphemeral(true).complete()
+            event.reply("I've found # emojis :(".translate(event, emojis.size)).setEphemeral(true).queue()
             return
         }
 
         val guildState = rolesState.getGuildState(guild)!!
         if (emojis[0] !in guildState.emojiToRole.keys) {
-            event.reply("I've found no mapping to this emoji".translate(event)).setEphemeral(true).complete()
+            event.reply("I've found no mapping to this emoji".translate(event)).setEphemeral(true).queue()
             return
         }
 
@@ -167,7 +168,7 @@ class Roles : BotCommand, EventListener {
         rolesState.store()
 
         updateGuild(guild, guildState)
-        event.reply("Updated role message".translate(event)).setEphemeral(true).complete()
+        event.reply("Updated role message".translate(event)).setEphemeral(true).queue()
     }
 
     private fun handleRolesClick(event: ButtonClickEvent) {
@@ -177,7 +178,7 @@ class Roles : BotCommand, EventListener {
 
         val roleMention = state.emojiToRole[clickedId]
         if (roleMention == null) {
-            event.reply("I can't find the role :( .. ask your bot admin".translate(event)).setEphemeral(true).complete()
+            event.reply("I can't find the role :( .. ask your bot admin".translate(event)).setEphemeral(true).queue()
             return
         }
 
@@ -188,14 +189,14 @@ class Roles : BotCommand, EventListener {
         try {
             if (role in member.roles) {
                 guild.removeRoleFromMember(member, role!!).complete()
-                event.reply("I've removed # from your roles".translate(event, role.asMention)).setEphemeral(true).complete()
+                event.reply("I've removed # from your roles".translate(event, role.asMention)).setEphemeral(true).queue()
             } else {
                 guild.addRoleToMember(member, role!!).complete()
-                event.reply("I've added # to your roles".translate(event, role.asMention)).setEphemeral(true).complete()
+                event.reply("I've added # to your roles".translate(event, role.asMention)).setEphemeral(true).queue()
             }
         } catch (e: Exception) {
             logger.error(e.message)
-            event.reply("I'm not allowed to do that.".translate(event)).setEphemeral(true).complete()
+            event.reply("I'm not allowed to do that.".translate(event)).setEphemeral(true).queue()
         }
     }
 
@@ -210,7 +211,7 @@ class Roles : BotCommand, EventListener {
         }
 
         val msg = guild.fetchMessage(guildState.channelId, guildState.messageId)!!
-        msg.editMessage(message).setActionRows(buttons.toActionRows()).complete()
+        msg.editMessage(message).setActionRows(buttons.toActionRows()).queue()
 
     }
 

@@ -9,12 +9,13 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import org.fuchss.deltabot.Configuration
 import org.fuchss.deltabot.cognitive.DucklingService
 import org.fuchss.deltabot.command.BotCommand
+import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.language
 import org.fuchss.deltabot.translate
 import org.fuchss.deltabot.utils.*
 
 class Reminder(configuration: Configuration, private val scheduler: Scheduler) : BotCommand {
-    override val isAdminCommand: Boolean get() = false
+    override val permissions: CommandPermissions get() = CommandPermissions.ALL
     override val isGlobal: Boolean get() = true
 
     private val reminderState = ReminderState().load("./states/reminder.json")
@@ -47,13 +48,13 @@ class Reminder(configuration: Configuration, private val scheduler: Scheduler) :
         val timeText = event.getOption("time")?.asString ?: ""
 
         if (message.isBlank() || timeText.isBlank()) {
-            event.reply("I need both .. message and time ..".translate(language)).setEphemeral(true).complete()
+            event.reply("I need both .. message and time ..".translate(language)).setEphemeral(true).queue()
             return
         }
 
         val times = ducklingService.interpretTime(timeText, language)
         if (times.size != 1) {
-            event.reply("I've found # time(s) in your message :(".translate(language, times.size)).setEphemeral(true).complete()
+            event.reply("I've found # time(s) in your message :(".translate(language, times.size)).setEphemeral(true).queue()
             return
         }
 
@@ -67,7 +68,7 @@ class Reminder(configuration: Configuration, private val scheduler: Scheduler) :
 
         reminderState.add(reminder)
         scheduler.queue({ remind(reminder, event.jda) }, ts)
-        event.reply("I'll remind you <t:#:R>: '#'".translate(language, ts, message)).setEphemeral(true).complete()
+        event.reply("I'll remind you <t:#:R>: '#'".translate(language, ts, message)).setEphemeral(true).queue()
     }
 
     private fun remind(reminder: ReminderData, jda: JDA) {
@@ -75,7 +76,7 @@ class Reminder(configuration: Configuration, private val scheduler: Scheduler) :
 
         val user = jda.fetchUser(reminder.uid)!!
         val channel = if (reminder.isDirectChannel) user.openPrivateChannel().complete() else jda.fetchTextChannel(reminder.gid, reminder.cid)!!
-        channel.sendMessage("**Reminder ${user.asMention}**\n${reminder.message}").complete()
+        channel.sendMessage("**Reminder ${user.asMention}**\n${reminder.message}").queue()
     }
 
 

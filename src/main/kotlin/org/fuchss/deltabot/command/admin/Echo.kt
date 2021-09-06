@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import org.fuchss.deltabot.command.BotCommand
+import org.fuchss.deltabot.command.CommandPermissions
 
 class Echo : BotCommand {
     override fun createCommand(): CommandData {
@@ -14,11 +15,11 @@ class Echo : BotCommand {
         return cmd
     }
 
-    override val isAdminCommand: Boolean get() = true
+    override val permissions: CommandPermissions get() = CommandPermissions.GUILD_ADMIN
     override val isGlobal: Boolean get() = false
 
     override fun handle(event: SlashCommandEvent) {
         val text = event.getOption("text")?.asString ?: ""
-        event.reply(text.replace("<", "").replace(">", "")).complete()
+        event.reply(text.replace("<", "").replace(">", "")).queue()
     }
 }

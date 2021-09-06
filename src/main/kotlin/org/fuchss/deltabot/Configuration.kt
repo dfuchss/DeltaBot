@@ -49,7 +49,9 @@ data class Configuration(
         return debug
     }
 
-    fun getAdminsMembersOfGuild(guild: Guild): List<User> {
+    fun getAdminsMembersOfGuild(guild: Guild?): List<User> {
+        if (guild == null)
+            return emptyList()
         val adminsOfGuild = mutableListOf<User>()
         adminsOfGuild.add(guild.fetchMember(guild.ownerId)!!.user)
 
