@@ -15,7 +15,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 import net.dv8tion.jda.api.interactions.components.Button
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
-import org.fuchss.deltabot.language
+import org.fuchss.deltabot.internalLanguage
 import org.fuchss.deltabot.translate
 import org.fuchss.deltabot.utils.*
 
@@ -201,12 +201,16 @@ class Roles : BotCommand, EventListener {
     }
 
     private fun updateGuild(guild: Guild, guildState: GuildState) {
-        var message = "${switcherText.translate(guild.language())}\n${noRoles.translate(guild.language())}"
+        var message = "${switcherText.translate(guild.internalLanguage())}\n${noRoles.translate(guild.internalLanguage())}"
         var buttons = emptyList<Button>()
 
         if (guildState.emojiToRole.isNotEmpty()) {
-            message = "${switcherText.translate(guild.language())}\n\n${guildState.emojiToRole.entries.joinToString(separator = "\n", transform = { (emoji, roleMention) -> "$emoji → $roleMention" })}"
-            message += "\n\n" + "Please choose buttons to select your roles ..".translate(guild.language())
+            message = "${switcherText.translate(guild.internalLanguage())}\n\n${
+                guildState.emojiToRole.entries.joinToString(
+                    separator = "\n",
+                    transform = { (emoji, roleMention) -> "$emoji → $roleMention" })
+            }"
+            message += "\n\n" + "Please choose buttons to select your roles ..".translate(guild.internalLanguage())
             buttons = guildState.emojiToRole.keys.map { e -> loadEmojiButton(guild, e) }
         }
 

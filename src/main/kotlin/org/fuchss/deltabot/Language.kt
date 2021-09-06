@@ -18,7 +18,27 @@ enum class Language(val locale: String) {
     }
 }
 
-fun User.language() = languageSettings.userToLanguage[this.id]
+fun language(guild: Guild?, user: User?): Language {
+    if (guild != null) {
+        val usersGuildLanguage = user?.internalLanguage(guild)
+        if (usersGuildLanguage != null)
+            return usersGuildLanguage
+
+        val guildLanguage = guild.internalLanguage()
+        if (guildLanguage != null)
+            return guildLanguage
+    }
+
+    val userLanguage = user?.internalLanguage()
+    if (userLanguage != null)
+        return userLanguage
+
+    return languageSettings.defaultLanguage
+}
+
+
+fun User.internalLanguage() = languageSettings.userToLanguage[this.id]
+fun User.internalLanguage(guild: Guild) = languageSettings.userAndGuildToLanguage[this.id to guild.id]
 
 fun User.setLanguage(language: Language?) {
     if (language == null)
@@ -29,7 +49,16 @@ fun User.setLanguage(language: Language?) {
     languageSettings.store()
 }
 
-fun Guild.language() = languageSettings.guildToLanguage[this.id]
+fun User.setLanguage(language: Language?, guild: Guild) {
+    if (language == null)
+        languageSettings.userAndGuildToLanguage.remove(this.id to guild.id)
+    else
+        languageSettings.userAndGuildToLanguage[this.id to guild.id] = language
+
+    languageSettings.store()
+}
+
+fun Guild.internalLanguage() = languageSettings.guildToLanguage[this.id]
 
 fun Guild.setLanguage(language: Language?) {
     if (language == null)
@@ -46,6 +75,7 @@ private val languageSettings = LanguageSettings().load("./states/languages.json"
 private data class LanguageSettings(
     var guildToLanguage: MutableMap<String, Language> = mutableMapOf(),
     var userToLanguage: MutableMap<String, Language> = mutableMapOf(),
+    var userAndGuildToLanguage: MutableMap<Pair<String, String>, Language> = mutableMapOf(),
     var defaultLanguage: Language = Language.ENGLISH
 ) : Storable()
 
@@ -53,17 +83,6 @@ private val translations = mutableMapOf<Language, MutableMap<String, String>>()
 
 fun GenericInteractionCreateEvent.language(): Language = language(guild, user)
 
-fun language(guild: Guild?, user: User?): Language {
-    val guildLanguage = guild?.language()
-    if (guildLanguage != null)
-        return guildLanguage
-
-    val userLanguage = user?.language()
-    if (userLanguage != null)
-        return userLanguage
-
-    return languageSettings.defaultLanguage
-}
 
 fun String.translate(event: GenericInteractionCreateEvent, vararg attributes: Any) = this.translate(event.language(), *attributes)
 

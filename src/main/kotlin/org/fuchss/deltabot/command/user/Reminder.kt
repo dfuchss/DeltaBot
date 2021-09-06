@@ -42,7 +42,7 @@ class Reminder(configuration: Configuration, private val scheduler: Scheduler) :
 
     override fun handle(event: SlashCommandEvent) {
         // Use Language of the user for reminders ..
-        val language = event.user.language() ?: event.language()
+        val language = event.language()
 
         val message = event.getOption("message")?.asString ?: ""
         val timeText = event.getOption("time")?.asString ?: ""

@@ -1,4 +1,4 @@
-package org.fuchss.deltabot.command.user
+package org.fuchss.deltabot.command.admin
 
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.Command
@@ -8,7 +8,7 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import org.fuchss.deltabot.Language
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
-import org.fuchss.deltabot.language
+import org.fuchss.deltabot.internalLanguage
 import org.fuchss.deltabot.setLanguage
 import org.fuchss.deltabot.translate
 import org.fuchss.deltabot.utils.withFirst
@@ -37,7 +37,7 @@ class GuildLanguage : BotCommand {
         val locale = event.getOption("lang")?.asString ?: ""
         val language = Language.values().find { l -> l.locale == locale }
         guild.setLanguage(language)
-        event.reply("Your new guild language is #".translate(guild.language(), language ?: "--")).setEphemeral(true).queue()
+        event.reply("Your new guild language is #".translate(guild.internalLanguage(), language ?: "--")).setEphemeral(true).queue()
     }
 }
 
