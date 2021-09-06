@@ -6,6 +6,8 @@
   "in # days": "in # Tagen",
   "Your new language is #": "Deine neue Sprache ist #",
   "Your new guild language is #": "Deine neue Server Sprache ist #",
+  "You need to specify at least what language to you want to set": "Du musst mindestens einen Sprache angeben, die ich setzen soll",
+  "You can't set your guild language in a private channel": "Du kannst keine Server Sprache in einem privaten Kanal setzen",
   "I need both .. message and time ..": "Ich brauche beides .. Nachricht und Zeit",
   "I've found # time(s) in your message :(": "Ich habe # Zeit(en) gefunden :(",
   "I'll remind you at #: '#'": "Ich werde Dich um # erinnern an '#'",

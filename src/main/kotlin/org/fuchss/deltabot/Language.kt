@@ -38,7 +38,7 @@ fun language(guild: Guild?, user: User?): Language {
 
 
 fun User.internalLanguage() = languageSettings.userToLanguage[this.id]
-fun User.internalLanguage(guild: Guild) = languageSettings.userAndGuildToLanguage[this.id to guild.id]
+fun User.internalLanguage(guild: Guild) = languageSettings.userAndGuildToLanguage[this.id + guild.id]
 
 fun User.setLanguage(language: Language?) {
     if (language == null)
@@ -51,9 +51,9 @@ fun User.setLanguage(language: Language?) {
 
 fun User.setLanguage(language: Language?, guild: Guild) {
     if (language == null)
-        languageSettings.userAndGuildToLanguage.remove(this.id to guild.id)
+        languageSettings.userAndGuildToLanguage.remove(this.id + guild.id)
     else
-        languageSettings.userAndGuildToLanguage[this.id to guild.id] = language
+        languageSettings.userAndGuildToLanguage[this.id + guild.id] = language
 
     languageSettings.store()
 }
@@ -75,7 +75,7 @@ private val languageSettings = LanguageSettings().load("./states/languages.json"
 private data class LanguageSettings(
     var guildToLanguage: MutableMap<String, Language> = mutableMapOf(),
     var userToLanguage: MutableMap<String, Language> = mutableMapOf(),
-    var userAndGuildToLanguage: MutableMap<Pair<String, String>, Language> = mutableMapOf(),
+    var userAndGuildToLanguage: MutableMap<String, Language> = mutableMapOf(),
     var defaultLanguage: Language = Language.ENGLISH
 ) : Storable()
 
