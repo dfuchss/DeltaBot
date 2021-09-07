@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.entities.PrivateChannel
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent
 import net.dv8tion.jda.api.events.message.MessageDeleteEvent
+import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent
 import net.dv8tion.jda.api.hooks.EventListener
 import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.interactions.components.Button
@@ -26,6 +27,7 @@ fun initHiddenMessages(jda: JDA, scheduler: Scheduler) {
 
 private var hiddenMessages: HiddenMessagesStore? = null
 private const val hideId = "hide-message"
+private val hideEmote = ":arrow_down_small:".toEmoji()
 
 private class HiddenMessagesStore : Storable(), EventListener {
 
@@ -43,11 +45,38 @@ private class HiddenMessagesStore : Storable(), EventListener {
             return
         }
 
+        if (event is MessageReactionAddEvent) {
+            checkForHide(event)
+            return
+        }
+
         if (event !is ButtonClickEvent || event.button?.id != hideId)
             return
 
         val hiddenMessage = findMessage(event.message) ?: return
         handleHiddenMessageClick(event, hiddenMessage)
+    }
+
+    private fun checkForHide(event: MessageReactionAddEvent) {
+        if (hiddenMessages == null)
+            return
+
+        if (!event.reactionEmote.isEmoji || event.reactionEmote.emoji != hideEmote.name)
+            return
+
+        val msg = event.retrieveMessage().complete()
+        if (msg.author.id != event.jda.selfUser.id)
+            return
+
+        val hidden = hiddenMessages!!.findMessage(msg)
+
+        if (hidden != null)
+            msg.unhide()
+        else
+            msg.hide()
+
+        msg.clearReactions().queue()
+
     }
 
 
@@ -115,7 +144,8 @@ fun Message.unhide(): Message {
         error("Hidden Messages are not initialized")
 
     val hiddenMessage = hiddenMessages!!.findMessage(this) ?: return this
-    unhideMessage(hiddenMessages!!.scheduler, this, hiddenMessage)
+    unhideMessage(null, this, hiddenMessage)
+    this.editMessageComponents().queue()
     hiddenMessages!!.messages.remove(hiddenMessage)
     hiddenMessages!!.store()
     return this
@@ -131,7 +161,7 @@ private fun createHiddenMessage(message: Message) {
     hiddenMessages!!.messages.add(hiddenMessage)
     hiddenMessages!!.store()
 
-    val hideButton = Button.of(ButtonStyle.SECONDARY, hideId, "Details", ":arrow_down_small:".toEmoji())
+    val hideButton = Button.of(ButtonStyle.SECONDARY, hideId, "Details", hideEmote)
     message.editMessageComponents(ActionRow.of(hideButton)).complete()
 }
 
