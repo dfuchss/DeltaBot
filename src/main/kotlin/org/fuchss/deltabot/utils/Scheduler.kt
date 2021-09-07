@@ -1,10 +1,14 @@
 package org.fuchss.deltabot.utils
 
+import net.dv8tion.jda.api.events.GenericEvent
+import net.dv8tion.jda.api.events.ReadyEvent
+import net.dv8tion.jda.api.events.ShutdownEvent
+import net.dv8tion.jda.api.hooks.EventListener
 import java.time.Instant
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
 
-class Scheduler {
+class Scheduler : EventListener {
     private val priorityQueue = PriorityQueue<QueueElement>()
     private val lock = ReentrantLock()
 
@@ -16,8 +20,15 @@ class Scheduler {
         this.sleepInterval = sleepInterval
     }
 
+    override fun onEvent(event: GenericEvent) {
+        if (event is ReadyEvent)
+            this.start()
 
-    fun start() {
+        if (event is ShutdownEvent)
+            this.stop()
+    }
+
+    private fun start() {
         logger.debug("Start Scheduler")
         this.thread = Thread { -> loop() }
         this.thread!!.name = "BotScheduler"
@@ -25,7 +36,7 @@ class Scheduler {
         this.thread!!.start()
     }
 
-    fun stop() {
+    private fun stop() {
         logger.debug("Terminate Scheduler")
         this.thread = null
     }
@@ -76,4 +87,6 @@ class Scheduler {
             logger.error(e.message)
         }
     }
+
+
 }

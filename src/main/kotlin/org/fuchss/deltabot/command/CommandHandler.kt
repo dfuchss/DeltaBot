@@ -5,7 +5,6 @@ import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.ReadyEvent
-import net.dv8tion.jda.api.events.ShutdownEvent
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.hooks.EventListener
 import net.dv8tion.jda.api.interactions.commands.Command
@@ -18,10 +17,10 @@ import org.fuchss.deltabot.utils.Scheduler
 import org.fuchss.deltabot.utils.fetchCommands
 import org.fuchss.deltabot.utils.logger
 
-class CommandHandler(private val configuration: Configuration) : EventListener {
+class CommandHandler(private val configuration: Configuration, val scheduler: Scheduler) : EventListener {
     private val commands: MutableList<BotCommand>
     private val nameToCommand: MutableMap<String, BotCommand>
-    private val scheduler: Scheduler = Scheduler()
+
 
     init {
         commands = ArrayList()
@@ -65,12 +64,6 @@ class CommandHandler(private val configuration: Configuration) : EventListener {
     override fun onEvent(event: GenericEvent) {
         if (event is ReadyEvent) {
             initCommands(event.jda)
-            this.scheduler.start()
-            return
-        }
-
-        if (event is ShutdownEvent) {
-            this.scheduler.stop()
             return
         }
 
