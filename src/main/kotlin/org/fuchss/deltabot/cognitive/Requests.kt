@@ -11,10 +11,10 @@ import java.nio.charset.StandardCharsets
 fun get(url: String): String {
     val endpoint = URL(url)
     val urlConnection: HttpURLConnection = endpoint.openConnection() as HttpURLConnection
-    urlConnection.requestMethod = "GET";
+    urlConnection.requestMethod = "GET"
     urlConnection.useCaches = false
 
-    urlConnection.setRequestProperty("charset", "utf-8");
+    urlConnection.setRequestProperty("charset", "utf-8")
 
     return readInputStream(urlConnection.inputStream)
 }
@@ -24,12 +24,12 @@ fun post(url: String, contentType: String, postData: String) = post(url, content
 fun post(url: String, contentType: String, postData: ByteArray): String {
     val endpoint = URL(url)
     val urlConnection: HttpURLConnection = endpoint.openConnection() as HttpURLConnection
-    urlConnection.requestMethod = "POST";
+    urlConnection.requestMethod = "POST"
     urlConnection.useCaches = false
     urlConnection.doOutput = true
 
     urlConnection.setRequestProperty("content-type", contentType)
-    urlConnection.setRequestProperty("charset", "utf-8");
+    urlConnection.setRequestProperty("charset", "utf-8")
     urlConnection.setRequestProperty("Content-Length", postData.size.toString())
 
     DataOutputStream(urlConnection.outputStream).use { wr -> wr.write(postData) }

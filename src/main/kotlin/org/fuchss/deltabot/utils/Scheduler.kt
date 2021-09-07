@@ -30,7 +30,7 @@ class Scheduler : EventListener {
 
     private fun start() {
         logger.debug("Start Scheduler")
-        this.thread = Thread { -> loop() }
+        this.thread = Thread { loop() }
         this.thread!!.name = "BotScheduler"
         this.thread!!.isDaemon = true
         this.thread!!.start()
