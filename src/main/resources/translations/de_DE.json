@@ -37,5 +37,6 @@
   "No Server found .. this should not happen ..": "Server nicht gefunden .. das sollte nicht passieren ..",
   "You are not in a voice channel": "Du bist in keinem Sprachchannel",
   "There are not enough members in the voice channel": "Es sind nicht genügend Teilnehmer im Sprachchannel",
-  "Not enough teams": "Nicht genügend Teams"
+  "Not enough teams": "Nicht genügend Teams",
+  "Your point in time shall be in the future :)": "Dein Zeitpunkt sollte in der Zukunft liegen :)"
 }

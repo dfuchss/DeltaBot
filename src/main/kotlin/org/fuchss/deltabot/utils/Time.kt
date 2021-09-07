@@ -65,11 +65,10 @@ fun findGenericTimespan(message: String, language: Language, ducklingService: Du
 
     if (ducklingService != null) {
         val times = ducklingService.interpretTime(message, language)
-        if (times.size != 1)
-            return null
-
-        val (time, range) = times[0]
-        return time to range
+        if (times.size == 1) {
+            val (time, range) = times[0]
+            return time to range
+        }
     }
 
     for (timespan in genericTimeSpans[language] ?: listOf()) {
