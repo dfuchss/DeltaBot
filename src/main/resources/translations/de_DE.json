@@ -33,7 +33,7 @@
   "Your roll was #": "Dein Würfelwurf war #",
   "###USER###: Who wants to play ###MENTION### ###TIME###?": "###USER###: Wer will ###MENTION### spielen? Zeit: ###TIME###",
   "###USER###: Who would be up for playing ###MENTION### ###TIME###?": "###USER###: Wer wäre dabei ###MENTION###, ###TIME###",
-  "*Poll finished. You can't vote anymore :)*": "*Umfrage beendent. Du kannst nichtmehr abstimmen :)*",
+  "*Poll finished. You can't vote anymore :)*": "*Umfrage beendet. Du kannst nicht mehr abstimmen :)*",
   "No Server found .. this should not happen ..": "Server nicht gefunden .. das sollte nicht passieren ..",
   "You are not in a voice channel": "Du bist in keinem Sprachchannel",
   "There are not enough members in the voice channel": "Es sind nicht genügend Teilnehmer im Sprachchannel",
