@@ -131,7 +131,7 @@ private fun createHiddenMessage(message: Message) {
     hiddenMessages!!.messages.add(hiddenMessage)
     hiddenMessages!!.store()
 
-    val hideButton = Button.of(ButtonStyle.SECONDARY, hideId, ":mag:".toEmoji())
+    val hideButton = Button.of(ButtonStyle.SECONDARY, hideId, "Details", ":arrow_down_small:".toEmoji())
     message.editMessageComponents(ActionRow.of(hideButton)).complete()
 }
 
