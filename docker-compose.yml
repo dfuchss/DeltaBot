@@ -14,7 +14,7 @@ services:
       - deltabot-duckling
 
   deltabot-duckling:
-    image: rasa/duckling
+    image: ghcr.io/dfuchss/duckling
     restart: unless-stopped
     expose:
       - 8000
