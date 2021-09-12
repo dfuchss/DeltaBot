@@ -82,8 +82,4 @@ fun JDA.fetchUser(uid: String): User? {
     }
 }
 
-fun <E> List<E>.withFirst(e: E): List<E> {
-    val newList = mutableListOf(e)
-    newList.addAll(this)
-    return newList
-}
+fun Message.refresh(): Message = this.channel.retrieveMessageById(this.id).complete()

@@ -95,13 +95,13 @@ class Summon(configuration: Configuration, private val scheduler: Scheduler) : B
         val buttonId = event.button?.id ?: ""
         if (finish.name == buttonId) {
             summonState.remove(data)
-            terminateSummon(event.message!!, event.jda.fetchUser(data.uid)!!)
+            terminateSummon(event.message, event.jda.fetchUser(data.uid)!!)
             return
         }
 
         if (delete.name == buttonId) {
             summonState.remove(data)
-            event.message!!.delete().queue()
+            event.message.delete().queue()
             return
         }
 
@@ -113,7 +113,7 @@ class Summon(configuration: Configuration, private val scheduler: Scheduler) : B
         }
         summonState.store()
 
-        recreateMessage(event.message!!, data)
+        recreateMessage(event.message, data)
     }
 
     private fun recreateMessage(message: Message, data: SummonData) {
@@ -158,7 +158,8 @@ class Summon(configuration: Configuration, private val scheduler: Scheduler) : B
         reply.deleteOriginal().queue()
     }
 
-    private fun terminateSummon(msg: Message, user: User) {
+    private fun terminateSummon(oldMessage: Message, user: User) {
+        val msg = oldMessage.refresh()
         val data = summonState.getSummonMessage(msg.id)
         if (data != null)
             summonState.remove(data)
@@ -229,6 +230,3 @@ class Summon(configuration: Configuration, private val scheduler: Scheduler) : B
         var userToReact: MutableMap<String, String> = mutableMapOf()
     )
 }
-
-
-

@@ -17,7 +17,7 @@
   "No role message found": "Keine Rollennachricht gefunden",
   "Role message deleted ..": "Rollennachricht gelöscht ..",
   "You must provide both .. role and emoji ..": "Du musst beides angeben .. Rolle und Emoji ..",
-  "Role already mapped ..": "Rolle schon gemapped",
+  "Role already mapped ..": "Rolle schon zugeordnet",
   "I've found # emojis :(": "Ich habe # Emojis gefunden :(",
   "Emoji already used ..": "Emoji wird bereits benutzt ..",
   "Updated role message": "Rollennachricht aktualisiert",
@@ -27,7 +27,7 @@
   "I've added # to your roles": "Ich habe # zu Deinen Rollen hinzugefügt",
   "I'm not allowed to do that.": "Ich darf das leider nicht tun.",
   "**Please choose your roles on this server :)**": "**Bitte wähle Deine Rollen auf dem Server :)**",
-  "*At the moment, no roles can be chosen .. please wait for your guild leader :)*": "*Im Moment können noch keine Rollen ausgewählt werden. Bitte wartet auf Euren Gildenleiter :)*",
+  "*At the moment, no roles can be chosen .. please wait for your guild leader :)*": "*Im Moment können noch keine Rollen ausgewählt werden. Bitte wartet auf Euren Gilden-Leiter :)*",
   "Please choose buttons to select your roles ..": "Bitte wähle mit den Knöpfen Deine Rollen",
   "A dice shall have at least 2 sides ..": "Ein Würfel hat mindestens 2 Seiten ..",
   "Your roll was #": "Dein Würfelwurf war #",
@@ -35,8 +35,8 @@
   "###USER###: Who would be up for playing ###MENTION### ###TIME###?": "###USER###: Wer wäre dabei ###MENTION###, ###TIME###",
   "*Poll finished. You can't vote anymore :)*": "*Umfrage beendet. Du kannst nicht mehr abstimmen :)*",
   "No Server found .. this should not happen ..": "Server nicht gefunden .. das sollte nicht passieren ..",
-  "You are not in a voice channel": "Du bist in keinem Sprachchannel",
-  "There are not enough members in the voice channel": "Es sind nicht genügend Teilnehmer im Sprachchannel",
+  "You are not in a voice channel": "Du bist in keinem Sprachkanal",
+  "There are not enough members in the voice channel": "Es sind nicht genügend Teilnehmer im Sprachkanal",
   "Not enough teams": "Nicht genügend Teams",
   "Your point in time shall be in the future :)": "Dein Zeitpunkt sollte in der Zukunft liegen :)"
 }
