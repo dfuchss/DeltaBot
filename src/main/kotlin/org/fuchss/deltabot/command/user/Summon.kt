@@ -165,7 +165,7 @@ class Summon(configuration: Configuration, private val scheduler: Scheduler) : B
             summonState.remove(data)
 
         val newContent = msg.contentRaw + "\n\n${pollFinished.translate(language(msg.guild, user))}"
-        msg.editMessage(newContent).setActionRows(listOf()).complete().hide()
+        msg.editMessage(newContent).setActionRows(listOf()).complete().hide(directHide = false)
         if (msg.isPinned)
             msg.unpin().complete()
     }
