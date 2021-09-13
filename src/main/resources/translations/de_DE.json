@@ -38,5 +38,6 @@
   "You are not in a voice channel": "Du bist in keinem Sprachkanal",
   "There are not enough members in the voice channel": "Es sind nicht genügend Teilnehmer im Sprachkanal",
   "Not enough teams": "Nicht genügend Teams",
-  "Your point in time shall be in the future :)": "Dein Zeitpunkt sollte in der Zukunft liegen :)"
+  "Your point in time shall be in the future :)": "Dein Zeitpunkt sollte in der Zukunft liegen :)",
+  "I'll remind you <t:#:R>: '#'": "Ich werde Dich <t:#:R> an '#' erinnern"
 }

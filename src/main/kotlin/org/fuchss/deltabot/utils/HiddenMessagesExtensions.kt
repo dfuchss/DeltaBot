@@ -104,9 +104,9 @@ private class HiddenMessagesStore : Storable(), EventListener {
     private fun handleHiddenMessageClick(event: ButtonClickEvent, hiddenMessage: HiddenMessage) {
         event.deferEdit().complete()
         if (hiddenMessage.hidden)
-            unhideMessage(scheduler, event.message!!, hiddenMessage)
+            unhideMessage(scheduler, event.message, hiddenMessage)
         else
-            hideMessage(event.message!!, hiddenMessage)
+            hideMessage(event.message, hiddenMessage)
     }
 
     fun registerScheduler(scheduler: Scheduler): HiddenMessagesStore {
