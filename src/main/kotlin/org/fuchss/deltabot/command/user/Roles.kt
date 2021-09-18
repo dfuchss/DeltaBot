@@ -204,14 +204,15 @@ class Roles : BotCommand, EventListener {
         var message = "${switcherText.translate(guild.internalLanguage())}\n${noRoles.translate(guild.internalLanguage())}"
         var buttons = emptyList<Button>()
 
-        if (guildState.emojiToRole.isNotEmpty()) {
+        val emoji2Role = guildState.emojiToRole.entries.sortedBy { (_, mention) -> guild.getRoleById(mention.drop("<@&".length).dropLast(">".length))?.name ?: "" }
+        if (emoji2Role.isNotEmpty()) {
             message = "${switcherText.translate(guild.internalLanguage())}\n\n${
-                guildState.emojiToRole.entries.joinToString(
+                emoji2Role.joinToString(
                     separator = "\n",
                     transform = { (emoji, roleMention) -> "$emoji → $roleMention" })
             }"
             message += "\n\n" + "Please choose buttons to select your roles ..".translate(guild.internalLanguage())
-            buttons = guildState.emojiToRole.keys.map { e -> loadEmojiButton(guild, e) }
+            buttons = emoji2Role.map { (e, _) -> loadEmojiButton(guild, e) }
         }
 
         val msg = guild.fetchMessage(guildState.channelId, guildState.messageId)!!
