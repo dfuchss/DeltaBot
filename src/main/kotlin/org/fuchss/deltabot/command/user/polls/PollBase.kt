@@ -68,15 +68,40 @@ abstract class PollBase(configPath: String, protected val scheduler: Scheduler) 
 
         event.deferEdit().queue()
 
-        val uid = event.user.id
-        if (data.userToReact.containsKey(uid) && data.userToReact[uid] == buttonId) {
-            data.userToReact.remove(uid)
-        } else {
-            data.userToReact[uid] = buttonId
-        }
+        updateUser(event.user.id, buttonId, data)
         pollState.store()
 
         recreateMessage(event.message, data)
+    }
+
+    private fun updateUser(uid: String, buttonId: String, data: PollData) {
+        val reactions = data.user2React[uid] ?: listOf()
+
+        if (data.onlyOneOption) {
+            // Only one option allowed
+            reactions.forEach { r -> data.react2User[r]?.remove(uid) }
+            data.user2React.remove(uid)
+
+            if (buttonId !in reactions) {
+                data.user2React[uid] = mutableListOf(buttonId)
+                data.react2User.getOrPut(buttonId) { mutableListOf() }.add(uid)
+            }
+        } else {
+            // Multiple Options allowed
+            if (buttonId in reactions) {
+                // Remove reaction ..
+                data.user2React.getOrPut(uid) { mutableListOf() }.remove(buttonId)
+                data.react2User.getOrPut(buttonId) { mutableListOf() }.remove(uid)
+            } else {
+                // Add reaction ..
+                data.user2React.getOrPut(uid) { mutableListOf() }.add(buttonId)
+                data.react2User.getOrPut(buttonId) { mutableListOf() }.add(uid)
+            }
+        }
+
+        // Cleanup maps ..
+        data.user2React.entries.removeIf { (_, v) -> v.isEmpty() }
+        data.react2User.entries.removeIf { (_, v) -> v.isEmpty() }
     }
 
     private fun isOwner(event: ButtonClickEvent, data: PollData): Boolean {
@@ -91,8 +116,7 @@ abstract class PollBase(configPath: String, protected val scheduler: Scheduler) 
         val intro = message.contentRaw.split("\n")[0]
 
         val emojis = data.getEmojis(message.guild)
-        val reactionsToUser: Map<String, List<String>> = data.userToReact.toMap().reverseMap()
-        val reactions = emojis.map { e -> reactionsToUser.getOrDefault(e.name, emptyList()) }.zip(emojis).filter { (list, _) -> list.isNotEmpty() }
+        val reactions = emojis.map { e -> data.react2User.getOrDefault(e.name, mutableListOf()) }.zip(emojis).filter { (list, _) -> list.isNotEmpty() }
             .map { (list, emoji) -> emoji to list.mapNotNull { u -> jda.fetchUser(u)?.asMention } }
 
         val reactionText = reactions.filter { (_, l) -> l.isNotEmpty() }.joinToString("\n") { (emoji, list) -> "${emoji.asMention}: ${list.joinToString(" ")}" }
@@ -104,7 +128,7 @@ abstract class PollBase(configPath: String, protected val scheduler: Scheduler) 
         message.editMessage(finalMessage).queue()
     }
 
-    protected fun createPoll(channel: MessageChannel, terminationTimestamp: Long?, author: User, response: String, options: Map<Emoji, Button>) {
+    protected fun createPoll(channel: MessageChannel, terminationTimestamp: Long?, author: User, response: String, options: Map<Emoji, Button>, onlyOneOption: Boolean) {
         val components = options.values.toList<Component>().toActionRows().toMutableList()
         val globalActions = listOf(Button.secondary(finish.name + "", finish), Button.secondary(delete.name, delete))
         components.add(ActionRow.of(globalActions))
@@ -112,7 +136,7 @@ abstract class PollBase(configPath: String, protected val scheduler: Scheduler) 
         val msg = channel.sendMessage(response).setActionRows(components).complete()
         msg.pinAndDelete()
 
-        val data = PollData(terminationTimestamp, msg.guild.id, msg.channel.id, msg.id, author.id, options.keys.map { e -> EmojiDTO.create(e) })
+        val data = PollData(terminationTimestamp, msg.guild.id, msg.channel.id, msg.id, author.id, options.keys.map { e -> EmojiDTO.create(e) }, onlyOneOption)
         pollState.add(data)
         if (terminationTimestamp != null)
             scheduler.queue({ terminate(msg, author.id) }, terminationTimestamp)
@@ -167,7 +191,9 @@ abstract class PollBase(configPath: String, protected val scheduler: Scheduler) 
         var mid: String,
         var uid: String,
         var options: List<EmojiDTO> = mutableListOf(),
-        var userToReact: MutableMap<String, String> = mutableMapOf()
+        var onlyOneOption: Boolean,
+        var react2User: MutableMap<String, MutableList<String>> = mutableMapOf(),
+        var user2React: MutableMap<String, MutableList<String>> = mutableMapOf()
     ) {
         fun getEmojis(guild: Guild): List<Emoji> {
             return options.map { dto -> dto.getEmoji(guild) }

@@ -16,7 +16,7 @@ import org.fuchss.deltabot.language
 import org.fuchss.deltabot.translate
 import org.fuchss.deltabot.utils.*
 
-class WeekdayPoll(scheduler: Scheduler) : PollBase("./states/weekday_poll", scheduler) {
+class WeekdayPoll(scheduler: Scheduler) : PollBase("./states/weekday_poll.json", scheduler) {
 
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
     override val isGlobal: Boolean get() = false
@@ -42,7 +42,7 @@ class WeekdayPoll(scheduler: Scheduler) : PollBase("./states/weekday_poll", sche
         val question = event.message.contentRaw.split("\n")[0]
         val weekdays = event.selectedOptions!!.map { o -> o.value }
         val options = getOptions(weekdays)
-        createPoll(event.channel, null, event.user, question, options)
+        createPoll(event.channel, null, event.user, question, options, false)
     }
 
 
@@ -77,7 +77,7 @@ class WeekdayPoll(scheduler: Scheduler) : PollBase("./states/weekday_poll", sche
 
         val user = oldMessage.jda.fetchUser(uid)
         val dayMapping = msg.buttons.associate { b -> b.id!! to b.label }
-        val reactionsToUser: Map<String, List<String>> = data.userToReact.toMap().reverseMap().mapKeys { (k, _) -> dayMapping[k]!! }
+        val reactionsToUser: Map<String, List<String>> = data.react2User.mapKeys { (k, _) -> dayMapping[k]!! }
 
         var finalMsg = oldMessage.contentRaw.split("\n")[0] + "\n\n"
         for ((d, users) in reactionsToUser.entries) {

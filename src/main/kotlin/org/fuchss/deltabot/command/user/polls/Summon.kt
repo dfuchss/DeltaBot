@@ -75,7 +75,7 @@ class Summon(configuration: Configuration, scheduler: Scheduler) : PollBase("./s
         response = response.replace("###TIME###", "<t:${extractedTime.timestamp()}:R>")
 
         val options = getEmojis(guild).zip(getButtons(guild)).toMap()
-        createPoll(channel, extractedTime.timestamp(), user, response, options)
+        createPoll(channel, extractedTime.timestamp(), user, response, options, true)
         reply.deleteOriginal().queue()
     }
 
