@@ -75,7 +75,6 @@ fun findGenericTimespan(message: String, language: Language, ducklingService: Du
     }
 
     for (timespan in genericTimeSpans[language] ?: listOf()) {
-        // Only consider timespans >= 1 day
         val rgx = Regex(regex(timespan))
         val match = rgx.findAll(message).toList()
 
