@@ -29,7 +29,7 @@ open class Help(private val configuration: Configuration, protected val commands
         }
 
         val commands = commands.sorted().filter { c -> c.permissions in visibilities }
-        event.replyEmbeds(generateText(event.jda, commands)).setEphemeral(visibilities.size > 1).queue()
+        event.replyEmbeds(generateText(event.jda, commands)).setEphemeral(true).queue()
     }
 
     companion object {
