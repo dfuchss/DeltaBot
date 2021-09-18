@@ -49,5 +49,17 @@
   "Thursday": "Donnerstag",
   "Friday": "Freitag",
   "Saturday": "Samstag",
-  "Sunday": "Sonntag"
+  "Sunday": "Sonntag",
+  "Neither name nor question can be blank!": "Weder Name noch Frage dürfen leer sein!",
+  "Poll *#* created!": "Poll *#* angelegt!",
+  "Poll *#* deleted!": "Poll *#* gelöscht!",
+  "An option can't be blank!": "Eine Option kann nicht leer sein!",
+  "Option '#' added to **#**": "Option '#' zu **#** hinzugefügt",
+  "Option '#' removed from **#**": "Option '#' von **#** entfernt",
+  "No poll(s) found!": "Keine Umfrage(n) gefunden!",
+  "*No Options*": "*Keine Optionen*",
+  "Please add options to your poll!": "Bitte füge der Umfrage Optionen hinzu!",
+  "Creating Poll ...": "Erstelle Umfrage ...",
+  "Poll not found!": "Umfrage nicht gefunden!",
+  "Poll already found!": "Umfrage existiert bereits!"
 }

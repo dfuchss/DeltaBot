@@ -13,6 +13,7 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import org.fuchss.deltabot.Configuration
 import org.fuchss.deltabot.command.admin.*
 import org.fuchss.deltabot.command.user.*
+import org.fuchss.deltabot.command.user.polls.SimplePoll
 import org.fuchss.deltabot.command.user.polls.Summon
 import org.fuchss.deltabot.command.user.polls.WeekdayPoll
 import org.fuchss.deltabot.utils.Scheduler
@@ -45,6 +46,7 @@ class CommandHandler(private val configuration: Configuration, val scheduler: Sc
         commands.add(Summon(configuration, scheduler))
         commands.add(Reminder(configuration, scheduler))
         commands.add(WeekdayPoll(scheduler))
+        commands.add(SimplePoll(scheduler))
 
         if (!configuration.hasAdmins()) {
             logger.info("Missing initial admin .. adding initial admin command ..")

@@ -1,7 +1,6 @@
 package org.fuchss.deltabot.command.user.polls
 
 import net.dv8tion.jda.api.MessageBuilder
-import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.interaction.SelectionMenuEvent
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
@@ -12,9 +11,9 @@ import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption
 import net.dv8tion.jda.api.interactions.components.selections.SelectionMenu
 import org.fuchss.deltabot.command.CommandPermissions
-import org.fuchss.deltabot.language
 import org.fuchss.deltabot.translate
-import org.fuchss.deltabot.utils.*
+import org.fuchss.deltabot.utils.Scheduler
+import org.fuchss.deltabot.utils.Weekday
 
 class WeekdayPoll(scheduler: Scheduler) : PollBase("./states/weekday_poll.json", scheduler) {
 
@@ -64,29 +63,4 @@ class WeekdayPoll(scheduler: Scheduler) : PollBase("./states/weekday_poll.json",
         event.reply(msg).setEphemeral(true).queue()
     }
 
-    override fun terminate(oldMessage: Message, uid: String) {
-        val msg = oldMessage.refresh()
-        val data = pollState.getPollData(msg.id)
-        pollState.remove(data)
-        if (data == null) {
-            msg.editMessageComponents(listOf()).complete().hide(directHide = false)
-            if (msg.isPinned)
-                msg.unpin().complete()
-            return
-        }
-
-        val user = oldMessage.jda.fetchUser(uid)
-        val dayMapping = msg.buttons.associate { b -> b.id!! to b.label }
-        val reactionsToUser: Map<String, List<String>> = data.react2User.mapKeys { (k, _) -> dayMapping[k]!! }
-
-        var finalMsg = oldMessage.contentRaw.split("\n")[0] + "\n\n"
-        for ((d, users) in reactionsToUser.entries) {
-            finalMsg += "$d: ${if (users.isEmpty()) "--" else users.mapNotNull { u -> oldMessage.jda.fetchUser(u)?.asMention }.joinToString(" ")}\n"
-        }
-        finalMsg += "\n${pollFinished.translate(language(msg.guild, user))}"
-
-        msg.editMessage(finalMsg).setActionRows(listOf()).complete().hide(directHide = false)
-        if (msg.isPinned)
-            msg.unpin().complete()
-    }
 }

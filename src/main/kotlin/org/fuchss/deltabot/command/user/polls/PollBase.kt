@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.interactions.components.Button
 import net.dv8tion.jda.api.interactions.components.ButtonStyle
 import net.dv8tion.jda.api.interactions.components.Component
 import org.fuchss.deltabot.command.BotCommand
+import org.fuchss.deltabot.language
 import org.fuchss.deltabot.translate
 import org.fuchss.deltabot.utils.*
 
@@ -163,7 +164,31 @@ abstract class PollBase(configPath: String, protected val scheduler: Scheduler) 
     }
 
 
-    protected abstract fun terminate(oldMessage: Message, uid: String)
+    protected open fun terminate(oldMessage: Message, uid: String) {
+        val msg = oldMessage.refresh()
+        val data = pollState.getPollData(msg.id)
+        pollState.remove(data)
+        if (data == null) {
+            msg.editMessageComponents(listOf()).complete().hide(directHide = false)
+            if (msg.isPinned)
+                msg.unpin().complete()
+            return
+        }
+
+        val user = oldMessage.jda.fetchUser(uid)
+        val buttonMapping = msg.buttons.associate { b -> b.id!! to b.label }
+        val reactionsToUser: Map<String, List<String>> = data.react2User.mapKeys { (k, _) -> buttonMapping[k]!! }
+
+        var finalMsg = oldMessage.contentRaw.split("\n")[0] + "\n\n"
+        for ((d, users) in reactionsToUser.entries.sortedBy { (k, _) -> k }) {
+            finalMsg += "$d: ${if (users.isEmpty()) "--" else users.mapNotNull { u -> oldMessage.jda.fetchUser(u)?.asMention }.joinToString(" ")}\n"
+        }
+        finalMsg += "\n${pollFinished.translate(language(msg.guild, user))}"
+
+        msg.editMessage(finalMsg).setActionRows(listOf()).complete().hide(directHide = false)
+        if (msg.isPinned)
+            msg.unpin().complete()
+    }
 
     protected data class PollState(
         var polls: MutableList<PollData> = mutableListOf()
