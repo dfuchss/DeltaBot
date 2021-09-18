@@ -12,7 +12,7 @@ import java.time.format.DateTimeFormatter
 
 class DucklingService(private val endpoint: String) {
 
-    fun interpretTime(text: String, language: Language): List<Pair<LocalDateTime, IntRange>> {
+    fun interpretTime(text: String, language: Language): List<LocalDateTime> {
         val om = createObjectMapper()
         val tz = ZoneId.systemDefault().id
         val locale = language.locale
@@ -32,7 +32,7 @@ class DucklingService(private val endpoint: String) {
             foundTimes = om.readValue(rawResponse, foundTimes.javaClass)
 
             val df = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
-            val times = foundTimes.map { t -> extractTime(t.value) to IntRange(t.start, t.end - 1) }.map { (t, r) -> LocalDateTime.parse(t, df) to r }
+            val times = foundTimes.map { t -> extractTime(t.value) }.map { t -> LocalDateTime.parse(t, df) }
             logger.debug("Found times: $times")
             times
         } catch (e: Exception) {

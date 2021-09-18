@@ -58,7 +58,7 @@ class Reminder(configuration: Configuration, private val scheduler: Scheduler) :
             return
         }
 
-        val (time, _) = times[0]
+        val time = times[0]
         val ts = time.timestamp()
         val reminder =
             if (event.channelType == ChannelType.PRIVATE)

@@ -60,7 +60,7 @@ class Summon(configuration: Configuration, scheduler: Scheduler) : PollBase("./s
 
     private fun createSummon(event: SlashCommandEvent, guild: Guild, user: User, channel: MessageChannel, game: Role, time: String) {
         // TODO maybe specify default time to another time ..
-        val extractedTime = findGenericTimespan(time, event.language(), ducklingService)?.first ?: LocalDateTime.of(LocalDate.now(), LocalTime.of(20, 0))
+        val extractedTime = findGenericTimespan(time, event.language(), ducklingService) ?: LocalDateTime.of(LocalDate.now(), LocalTime.of(20, 0))
 
         if (extractedTime < LocalDateTime.now()) {
             event.reply("Your point in time shall be in the future :)".translate(event.language())).setEphemeral(true).queue()
