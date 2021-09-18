@@ -13,6 +13,7 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import org.fuchss.deltabot.Configuration
 import org.fuchss.deltabot.command.admin.*
 import org.fuchss.deltabot.command.user.*
+import org.fuchss.deltabot.command.user.polls.Summon
 import org.fuchss.deltabot.utils.Scheduler
 import org.fuchss.deltabot.utils.fetchCommands
 import org.fuchss.deltabot.utils.logger
