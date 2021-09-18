@@ -28,8 +28,6 @@ class Summon(configuration: Configuration, scheduler: Scheduler) : PollBase("./s
 
         private val summonReactionsDefault = listOf(":+1:", ":thinking:", ":question:", ":pensive:", ":-1").map { e -> e.toEmoji() }
         private val summonReactionsDefaultStyle = listOf(ButtonStyle.SUCCESS, ButtonStyle.SECONDARY, ButtonStyle.SECONDARY, ButtonStyle.SECONDARY, ButtonStyle.DANGER)
-
-        private const val pollFinished = "*Poll finished. You can't vote anymore :)*"
     }
 
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
@@ -85,8 +83,7 @@ class Summon(configuration: Configuration, scheduler: Scheduler) : PollBase("./s
     override fun terminate(oldMessage: Message, uid: String) {
         val msg = oldMessage.refresh()
         val data = pollState.getPollData(msg.id)
-        if (data != null)
-            pollState.remove(data)
+        pollState.remove(data)
 
         val user = oldMessage.jda.fetchUser(uid)
         val newContent = msg.contentRaw + "\n\n${pollFinished.translate(language(msg.guild, user))}"

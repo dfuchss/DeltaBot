@@ -1,5 +1,6 @@
 package org.fuchss.deltabot.command.user.polls
 
+import com.vdurmont.emoji.EmojiManager
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.events.GenericEvent
@@ -7,6 +8,7 @@ import net.dv8tion.jda.api.events.interaction.ButtonClickEvent
 import net.dv8tion.jda.api.hooks.EventListener
 import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.interactions.components.Button
+import net.dv8tion.jda.api.interactions.components.ButtonStyle
 import net.dv8tion.jda.api.interactions.components.Component
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.translate
@@ -17,11 +19,14 @@ abstract class PollBase(configPath: String, protected val scheduler: Scheduler) 
     companion object {
         private val finish = ":octagonal_sign:".toEmoji()
         private val delete = ":put_litter_in_its_place:".toEmoji()
+
+        @JvmStatic
+        protected val pollFinished = "*Poll finished. You can't vote anymore :)*"
     }
 
     protected val pollState: PollState = PollState().load(configPath)
 
-    override fun registerJDA(jda: JDA) {
+    final override fun registerJDA(jda: JDA) {
         jda.addEventListener(this)
         initScheduler(jda)
     }
@@ -47,7 +52,6 @@ abstract class PollBase(configPath: String, protected val scheduler: Scheduler) 
                 return
 
             event.deferEdit().queue()
-            pollState.remove(data)
             terminate(event.message, event.user.id)
             return
         }
@@ -114,6 +118,27 @@ abstract class PollBase(configPath: String, protected val scheduler: Scheduler) 
             scheduler.queue({ terminate(msg, author.id) }, terminationTimestamp)
     }
 
+    protected fun getOptions(options: List<String>): Map<Emoji, Button> {
+        val map = LinkedHashMap<Emoji, Button>()
+
+        val usedEmoji = mutableListOf(finish.name, delete.name)
+        for (o in options) {
+            val randomEmoji = randomEmoji(usedEmoji)
+            usedEmoji.add(randomEmoji.name)
+            map[randomEmoji] = Button.of(ButtonStyle.SECONDARY, randomEmoji.name, o, randomEmoji)
+        }
+        return map
+    }
+
+    private fun randomEmoji(usedEmoji: MutableList<String>): Emoji {
+        var random = EmojiManager.getAll().random().unicode
+        while (random in usedEmoji)
+            random = EmojiManager.getAll().random().unicode
+
+        return Emoji.fromUnicode(random)
+    }
+
+
     protected abstract fun terminate(oldMessage: Message, uid: String)
 
     protected data class PollState(
@@ -129,7 +154,7 @@ abstract class PollBase(configPath: String, protected val scheduler: Scheduler) 
             this.store()
         }
 
-        fun remove(data: PollData) {
+        fun remove(data: PollData?) {
             this.polls.remove(data)
             this.store()
         }

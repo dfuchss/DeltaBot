@@ -7,6 +7,10 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
 
+enum class Weekday {
+    Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday
+}
+
 // 'Regex' X 'Value in String' X 'Time Units'
 private val genericTimeSpansEN = listOf(
     ("in \\d+ minute(s)?" to { s: String -> s.split(" ")[1].toInt() } to Duration.ofMinutes(1)),

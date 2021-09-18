@@ -14,6 +14,7 @@ import org.fuchss.deltabot.Configuration
 import org.fuchss.deltabot.command.admin.*
 import org.fuchss.deltabot.command.user.*
 import org.fuchss.deltabot.command.user.polls.Summon
+import org.fuchss.deltabot.command.user.polls.WeekdayPoll
 import org.fuchss.deltabot.utils.Scheduler
 import org.fuchss.deltabot.utils.fetchCommands
 import org.fuchss.deltabot.utils.logger
@@ -43,6 +44,7 @@ class CommandHandler(private val configuration: Configuration, val scheduler: Sc
         commands.add(Teams())
         commands.add(Summon(configuration, scheduler))
         commands.add(Reminder(configuration, scheduler))
+        commands.add(WeekdayPoll(scheduler))
 
         if (!configuration.hasAdmins()) {
             logger.info("Missing initial admin .. adding initial admin command ..")

@@ -40,5 +40,14 @@
   "Not enough teams": "Nicht genügend Teams",
   "Your point in time shall be in the future :)": "Dein Zeitpunkt sollte in der Zukunft liegen :)",
   "I'll remind you <t:#:R>: '#'": "Ich werde Dich <t:#:R> an '#' erinnern",
-  "Since you are not the owner of the poll, you can't do this action": "Da Du nicht der Besitzer der Umfrage bist, darfst Du das nicht!"
+  "Since you are not the owner of the poll, you can't do this action": "Da Du nicht der Besitzer der Umfrage bist, darfst Du das nicht!",
+  "You have to provide a question!": "Du musst eine Frage angeben!",
+  "*Please choose the Weekdays you want to use*": "*Bitte wähle die Tage die Du für zur Auswahl stellen möchtest*",
+  "Monday": "Montag",
+  "Tuesday": "Dienstag",
+  "Wednesday": "Mittwoch",
+  "Thursday": "Donnerstag",
+  "Friday": "Freitag",
+  "Saturday": "Samstag",
+  "Sunday": "Sonntag"
 }
