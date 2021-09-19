@@ -16,6 +16,6 @@ class PersistentHelp(configuration: Configuration, commands: List<BotCommand>) :
 
     override fun handle(event: SlashCommandEvent) {
         val commands = commands.filter { c -> c.permissions == CommandPermissions.ALL }.sorted()
-        event.replyEmbeds(generateText(event.jda, commands)).queue()
+        event.replyEmbeds(generateText(event, commands)).queue()
     }
 }

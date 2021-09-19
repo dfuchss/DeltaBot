@@ -1,7 +1,6 @@
 package org.fuchss.deltabot.command.user
 
 import net.dv8tion.jda.api.EmbedBuilder
-import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
@@ -29,11 +28,11 @@ open class Help(private val configuration: Configuration, protected val commands
         }
 
         val commands = commands.sorted().filter { c -> c.permissions in visibilities }
-        event.replyEmbeds(generateText(event.jda, commands)).setEphemeral(true).queue()
+        event.replyEmbeds(generateText(event, commands)).setEphemeral(true).queue()
     }
 
     companion object {
-        fun generateText(jda: JDA, commands: List<BotCommand>): MessageEmbed {
+        fun generateText(event: SlashCommandEvent, commands: List<BotCommand>): MessageEmbed {
             var message = ""
             for (cmd in commands) {
                 message += "**/${cmd.name}**: ${cmd.description}\n"
@@ -43,7 +42,7 @@ open class Help(private val configuration: Configuration, protected val commands
                         message += "→ **${subcommand.name}**: ${subcommand.description}\n"
                 }
             }
-            return EmbedBuilder().setTitle(jda.selfUser.name + " Help").setDescription(message.trim()).setColor(Constants.BLUE).build()
+            return EmbedBuilder().setTitle((event.guild?.selfMember?.effectiveName ?: event.jda.selfUser.name) + " Help").setDescription(message.trim()).setColor(Constants.BLUE).build()
         }
     }
 
