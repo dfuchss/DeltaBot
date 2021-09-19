@@ -37,6 +37,7 @@ class CommandHandler(private val configuration: Configuration, val scheduler: Sc
         commands.add(Erase())
         commands.add(Roles())
         commands.add(ResetStateAndCommands(configuration))
+        commands.add(ServerRoles())
 
         commands.add(Language())
         commands.add(Help(configuration, commands))

@@ -61,5 +61,11 @@
   "Please add options to your poll!": "Bitte füge der Umfrage Optionen hinzu!",
   "Creating Poll ...": "Erstelle Umfrage ...",
   "Poll not found!": "Umfrage nicht gefunden!",
-  "Poll already found!": "Umfrage existiert bereits!"
+  "Poll already found!": "Umfrage existiert bereits!",
+  "You need to supply a name with no special characters!": "Du musst einen Namen ohne Sonderzeichen angeben!",
+  "I've found some role that matches your provided name!": "Ich habe eine Rolle gefunden, die bereits so heißt!",
+  "Welcome # on the server!": "Willkommen # auf diesem Server!",
+  "You need to supply a role!": "Du musst eine Rolle angeben!",
+  "Purging # role on the server!": "Lösche # von diesem Server!",
+  "I'm not allowed to do that!": "Ich habe keine Berechtigung dafür!"
 }
