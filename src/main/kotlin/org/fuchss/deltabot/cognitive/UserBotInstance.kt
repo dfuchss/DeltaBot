@@ -1,9 +1,8 @@
-package org.fuchss.deltabot.command.cognitive
+package org.fuchss.deltabot.cognitive
 
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Message
 import org.fuchss.deltabot.Configuration
-import org.fuchss.deltabot.cognitive.RasaService
 import org.fuchss.deltabot.cognitive.dialog.Dialog
 import org.fuchss.deltabot.cognitive.dialog.DialogResult
 import org.fuchss.deltabot.cognitive.dialog.NotUnderstanding
@@ -45,7 +44,8 @@ class UserBotInstance(private val configuration: Configuration, private val comm
                 dialog = NotUnderstanding.ID
             } else if (intent == "QnA-Tasks") {
                 // Simply print help message ..
-                val reply = Help.generateText(message.jda, commands)
+                val botName = if (message.isFromGuild) message.guild.selfMember.effectiveName else message.jda.selfUser.name
+                val reply = Help.generateText(botName, commands)
                 message.replyEmbeds(reply).complete()
                 return
             } else if (intent.startsWith("QnA")) {
