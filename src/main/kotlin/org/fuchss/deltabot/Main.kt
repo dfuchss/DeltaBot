@@ -12,7 +12,9 @@ import org.fuchss.deltabot.command.CommandHandler
 import org.fuchss.deltabot.utils.*
 import org.slf4j.spi.LocationAwareLogger
 
-
+/**
+ * A listener that simply logs [GenericEvent] based on the log level in [Configuration.debug].
+ */
 class LoggerListener(private val configuration: Configuration) : EventListener {
     override fun onEvent(event: GenericEvent) {
         if (configuration.debug) {
@@ -26,6 +28,9 @@ class LoggerListener(private val configuration: Configuration) : EventListener {
     }
 }
 
+/**
+ * A listener that changes the presence to the default one of the bot.
+ */
 class ActivityChanger : EventListener {
     override fun onEvent(event: GenericEvent) {
         if (event !is ReadyEvent)
@@ -34,6 +39,7 @@ class ActivityChanger : EventListener {
         event.jda.presence.setPresence(OnlineStatus.ONLINE, Activity.watching("/help"))
     }
 }
+
 
 fun main() {
     val configPath = System.getenv("CONF_PATH") ?: "./config.json"

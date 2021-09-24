@@ -2,6 +2,9 @@ package org.fuchss.deltabot
 
 import java.awt.Color
 
+/**
+ * Just some constants of the bot.
+ */
 class Constants {
     companion object {
         /**

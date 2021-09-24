@@ -10,11 +10,29 @@ import org.slf4j.spi.LocationAwareLogger
  * The configuration of the bot.
  */
 data class Configuration(
+    /**
+     * The path to the multi nlu interpreter.
+     */
     var nluUrl: String = "http://localhost:5005",
+    /**
+     * The path to ducking service.
+     */
     var ducklingUrl: String = "http://localhost:8000",
+    /**
+     * The threshold for filtering nlu intents.
+     */
     var nluThreshold: Double = 0.7,
+    /**
+     * A list of all global admins identified by [User.getId]
+     */
     private var admins: MutableList<String> = ArrayList(),
+    /**
+     * Indicator whether debug is enabled.
+     */
     var debug: Boolean = false,
+    /**
+     * Indicator whether the NLU Unit is disabled.
+     */
     var disableNlu: Boolean = false
 ) : Storable() {
 
