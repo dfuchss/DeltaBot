@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.EventListener
 import org.fuchss.deltabot.cognitive.dialog.DialogListener
 import org.fuchss.deltabot.command.CommandHandler
+import org.fuchss.deltabot.command.CommandRegistry
 import org.fuchss.deltabot.utils.*
 import org.slf4j.spi.LocationAwareLogger
 
@@ -54,8 +55,10 @@ fun main() {
     logger.info("Creating Bot ..")
 
     val scheduler = Scheduler()
+    val commandRegistry = CommandRegistry(config, scheduler)
+
     val builder = JDABuilder.createDefault(token)
-    val jda = builder.addEventListeners(scheduler, LoggerListener(config), ActivityChanger(), CommandHandler(config, scheduler), DialogListener(config)).build()
+    val jda = builder.addEventListeners(scheduler, LoggerListener(config), ActivityChanger(), CommandHandler(config, commandRegistry), DialogListener(config, commandRegistry)).build()
     initHiddenMessages(jda, scheduler)
 
     jda.awaitReady()

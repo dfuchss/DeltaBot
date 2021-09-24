@@ -6,10 +6,11 @@ import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.EventListener
 import org.fuchss.deltabot.Configuration
+import org.fuchss.deltabot.command.CommandRegistry
 import org.fuchss.deltabot.language
 import org.fuchss.deltabot.translate
 
-class DialogListener(private val configuration: Configuration) : EventListener {
+class DialogListener(private val configuration: Configuration, private val commandRegistry: CommandRegistry) : EventListener {
     private val user2instance = mutableMapOf<User, UserBotInstance>()
 
     override fun onEvent(event: GenericEvent) {
@@ -25,7 +26,7 @@ class DialogListener(private val configuration: Configuration) : EventListener {
             return
         }
 
-        val instance = user2instance.getOrPut(event.message.author) { UserBotInstance(configuration) }
+        val instance = user2instance.getOrPut(event.message.author) { UserBotInstance(configuration, commandRegistry) }
         instance.handle(event.message, event.language())
     }
 }

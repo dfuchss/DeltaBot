@@ -4,11 +4,12 @@ import net.dv8tion.jda.api.entities.Message
 import org.fuchss.deltabot.Configuration
 import org.fuchss.deltabot.Language
 import org.fuchss.deltabot.cognitive.RasaService
+import org.fuchss.deltabot.command.CommandRegistry
 import org.fuchss.deltabot.command.user.Help
 import org.fuchss.deltabot.utils.logger
 import java.util.*
 
-class UserBotInstance(private val configuration: Configuration) {
+class UserBotInstance(private val configuration: Configuration, private val commandRegistry: CommandRegistry) {
     private val rasaService = RasaService(configuration)
 
     private val activeDialogs: Stack<String> = Stack()
@@ -41,8 +42,7 @@ class UserBotInstance(private val configuration: Configuration) {
             } else if (intent == "QnA-Tasks") {
                 // Simply print help message ..
                 val botName = if (message.isFromGuild) message.guild.selfMember.effectiveName else message.jda.selfUser.name
-                // TODO Get Command List
-                val reply = Help.generateText(botName, emptyList())
+                val reply = Help.generateText(botName, commandRegistry.getCommands())
                 message.replyEmbeds(reply).complete()
                 return
             } else if (intent.startsWith("QnA")) {
