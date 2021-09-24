@@ -2,18 +2,16 @@
 
 **Important:**
 
-* Since discord.py will be discontinued, I've recreated DeltaBot using Kotlin and JDA. You can find the old version of DeltaBot [here](https://github.com/dfuchss/DeltaBot/releases/tag/v1.0) and its
-  source code [here](./legacy)
-* **I've disabled any code regarding dialogs so far, because I have to rewrite it from scratch.**
+*Since discord.py will be discontinued, I've recreated DeltaBot using Kotlin and JDA. You can find the old version of DeltaBot [here](https://github.com/dfuchss/DeltaBot/releases/tag/v1.0) and its source code [here](./legacy)*
 
-This repo contains my first [Discord](https://discordapp.com/) bot. It uses [RASA]("https://rasa.com") for NLP. The NLU is located [here](https://github.com/dfuchss/DeltaBot-NLU).
+This repo contains my first [Discord](https://discordapp.com/) bot. It uses [RASA]("https://rasa.com") for NLP. The NLU
+is located [here](https://github.com/dfuchss/DeltaBot-NLU).
 
 ## Requirements (Development):
-
 * maven 3 and Java 11
-    * `mvn clean package`
+  * `mvn clean package`
 * Python 3.8 with pip (NLU only)
-    * `pip install -r rasa/requirements.txt`
+  * `pip install -r rasa/requirements.txt`
 
 ## Run the Bot (via Docker)
 
