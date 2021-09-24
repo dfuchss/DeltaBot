@@ -33,7 +33,8 @@ class QnA : Dialog(ID) {
             return DialogResult.NEXT
         }
 
-        message.reply(answer).complete()
+
+        message.reply(answer.enhance(message)).complete()
         return DialogResult.NEXT
     }
 
@@ -51,4 +52,11 @@ class QnA : Dialog(ID) {
             return null
         }
     }
+}
+
+private fun String.enhance(request: Message): String {
+    var result = this
+    result = result.replace("#USER", request.author.name)
+    result = result.replace("#CHANNEL", request.channel.name)
+    return result
 }
