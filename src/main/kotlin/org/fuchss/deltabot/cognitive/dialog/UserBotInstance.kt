@@ -1,18 +1,14 @@
-package org.fuchss.deltabot.cognitive
+package org.fuchss.deltabot.cognitive.dialog
 
-import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Message
 import org.fuchss.deltabot.Configuration
-import org.fuchss.deltabot.cognitive.dialog.Dialog
-import org.fuchss.deltabot.cognitive.dialog.DialogResult
-import org.fuchss.deltabot.cognitive.dialog.NotUnderstanding
-import org.fuchss.deltabot.cognitive.dialog.QnA
-import org.fuchss.deltabot.command.BotCommand
+import org.fuchss.deltabot.Language
+import org.fuchss.deltabot.cognitive.RasaService
 import org.fuchss.deltabot.command.user.Help
 import org.fuchss.deltabot.utils.logger
 import java.util.*
 
-class UserBotInstance(private val configuration: Configuration, private val commands: List<BotCommand>, private val jda: JDA) {
+class UserBotInstance(private val configuration: Configuration) {
     private val rasaService = RasaService(configuration)
 
     private val activeDialogs: Stack<String> = Stack()
@@ -25,8 +21,8 @@ class UserBotInstance(private val configuration: Configuration, private val comm
         "QnA".lowercase() to QnA.ID
     )
 
-    fun handle(message: Message) {
-        val (intents, entities) = rasaService.recognize(message.contentDisplay)
+    fun handle(message: Message, language: Language) {
+        val (intents, entities) = rasaService.recognize(message.contentDisplay, language.locale)
         logger.debug("Intents & Entities: $intents & $entities")
         var dialog: String
 
@@ -45,7 +41,8 @@ class UserBotInstance(private val configuration: Configuration, private val comm
             } else if (intent == "QnA-Tasks") {
                 // Simply print help message ..
                 val botName = if (message.isFromGuild) message.guild.selfMember.effectiveName else message.jda.selfUser.name
-                val reply = Help.generateText(botName, commands)
+                // TODO Get Command List
+                val reply = Help.generateText(botName, emptyList())
                 message.replyEmbeds(reply).complete()
                 return
             } else if (intent.startsWith("QnA")) {
@@ -54,7 +51,7 @@ class UserBotInstance(private val configuration: Configuration, private val comm
         }
 
         val instance = dialogs.find { d -> d.dialogId == dialog }!!
-        val result = instance.proceed(message, intents, entities)
+        val result = instance.proceed(message, intents, entities, language)
         if (result == DialogResult.WAIT_FOR_INPUT)
             activeDialogs.push(instance.dialogId)
     }

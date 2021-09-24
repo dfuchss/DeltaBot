@@ -1,6 +1,7 @@
 package org.fuchss.deltabot.cognitive.dialog
 
 import net.dv8tion.jda.api.entities.Message
+import org.fuchss.deltabot.Language
 import org.fuchss.deltabot.cognitive.RasaService
 import org.fuchss.deltabot.utils.createObjectMapper
 import org.fuchss.deltabot.utils.logger
@@ -16,9 +17,9 @@ class QnA : Dialog(ID) {
         this.steps.add(this::qnaStep)
     }
 
-    private fun qnaStep(message: Message, intents: List<RasaService.IntentResult>, entities: List<RasaService.EntityResult>): DialogResult {
+    private fun qnaStep(message: Message, intents: List<RasaService.IntentResult>, entities: List<RasaService.EntityResult>, language: Language): DialogResult {
         val qnaName = intents[0].name.substring(4)
-        val qnaFile = "/QnA/$qnaName.json"
+        val qnaFile = "/QnA/${language.locale}/$qnaName.json"
         val stream = this.javaClass.getResourceAsStream(qnaFile)
         if (stream == null) {
             message.reply("I cannot find a QnA entry for $qnaName .. please ask the admin").complete()

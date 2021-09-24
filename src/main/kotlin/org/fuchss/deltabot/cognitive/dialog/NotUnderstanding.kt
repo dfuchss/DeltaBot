@@ -1,6 +1,7 @@
 package org.fuchss.deltabot.cognitive.dialog
 
 import net.dv8tion.jda.api.entities.Message
+import org.fuchss.deltabot.Language
 import org.fuchss.deltabot.cognitive.RasaService
 import org.fuchss.deltabot.utils.createObjectMapper
 import org.fuchss.deltabot.utils.logger
@@ -16,8 +17,8 @@ class NotUnderstanding : Dialog(ID) {
         this.steps.add(this::notUnderstanding)
     }
 
-    private fun notUnderstanding(message: Message, intents: List<RasaService.IntentResult>, entities: List<RasaService.EntityResult>): DialogResult {
-        val qnaFile = "/QnA/NotUnderstanding.json"
+    private fun notUnderstanding(message: Message, intents: List<RasaService.IntentResult>, entities: List<RasaService.EntityResult>, language: Language): DialogResult {
+        val qnaFile = "/QnA/${language.locale}/NotUnderstanding.json"
         val stream = this.javaClass.getResourceAsStream(qnaFile)!!
         val answer = getAnswer(stream)
         stream.close()

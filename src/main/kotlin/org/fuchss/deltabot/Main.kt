@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.ReadyEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.EventListener
+import org.fuchss.deltabot.cognitive.dialog.DialogListener
 import org.fuchss.deltabot.command.CommandHandler
 import org.fuchss.deltabot.utils.*
 import org.slf4j.spi.LocationAwareLogger
@@ -48,7 +49,7 @@ fun main() {
 
     val scheduler = Scheduler()
     val builder = JDABuilder.createDefault(token)
-    val jda = builder.addEventListeners(scheduler, LoggerListener(config), ActivityChanger(), CommandHandler(config, scheduler)).build()
+    val jda = builder.addEventListeners(scheduler, LoggerListener(config), ActivityChanger(), CommandHandler(config, scheduler), DialogListener(config)).build()
     initHiddenMessages(jda, scheduler)
 
     jda.awaitReady()

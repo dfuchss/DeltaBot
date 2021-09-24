@@ -3,6 +3,7 @@ package org.fuchss.deltabot
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.interaction.GenericInteractionCreateEvent
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import org.fuchss.deltabot.utils.Storable
 import org.fuchss.deltabot.utils.createObjectMapper
 import org.fuchss.deltabot.utils.load
@@ -82,9 +83,11 @@ private data class LanguageSettings(
 private val translations = mutableMapOf<Language, MutableMap<String, String>>()
 
 fun GenericInteractionCreateEvent.language(): Language = language(guild, user)
+fun MessageReceivedEvent.language(): Language = language(guild, message.author)
 
 
 fun String.translate(event: GenericInteractionCreateEvent, vararg attributes: Any) = this.translate(event.language(), *attributes)
+fun String.translate(event: MessageReceivedEvent, vararg attributes: Any) = this.translate(event.language(), *attributes)
 
 fun String.translate(language: Language?, vararg attributes: Any): String {
     val lang = language ?: languageSettings.defaultLanguage

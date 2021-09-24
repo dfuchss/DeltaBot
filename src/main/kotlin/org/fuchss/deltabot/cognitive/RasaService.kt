@@ -11,7 +11,7 @@ class RasaService(configuration: Configuration) {
     private val endpoint = configuration.nluUrl
     private var version: String = ""
 
-    fun recognize(content: String): Pair<List<IntentResult>, List<EntityResult>> {
+    fun recognize(content: String, lang: String): Pair<List<IntentResult>, List<EntityResult>> {
         val empty = emptyList<IntentResult>() to emptyList<EntityResult>()
 
         if (version.isEmpty()) {
@@ -28,8 +28,8 @@ class RasaService(configuration: Configuration) {
         val orm = createObjectMapper()
 
         try {
-            val payload = "{ \"text\": \"$cleanContent\" }"
-            val dataString = post("$endpoint/model/parse", "application/json", payload)
+            val payload = "{ \"locale\": \"$lang\", \"text\": \"$cleanContent\" }"
+            val dataString = post("$endpoint/nlu/", "application/json", payload)
 
             val data: RecognitionResult = orm.readValue(dataString.toByteArray(), RecognitionResult().javaClass)
             data.entities.forEach { e -> e.message = data.message }
@@ -42,8 +42,8 @@ class RasaService(configuration: Configuration) {
 
     private fun init() {
         try {
-            val version = get(endpoint)
-            val status = "Hello from Rasa: "
+            val version = get("$endpoint/nlu/")
+            val status = "Hello from MultiNLU "
             if (version.startsWith(status)) {
                 this.version = version.substring(status.length)
             }
