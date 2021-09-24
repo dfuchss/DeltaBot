@@ -4,9 +4,10 @@ import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import org.fuchss.deltabot.Configuration
 import org.fuchss.deltabot.command.BotCommand
+import org.fuchss.deltabot.command.CommandPermissions
 
 class Debug(private val configuration: Configuration) : BotCommand {
-    override val isAdminCommand: Boolean get() = true
+    override val permissions: CommandPermissions get() = CommandPermissions.ADMIN
     override val isGlobal: Boolean get() = true
 
     override fun createCommand(): CommandData {
@@ -14,6 +15,6 @@ class Debug(private val configuration: Configuration) : BotCommand {
     }
 
     override fun handle(event: SlashCommandEvent) {
-        event.reply("Debug is not ${configuration.toggleDebug()}")
+        event.reply("Debug is not ${configuration.toggleDebug()}").setEphemeral(true).queue()
     }
 }

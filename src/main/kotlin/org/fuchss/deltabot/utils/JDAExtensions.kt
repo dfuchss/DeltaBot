@@ -81,3 +81,5 @@ fun JDA.fetchUser(uid: String): User? {
         return null
     }
 }
+
+fun Message.refresh(): Message = this.channel.retrieveMessageById(this.id).complete()

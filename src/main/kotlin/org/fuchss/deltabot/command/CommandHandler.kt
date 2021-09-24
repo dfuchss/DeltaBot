@@ -1,9 +1,10 @@
 package org.fuchss.deltabot.command
 
+import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.ReadyEvent
-import net.dv8tion.jda.api.events.ShutdownEvent
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.hooks.EventListener
 import net.dv8tion.jda.api.interactions.commands.Command
@@ -12,45 +13,63 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import org.fuchss.deltabot.Configuration
 import org.fuchss.deltabot.command.admin.*
 import org.fuchss.deltabot.command.user.*
+import org.fuchss.deltabot.command.user.polls.SimplePoll
+import org.fuchss.deltabot.command.user.polls.Summon
+import org.fuchss.deltabot.command.user.polls.WeekdayPoll
 import org.fuchss.deltabot.utils.Scheduler
+import org.fuchss.deltabot.utils.fetchCommands
 import org.fuchss.deltabot.utils.logger
 
-class CommandHandler(private val configuration: Configuration) : EventListener {
+class CommandHandler(private val configuration: Configuration, val scheduler: Scheduler) : EventListener {
     private val commands: MutableList<BotCommand>
-    private val nameToCommand: Map<String, BotCommand>
-    private val scheduler: Scheduler = Scheduler()
+    private val nameToCommand: MutableMap<String, BotCommand>
+
 
     init {
         commands = ArrayList()
 
         commands.add(Debug(configuration))
         commands.add(Shutdown())
+        commands.add(GuildLanguage())
         commands.add(Echo())
         commands.add(Admin(configuration, commands))
         commands.add(State(configuration))
         commands.add(Erase())
         commands.add(Roles())
         commands.add(ResetStateAndCommands(configuration))
+        commands.add(ServerRoles())
 
+        commands.add(Language())
         commands.add(Help(configuration, commands))
         commands.add(PersistentHelp(configuration, commands))
         commands.add(Roll())
         commands.add(Teams())
         commands.add(Summon(configuration, scheduler))
         commands.add(Reminder(configuration, scheduler))
+        commands.add(WeekdayPoll(scheduler))
+        commands.add(SimplePoll(scheduler))
 
-        nameToCommand = commands.associateBy { m -> m.name }
+        if (!configuration.hasAdmins()) {
+            logger.info("Missing initial admin .. adding initial admin command ..")
+            commands.add(InitialAdminCommand(configuration) { jda, u -> initialUser(jda, u) })
+        }
+
+        nameToCommand = commands.associateBy { m -> m.name }.toMutableMap()
+    }
+
+    private fun initialUser(jda: JDA, u: User) {
+        logger.info("Added initial admin $u")
+        val command = commands.find { c -> c is InitialAdminCommand } ?: return
+        commands.remove(command)
+        nameToCommand.remove(command.name)
+
+        jda.fetchCommands().find { c -> c.name == command.name }?.delete()?.complete()
+        fixCommandPermissions(jda, configuration, commands, u)
     }
 
     override fun onEvent(event: GenericEvent) {
         if (event is ReadyEvent) {
-            initCommands(event)
-            this.scheduler.start()
-            return
-        }
-
-        if (event is ShutdownEvent) {
-            this.scheduler.stop()
+            initCommands(event.jda)
             return
         }
 
@@ -59,23 +78,23 @@ class CommandHandler(private val configuration: Configuration) : EventListener {
         handleSlashCommand(event)
     }
 
-    private fun initCommands(event: ReadyEvent) {
+    private fun initCommands(jda: JDA) {
         var needFix = false
 
-        val activeCommands = event.jda.retrieveCommands().complete()
+        val activeCommands = jda.retrieveCommands().complete()
         val newCommands = findNewCommandsAndDeleteOldOnes(activeCommands, true)
         needFix = needFix || newCommands.isNotEmpty()
 
         for ((_, cmdData) in newCommands)
-            event.jda.upsertCommand(cmdData).complete()
+            jda.upsertCommand(cmdData).complete()
 
-        for (guild in event.jda.guilds) {
+        for (guild in jda.guilds) {
             val activeCommandsGuild = getCommands(guild) ?: continue
             val newCommandsGuild = findNewCommandsAndDeleteOldOnes(activeCommandsGuild, false)
             needFix = needFix || newCommandsGuild.isNotEmpty()
 
             for ((cmd, cmdData) in newCommandsGuild) {
-                if (!cmd.isAdminCommand) {
+                if (cmd.permissions == CommandPermissions.ALL) {
                     guild.upsertCommand(cmdData).complete()
                 } else {
                     guild.upsertCommand(cmdData.setDefaultEnabled(false)).complete()
@@ -84,11 +103,11 @@ class CommandHandler(private val configuration: Configuration) : EventListener {
         }
         if (needFix) {
             logger.info("Fixing command permissions ..")
-            fixCommandPermissions(event.jda, configuration, commands)
+            fixCommandPermissions(jda, configuration, commands)
         }
 
         for (cmd in commands)
-            cmd.registerJDA(event.jda)
+            cmd.registerJDA(jda)
     }
 
     private fun getCommands(guild: Guild): List<Command>? {
@@ -150,8 +169,13 @@ class CommandHandler(private val configuration: Configuration) : EventListener {
         logger.debug(event.toString())
         val command = nameToCommand[event.name] ?: UnknownCommand()
 
-        if (command.isAdminCommand && !isAdmin(event)) {
-            event.reply("You are not an admin!").setEphemeral(true).complete()
+        if (command.permissions == CommandPermissions.ADMIN && !isAdmin(event)) {
+            event.reply("You are not an admin!").setEphemeral(true).queue()
+            return
+        }
+
+        if (event.guild != null && command.permissions == CommandPermissions.GUILD_ADMIN && event.user !in configuration.getAdminsMembersOfGuild(event.guild!!)) {
+            event.reply("You are not an admin!").setEphemeral(true).queue()
             return
         }
 
@@ -163,7 +187,7 @@ class CommandHandler(private val configuration: Configuration) : EventListener {
     }
 
     private class UnknownCommand : BotCommand {
-        override val isAdminCommand: Boolean get() = false
+        override val permissions: CommandPermissions get() = CommandPermissions.ALL
         override val isGlobal: Boolean get() = error("Command shall only be used internally")
         override fun createCommand(): CommandData = error("Command shall only be used internally")
 

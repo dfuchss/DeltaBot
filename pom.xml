@@ -18,7 +18,7 @@
 
         <kotlin.version>1.5.30</kotlin.version>
         <jackson.version>2.12.5</jackson.version>
-        <jda.version>4.3.0_315</jda.version>
+        <jda.version>4.3.0_324</jda.version>
         <main.class>org.fuchss.deltabot.MainKt</main.class>
     </properties>
 

@@ -7,27 +7,34 @@ import net.dv8tion.jda.api.entities.PrivateChannel
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent
 import net.dv8tion.jda.api.events.message.MessageDeleteEvent
+import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent
 import net.dv8tion.jda.api.hooks.EventListener
 import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.interactions.components.Button
 import net.dv8tion.jda.api.interactions.components.ButtonStyle
+import java.time.Duration
+import java.time.LocalDateTime
 
 
-fun initHiddenMessages(jda: JDA) {
+fun initHiddenMessages(jda: JDA, scheduler: Scheduler) {
     if (hiddenMessages != null)
         error("Hidden Messages already initialized")
 
-    hiddenMessages = HiddenMessagesStore().load("./states/hiddenmsg.json")
+    hiddenMessages = HiddenMessagesStore().load("./states/hiddenmsg.json").registerScheduler(scheduler)
     jda.addEventListener(hiddenMessages)
 }
 
 
 private var hiddenMessages: HiddenMessagesStore? = null
 private const val hideId = "hide-message"
+private val hideEmote = ":arrow_down_small:".toEmoji()
 
 private class HiddenMessagesStore : Storable(), EventListener {
 
     var messages: MutableList<HiddenMessage> = mutableListOf()
+
+    @Transient
+    var scheduler: Scheduler? = null
 
     override fun onEvent(event: GenericEvent) {
         if (event is MessageDeleteEvent) {
@@ -38,11 +45,38 @@ private class HiddenMessagesStore : Storable(), EventListener {
             return
         }
 
+        if (event is MessageReactionAddEvent) {
+            checkForHide(event)
+            return
+        }
+
         if (event !is ButtonClickEvent || event.button?.id != hideId)
             return
 
         val hiddenMessage = findMessage(event.message) ?: return
         handleHiddenMessageClick(event, hiddenMessage)
+    }
+
+    private fun checkForHide(event: MessageReactionAddEvent) {
+        if (hiddenMessages == null)
+            return
+
+        if (!event.reactionEmote.isEmoji || event.reactionEmote.emoji != hideEmote.name)
+            return
+
+        val msg = event.retrieveMessage().complete()
+        if (msg.author.id != event.jda.selfUser.id)
+            return
+
+        val hidden = hiddenMessages!!.findMessage(msg)
+
+        if (hidden != null)
+            msg.unhide()
+        else
+            msg.hide()
+
+        msg.clearReactions().queue()
+
     }
 
 
@@ -70,9 +104,14 @@ private class HiddenMessagesStore : Storable(), EventListener {
     private fun handleHiddenMessageClick(event: ButtonClickEvent, hiddenMessage: HiddenMessage) {
         event.deferEdit().complete()
         if (hiddenMessage.hidden)
-            unhideMessage(event.message!!, hiddenMessage)
+            unhideMessage(scheduler, event.message, hiddenMessage)
         else
-            hideMessage(event.message!!, hiddenMessage)
+            hideMessage(event.message, hiddenMessage)
+    }
+
+    fun registerScheduler(scheduler: Scheduler): HiddenMessagesStore {
+        this.scheduler = scheduler
+        return this
     }
 }
 
@@ -105,7 +144,8 @@ fun Message.unhide(): Message {
         error("Hidden Messages are not initialized")
 
     val hiddenMessage = hiddenMessages!!.findMessage(this) ?: return this
-    unhideMessage(this, hiddenMessage)
+    unhideMessage(null, this, hiddenMessage)
+    this.editMessageComponents().queue()
     hiddenMessages!!.messages.remove(hiddenMessage)
     hiddenMessages!!.store()
     return this
@@ -121,7 +161,7 @@ private fun createHiddenMessage(message: Message) {
     hiddenMessages!!.messages.add(hiddenMessage)
     hiddenMessages!!.store()
 
-    val hideButton = Button.of(ButtonStyle.SECONDARY, hideId, ":mag:".toEmoji())
+    val hideButton = Button.of(ButtonStyle.SECONDARY, hideId, "Details", hideEmote)
     message.editMessageComponents(ActionRow.of(hideButton)).complete()
 }
 
@@ -138,13 +178,14 @@ private fun hideMessage(message: Message, hiddenMessage: HiddenMessage): Message
 }
 
 
-private fun unhideMessage(message: Message, hiddenMessage: HiddenMessage) {
+private fun unhideMessage(scheduler: Scheduler?, message: Message, hiddenMessage: HiddenMessage) {
     if (!hiddenMessage.hidden)
         return
 
     message.editMessage(hiddenMessage.content).complete()
     hiddenMessage.hidden = false
     hiddenMessages!!.store()
+    scheduler?.queue({ hideMessage(message, hiddenMessage) }, (LocalDateTime.now() + Duration.ofSeconds(30)).timestamp())
 }
 
 

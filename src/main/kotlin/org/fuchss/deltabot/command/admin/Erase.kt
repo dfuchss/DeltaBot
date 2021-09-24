@@ -3,10 +3,11 @@ package org.fuchss.deltabot.command.admin
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import org.fuchss.deltabot.command.BotCommand
+import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.utils.fetchHistory
 
 class Erase : BotCommand {
-    override val isAdminCommand: Boolean get() = true
+    override val permissions: CommandPermissions get() = CommandPermissions.GUILD_ADMIN
     override val isGlobal: Boolean get() = false
 
     override fun createCommand(): CommandData {
@@ -27,7 +28,7 @@ class Erase : BotCommand {
                 history = event.channel.history.fetchHistory(retrieveMax)
             }
         } catch (e: Exception) {
-            reply.editOriginal("An error occured while deleting messages: ${e.message}").complete()
+            reply.editOriginal("An error occured while deleting messages: ${e.message}").queue()
         }
     }
 }

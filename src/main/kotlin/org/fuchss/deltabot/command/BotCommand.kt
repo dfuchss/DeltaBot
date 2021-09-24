@@ -6,7 +6,7 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 
 interface BotCommand : Comparable<BotCommand> {
-    val isAdminCommand: Boolean
+    val permissions: CommandPermissions
     val isGlobal: Boolean
     val name: String get() = createCommand().name
     val description: String get() = createCommand().description

@@ -132,3 +132,9 @@ fun findAllEmojis(emoji: String): List<String> {
 }
 
 fun <K, V> Map<K, V>.reverseMap(): Map<V, List<K>> = entries.map { e -> e.value to e.key }.groupBy { e -> e.first }.map { e -> e.key to e.value.map { v -> v.second } }.toMap()
+
+fun <E> List<E>.withFirst(e: E): List<E> {
+    val newList = mutableListOf(e)
+    newList.addAll(this)
+    return newList
+}

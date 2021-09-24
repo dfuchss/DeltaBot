@@ -3,9 +3,10 @@ package org.fuchss.deltabot.command.admin
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import org.fuchss.deltabot.command.BotCommand
+import org.fuchss.deltabot.command.CommandPermissions
 
 class Shutdown : BotCommand {
-    override val isAdminCommand: Boolean get() = true
+    override val permissions: CommandPermissions get() = CommandPermissions.ADMIN
     override val isGlobal: Boolean get() = true
 
     override fun createCommand(): CommandData {

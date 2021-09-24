@@ -1,23 +1,33 @@
 package org.fuchss.deltabot.command
 
 import net.dv8tion.jda.api.JDA
+import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.User
+import net.dv8tion.jda.api.interactions.commands.Command
 import net.dv8tion.jda.api.interactions.commands.privileges.CommandPrivilege
 import org.fuchss.deltabot.Configuration
 
 fun fixCommandPermissions(jda: JDA, configuration: Configuration, commands: List<BotCommand>, changedUser: User? = null) {
-    val adminCommands = commands.filter { c -> c.isAdminCommand && !c.isGlobal }
-    for (guild in jda.guilds) {
-        val admins = configuration.getAdminsMembersOfGuild(guild)
-        val guildCommands = guild.retrieveCommands().complete().filter { gc -> adminCommands.any { ac -> ac.name == gc.name } }
+    val globalAdminCommands = commands.filter { c -> c.permissions == CommandPermissions.ADMIN && !c.isGlobal }
+    val guildAdminCommands = commands.filter { c -> c.permissions == CommandPermissions.GUILD_ADMIN && !c.isGlobal }
 
-        if (changedUser == null) {
-            for (admin in admins) {
-                guildCommands.forEach { c -> guild.updateCommandPrivilegesById(c.id, CommandPrivilege.enable(admin)).queue() }
-            }
-        } else {
-            val privilege = if (changedUser in admins) CommandPrivilege.enable(changedUser) else CommandPrivilege.disable(changedUser)
-            guildCommands.forEach { c -> guild.updateCommandPrivilegesById(c.id, privilege).queue() }
+    val globalAdmins = configuration.getAdmins(jda)
+
+    for (guild in jda.guilds) {
+        val guildCommands = guild.retrieveCommands().complete()
+        val guildAdmins = configuration.getAdminsMembersOfGuild(guild)
+        allowCommands(guild, guildAdmins, changedUser, guildCommands.filter { gc -> guildAdminCommands.any { ac -> ac.name == gc.name } })
+        allowCommands(guild, globalAdmins, changedUser, guildCommands.filter { gc -> globalAdminCommands.any { ac -> ac.name == gc.name } })
+    }
+}
+
+fun allowCommands(guild: Guild, admins: List<User>, changedUser: User?, commands: List<Command>) {
+    if (changedUser == null) {
+        for (admin in admins) {
+            commands.forEach { c -> guild.updateCommandPrivilegesById(c.id, CommandPrivilege.enable(admin)).queue() }
         }
+    } else {
+        val privilege = if (changedUser in admins) CommandPrivilege.enable(changedUser) else CommandPrivilege.disable(changedUser)
+        commands.forEach { c -> guild.updateCommandPrivilegesById(c.id, privilege).queue() }
     }
 }

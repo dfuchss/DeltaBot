@@ -6,10 +6,12 @@ import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import org.fuchss.deltabot.command.BotCommand
+import org.fuchss.deltabot.command.CommandPermissions
+import org.fuchss.deltabot.translate
 import kotlin.random.Random
 
 class Teams : BotCommand {
-    override val isAdminCommand: Boolean get() = false
+    override val permissions: CommandPermissions get() = CommandPermissions.ALL
     override val isGlobal: Boolean get() = false
 
     override fun createCommand(): CommandData {
@@ -21,19 +23,19 @@ class Teams : BotCommand {
     override fun handle(event: SlashCommandEvent) {
         val voiceChannel = event.member?.voiceState?.channel
         if (voiceChannel == null) {
-            event.reply("You are not in a voice channel").setEphemeral(true).complete()
+            event.reply("You are not in a voice channel".translate(event)).setEphemeral(true).queue()
             return
         }
 
         val members: MutableList<User> = voiceChannel.members.map { m -> m.user }.sortedBy { u -> u.name.lowercase() }.toMutableList()
         if (members.size < 2) {
-            event.reply("There are not enough members in the voice channel").setEphemeral(true).complete()
+            event.reply("There are not enough members in the voice channel".translate(event)).setEphemeral(true).queue()
             return
         }
 
         val amount = event.getOption("amount")?.asLong?.toInt() ?: 2
         if (amount < 2) {
-            event.reply("Not enough teams").setEphemeral(true).complete()
+            event.reply("Not enough teams".translate(event)).setEphemeral(true).queue()
             return
         }
 
@@ -50,6 +52,6 @@ class Teams : BotCommand {
             msg += "Team ${t + 1}: ${teams[t].joinToString { m -> m.asMention }}"
         }
 
-        event.reply(msg).complete()
+        event.reply(msg).queue()
     }
 }

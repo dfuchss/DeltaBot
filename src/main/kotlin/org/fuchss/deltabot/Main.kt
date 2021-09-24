@@ -8,10 +8,7 @@ import net.dv8tion.jda.api.events.ReadyEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.EventListener
 import org.fuchss.deltabot.command.CommandHandler
-import org.fuchss.deltabot.utils.initHiddenMessages
-import org.fuchss.deltabot.utils.load
-import org.fuchss.deltabot.utils.logger
-import org.fuchss.deltabot.utils.setLogLevel
+import org.fuchss.deltabot.utils.*
 import org.slf4j.spi.LocationAwareLogger
 
 
@@ -48,10 +45,11 @@ fun main() {
     val token = System.getenv("DISCORD_TOKEN") ?: error("DISCORD_TOKEN not set")
 
     logger.info("Creating Bot ..")
-    val builder = JDABuilder.createDefault(token)
 
-    val jda = builder.addEventListeners(LoggerListener(config), ActivityChanger(), CommandHandler(config)).build()
-    initHiddenMessages(jda)
+    val scheduler = Scheduler()
+    val builder = JDABuilder.createDefault(token)
+    val jda = builder.addEventListeners(scheduler, LoggerListener(config), ActivityChanger(), CommandHandler(config, scheduler)).build()
+    initHiddenMessages(jda, scheduler)
 
     jda.awaitReady()
 }
