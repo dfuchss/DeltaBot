@@ -3,7 +3,7 @@
 - [ ] I tested my changes on Discord
 - [ ] I documented the important parts of the code and methods
 - [ ] I deleted unnecessary imports
-- [ ] I documented all new commands using `@command_meta` and new dialogs using `@dialog_meta`
+- [ ] I documented all new commands using and new dialogs
 
 ### Motivation and Context
 
