@@ -5,6 +5,7 @@ import org.fuchss.deltabot.Configuration
 import org.fuchss.deltabot.Language
 import org.fuchss.deltabot.cognitive.RasaService
 import org.fuchss.deltabot.cognitive.dialogmanagement.dialog.Clock
+import org.fuchss.deltabot.cognitive.dialogmanagement.dialog.News
 import org.fuchss.deltabot.cognitive.dialogmanagement.dialog.NotUnderstanding
 import org.fuchss.deltabot.cognitive.dialogmanagement.dialog.QnA
 import org.fuchss.deltabot.command.CommandRegistry
@@ -20,11 +21,13 @@ class UserBotInstance(private val configuration: Configuration, private val comm
     private val dialogs: List<Dialog> = listOf(
         NotUnderstanding(),
         QnA(),
-        Clock()
+        Clock(),
+        News()
     )
     private val intent2Dialog: Map<String, String> = mapOf(
         "QnA".lowercase() to QnA.ID,
-        "Clock".lowercase() to Clock.ID
+        "Clock".lowercase() to Clock.ID,
+        "News".lowercase() to News.ID
     )
 
     fun handle(message: Message, language: Language) {
@@ -55,7 +58,7 @@ class UserBotInstance(private val configuration: Configuration, private val comm
             }
         }
 
-        val instance = dialogs.find { d -> d.dialogId == dialog }!!
+        val instance = dialogs.find { d -> d.dialogId == dialog } ?: InternalErrorDialog()
         val result = instance.proceed(message, intents, entities, language)
         if (result == DialogResult.WAIT_FOR_INPUT)
             activeDialogs.push(instance.dialogId)
