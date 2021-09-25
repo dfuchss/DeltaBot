@@ -24,11 +24,6 @@ class UserBotInstance(private val configuration: Configuration, private val comm
         Clock(),
         News()
     )
-    private val intent2Dialog: Map<String, String> = mapOf(
-        "QnA".lowercase() to QnA.ID,
-        "Clock".lowercase() to Clock.ID,
-        "News".lowercase() to News.ID
-    )
 
     fun handle(message: Message, language: Language) {
         val (intents, entities) = rasaService.recognize(message.contentDisplay, language.locale)
@@ -43,7 +38,7 @@ class UserBotInstance(private val configuration: Configuration, private val comm
             val intent = intents[0].name
             val score = intents[0].score
 
-            dialog = intent2Dialog[intent] ?: NotUnderstanding.ID
+            dialog = DialogRegistry.Intent2Dialog[intent] ?: NotUnderstanding.ID
 
             if (score <= configuration.nluThreshold) {
                 dialog = NotUnderstanding.ID

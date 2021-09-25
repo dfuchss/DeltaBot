@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import org.fuchss.deltabot.Configuration
 import org.fuchss.deltabot.Constants
+import org.fuchss.deltabot.cognitive.dialogmanagement.DialogRegistry
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
 
@@ -43,6 +44,14 @@ open class Help(private val configuration: Configuration, protected val commands
                         message += "→ **${subcommand.name}**: ${subcommand.description}\n"
                 }
             }
+
+            if (DialogRegistry.DialogToDescription.isNotEmpty()) {
+                message += "\n\n**Dialogs:**\n"
+                for (info in DialogRegistry.DialogToDescription.values.flatten().sorted()) {
+                    message += "* $info\n"
+                }
+            }
+
             return EmbedBuilder().setTitle("$botName Help").setDescription(message.trim()).setColor(Constants.BLUE).build()
         }
     }
