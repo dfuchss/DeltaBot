@@ -32,6 +32,10 @@
             <name>m2-dv8tion</name>
             <url>https://m2.dv8tion.net/releases</url>
         </repository>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
     </repositories>
 
     <build>
@@ -102,6 +106,11 @@
             <groupId>com.vdurmont</groupId>
             <artifactId>emoji-java</artifactId>
             <version>5.1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.w3stling</groupId>
+            <artifactId>rssreader</artifactId>
+            <version>v2.5.0</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>

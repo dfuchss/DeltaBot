@@ -13,7 +13,6 @@ fun get(url: String): String {
     val urlConnection: HttpURLConnection = endpoint.openConnection() as HttpURLConnection
     urlConnection.requestMethod = "GET"
     urlConnection.useCaches = false
-
     urlConnection.setRequestProperty("charset", "utf-8")
 
     return readInputStream(urlConnection.inputStream)

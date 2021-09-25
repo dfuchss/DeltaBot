@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import org.fuchss.deltabot.Configuration
 import org.fuchss.deltabot.Constants
+import org.fuchss.deltabot.cognitive.dialogmanagement.DialogRegistry
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
 
@@ -28,11 +29,12 @@ open class Help(private val configuration: Configuration, protected val commands
         }
 
         val commands = commands.sorted().filter { c -> c.permissions in visibilities }
-        event.replyEmbeds(generateText(event, commands)).setEphemeral(true).queue()
+        val botName = event.guild?.selfMember?.effectiveName ?: event.jda.selfUser.name
+        event.replyEmbeds(generateText(botName, commands)).setEphemeral(true).queue()
     }
 
     companion object {
-        fun generateText(event: SlashCommandEvent, commands: List<BotCommand>): MessageEmbed {
+        fun generateText(botName: String, commands: List<BotCommand>): MessageEmbed {
             var message = ""
             for (cmd in commands) {
                 message += "**/${cmd.name}**: ${cmd.description}\n"
@@ -42,7 +44,15 @@ open class Help(private val configuration: Configuration, protected val commands
                         message += "→ **${subcommand.name}**: ${subcommand.description}\n"
                 }
             }
-            return EmbedBuilder().setTitle((event.guild?.selfMember?.effectiveName ?: event.jda.selfUser.name) + " Help").setDescription(message.trim()).setColor(Constants.BLUE).build()
+
+            if (DialogRegistry.DialogToDescription.isNotEmpty()) {
+                message += "\n\n**Dialogs:**\n"
+                for (info in DialogRegistry.DialogToDescription.values.flatten().sorted()) {
+                    message += "* $info\n"
+                }
+            }
+
+            return EmbedBuilder().setTitle("$botName Help").setDescription(message.trim()).setColor(Constants.BLUE).build()
         }
     }
 

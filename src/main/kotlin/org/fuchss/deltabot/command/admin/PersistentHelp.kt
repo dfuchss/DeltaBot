@@ -16,6 +16,7 @@ class PersistentHelp(configuration: Configuration, commands: List<BotCommand>) :
 
     override fun handle(event: SlashCommandEvent) {
         val commands = commands.filter { c -> c.permissions == CommandPermissions.ALL }.sorted()
-        event.replyEmbeds(generateText(event, commands)).queue()
+        val botName = event.guild?.selfMember?.effectiveName ?: event.jda.selfUser.name
+        event.replyEmbeds(generateText(botName, commands)).queue()
     }
 }

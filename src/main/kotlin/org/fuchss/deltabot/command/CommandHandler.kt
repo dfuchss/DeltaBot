@@ -2,7 +2,6 @@ package org.fuchss.deltabot.command
 
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Guild
-import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.ReadyEvent
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
@@ -11,60 +10,19 @@ import net.dv8tion.jda.api.interactions.commands.Command
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import org.fuchss.deltabot.Configuration
-import org.fuchss.deltabot.command.admin.*
-import org.fuchss.deltabot.command.user.*
-import org.fuchss.deltabot.command.user.polls.SimplePoll
-import org.fuchss.deltabot.command.user.polls.Summon
-import org.fuchss.deltabot.command.user.polls.WeekdayPoll
-import org.fuchss.deltabot.utils.Scheduler
-import org.fuchss.deltabot.utils.fetchCommands
 import org.fuchss.deltabot.utils.logger
 
-class CommandHandler(private val configuration: Configuration, val scheduler: Scheduler) : EventListener {
-    private val commands: MutableList<BotCommand>
-    private val nameToCommand: MutableMap<String, BotCommand>
-
+class CommandHandler(private val configuration: Configuration, private val commandRegistry: CommandRegistry) : EventListener {
+    private var commands: List<BotCommand> = commandRegistry.getCommands()
+    private var nameToCommand: MutableMap<String, BotCommand> = commands.associateBy { m -> m.name }.toMutableMap()
 
     init {
-        commands = ArrayList()
-
-        commands.add(Debug(configuration))
-        commands.add(Shutdown())
-        commands.add(GuildLanguage())
-        commands.add(Echo())
-        commands.add(Admin(configuration, commands))
-        commands.add(State(configuration))
-        commands.add(Erase())
-        commands.add(Roles())
-        commands.add(ResetStateAndCommands(configuration))
-        commands.add(ServerRoles())
-
-        commands.add(Language())
-        commands.add(Help(configuration, commands))
-        commands.add(PersistentHelp(configuration, commands))
-        commands.add(Roll())
-        commands.add(Teams())
-        commands.add(Summon(configuration, scheduler))
-        commands.add(Reminder(configuration, scheduler))
-        commands.add(WeekdayPoll(scheduler))
-        commands.add(SimplePoll(scheduler))
-
-        if (!configuration.hasAdmins()) {
-            logger.info("Missing initial admin .. adding initial admin command ..")
-            commands.add(InitialAdminCommand(configuration) { jda, u -> initialUser(jda, u) })
-        }
-
-        nameToCommand = commands.associateBy { m -> m.name }.toMutableMap()
+        commandRegistry.registerUpdateHook { updateCommands() }
     }
 
-    private fun initialUser(jda: JDA, u: User) {
-        logger.info("Added initial admin $u")
-        val command = commands.find { c -> c is InitialAdminCommand } ?: return
-        commands.remove(command)
-        nameToCommand.remove(command.name)
-
-        jda.fetchCommands().find { c -> c.name == command.name }?.delete()?.complete()
-        fixCommandPermissions(jda, configuration, commands, u)
+    private fun updateCommands() {
+        commands = commandRegistry.getCommands()
+        nameToCommand = commands.associateBy { m -> m.name }.toMutableMap()
     }
 
     override fun onEvent(event: GenericEvent) {

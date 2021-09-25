@@ -2,14 +2,14 @@
 
 **Important:**
 
-* Since discord.py will be discontinued, I've recreated DeltaBot using Kotlin and JDA. You can find the old version of DeltaBot [here](https://github.com/dfuchss/DeltaBot/releases/tag/v1.0) and its
-  source code [here](./legacy)
-* **I've disabled any code regarding dialogs so far, because I have to rewrite it from scratch.**
+*Since discord.py will be discontinued, I've recreated DeltaBot using Kotlin and JDA. You can find the old version of DeltaBot [here](https://github.com/dfuchss/DeltaBot/releases/tag/v1.0)*
 
 This repo contains my first [Discord](https://discordapp.com/) bot. It uses [RASA]("https://rasa.com") for NLP. The NLU is located [here](https://github.com/dfuchss/DeltaBot-NLU).
 
 ## Commands (Admins + Users)
+
 For details take a look at [commands.md](./commands.md)
+
 ```
 /roles: manage the role changer message of this guild
 → init: creates the role changer message in this channel
@@ -44,7 +44,6 @@ For details take a look at [commands.md](./commands.md)
 /guild-language: set the bot language of your guild
 ```
 
-
 ## Requirements (Development):
 
 * maven 3 and Java 11
@@ -63,5 +62,5 @@ To start the bot simply run:
 
 * Create volume mappings (see dockerfile)
 * Store token to environment: `echo "DISCORD_TOKEN=YOUR-Discord-TOKEN" > .env`
+* Change the config urls to the internal docker container urls (e.g. `http://deltabot-nlu:5005`)
 * Start the Bot: `docker-compose up -d`
-

@@ -67,5 +67,13 @@
   "Welcome # on the server!": "Willkommen # auf diesem Server!",
   "You need to supply a role!": "Du musst eine Rolle angeben!",
   "Purging # role on the server!": "Lösche # von diesem Server!",
-  "I'm not allowed to do that!": "Ich habe keine Berechtigung dafür!"
+  "I'm not allowed to do that!": "Ich habe keine Berechtigung dafür!",
+  "Current Point in Time: <t:#:F>": "Aktuelle Zeit: <t:#:F>",
+  "No new news": "Keine neuen Nachrichten",
+  "Unfortunately I did not recognize any category. End dialog for now ;)": "Leider habe ich keine Kategorie erkannt. Dialog erstmal beenden ;)",
+  "Which categories are you interested in? #": "Für welche Kategorie(n) willst Du Nachrichten? #",
+  "General": "Allgemein",
+  "Sport": "Sport",
+  "IT": "IT",
+  "Netcup": "Netcup"
 }
