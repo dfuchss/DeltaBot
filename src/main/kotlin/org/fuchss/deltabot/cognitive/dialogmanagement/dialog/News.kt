@@ -40,7 +40,7 @@ class News : Dialog(ID) {
         }
 
         val categoryNames = providers.keys.map { n -> n.translate(message.language()) }
-        val question = "Which categories are you interested in? #".translate(message.language(), categoryNames.joinToString(", "))
+        val question = "Which categories are you interested in? #".translate(language, categoryNames.joinToString(", "))
         message.reply(question).complete()
         this.steps.add(this::newsStep)
 
@@ -75,7 +75,7 @@ class News : Dialog(ID) {
             }
         }
         if (!sent) {
-            message.reply("No new news".translate(message.language())).queue()
+            message.reply("No new news".translate(language)).queue()
         }
 
         return DialogResult.NEXT

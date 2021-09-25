@@ -28,7 +28,7 @@ class Erase : BotCommand {
                 history = event.channel.history.fetchHistory(retrieveMax)
             }
         } catch (e: Exception) {
-            reply.editOriginal("An error occured while deleting messages: ${e.message}").queue()
+            reply.editOriginal("An error occurred while deleting messages: ${e.message}").queue()
         }
     }
 }
