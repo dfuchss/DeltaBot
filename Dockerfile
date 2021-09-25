@@ -5,7 +5,7 @@ COPY src src
 COPY pom.xml pom.xml
 RUN mvn clean package
 
-FROM azul/zulu-openjdk-alpine:16
+FROM azul/zulu-openjdk-alpine:17
 
 ENV DISCORD_TOKEN MY_TOKEN
 ENV TZ=Europe/Berlin
