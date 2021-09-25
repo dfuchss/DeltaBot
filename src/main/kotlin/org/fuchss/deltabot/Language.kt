@@ -1,13 +1,11 @@
 package org.fuchss.deltabot
 
 import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.interaction.GenericInteractionCreateEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
-import org.fuchss.deltabot.utils.Storable
-import org.fuchss.deltabot.utils.createObjectMapper
-import org.fuchss.deltabot.utils.load
-import org.fuchss.deltabot.utils.logger
+import org.fuchss.deltabot.utils.*
 
 /**
  * Definition of all supported languages with their locales.
@@ -113,7 +111,12 @@ fun GenericInteractionCreateEvent.language(): Language = language(guild, user)
 /**
  * Calculate the language based on a [MessageReceivedEvent].
  */
-fun MessageReceivedEvent.language(): Language = language(guild, message.author)
+fun MessageReceivedEvent.language(): Language = language(message.optionalGuild(), message.author)
+
+/**
+ * Calculate the language based on a [Message] of a [User].
+ */
+fun Message.language(): Language = language(optionalGuild(), author)
 
 /**
  * Translate a string based the language retrieved for the [GenericInteractionCreateEvent].

@@ -1,4 +1,4 @@
-package org.fuchss.deltabot.cognitive.dialog
+package org.fuchss.deltabot.cognitive.dialogmanagement
 
 import net.dv8tion.jda.api.entities.Message
 import org.fuchss.deltabot.Language

@@ -83,3 +83,5 @@ fun JDA.fetchUser(uid: String): User? {
 }
 
 fun Message.refresh(): Message = this.channel.retrieveMessageById(this.id).complete()
+
+fun Message.optionalGuild(): Guild? = if (isFromGuild) guild else null

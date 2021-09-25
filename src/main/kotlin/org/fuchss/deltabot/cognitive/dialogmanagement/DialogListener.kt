@@ -1,4 +1,4 @@
-package org.fuchss.deltabot.cognitive.dialog
+package org.fuchss.deltabot.cognitive.dialogmanagement
 
 import net.dv8tion.jda.api.entities.ChannelType
 import net.dv8tion.jda.api.entities.User
@@ -17,7 +17,15 @@ class DialogListener(private val configuration: Configuration, private val comma
         if (event !is MessageReceivedEvent)
             return
 
-        if (event.channelType != ChannelType.PRIVATE && event.jda.selfUser !in event.message.mentionedUsers) {
+        if (event.message.author.isBot)
+            return
+
+        var respond = false
+        respond = respond || event.channelType == ChannelType.PRIVATE
+        respond = respond || event.jda.selfUser in event.message.mentionedUsers
+        respond = respond || event.message.referencedMessage?.author == event.jda.selfUser
+
+        if (!respond) {
             return
         }
 

@@ -1,9 +1,12 @@
-package org.fuchss.deltabot.cognitive.dialog
+package org.fuchss.deltabot.cognitive.dialogmanagement
 
 import net.dv8tion.jda.api.entities.Message
 import org.fuchss.deltabot.Configuration
 import org.fuchss.deltabot.Language
 import org.fuchss.deltabot.cognitive.RasaService
+import org.fuchss.deltabot.cognitive.dialogmanagement.dialog.Clock
+import org.fuchss.deltabot.cognitive.dialogmanagement.dialog.NotUnderstanding
+import org.fuchss.deltabot.cognitive.dialogmanagement.dialog.QnA
 import org.fuchss.deltabot.command.CommandRegistry
 import org.fuchss.deltabot.command.user.Help
 import org.fuchss.deltabot.utils.logger
@@ -16,10 +19,12 @@ class UserBotInstance(private val configuration: Configuration, private val comm
 
     private val dialogs: List<Dialog> = listOf(
         NotUnderstanding(),
-        QnA()
+        QnA(),
+        Clock()
     )
     private val intent2Dialog: Map<String, String> = mapOf(
-        "QnA".lowercase() to QnA.ID
+        "QnA".lowercase() to QnA.ID,
+        "Clock".lowercase() to Clock.ID
     )
 
     fun handle(message: Message, language: Language) {

@@ -1,8 +1,10 @@
-package org.fuchss.deltabot.cognitive.dialog
+package org.fuchss.deltabot.cognitive.dialogmanagement.dialog
 
 import net.dv8tion.jda.api.entities.Message
 import org.fuchss.deltabot.Language
 import org.fuchss.deltabot.cognitive.RasaService
+import org.fuchss.deltabot.cognitive.dialogmanagement.Dialog
+import org.fuchss.deltabot.cognitive.dialogmanagement.DialogResult
 import org.fuchss.deltabot.utils.createObjectMapper
 import org.fuchss.deltabot.utils.logger
 import java.io.InputStream
