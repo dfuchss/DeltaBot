@@ -46,7 +46,7 @@ For details take a look at [commands.md](./commands.md)
 
 ## Requirements (Development):
 
-* maven 3 and Java 11
+* maven 3 and Java 16
     * `mvn clean package`
 * Python 3.8 with pip (NLU only)
     * `pip install -r rasa/requirements.txt`

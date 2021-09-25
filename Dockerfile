@@ -1,11 +1,11 @@
-FROM maven:3-jdk-11 as builder
+FROM maven:3-openjdk-16 as builder
 
 WORKDIR /usr/src/bot
 COPY src src
 COPY pom.xml pom.xml
 RUN mvn clean package
 
-FROM azul/zulu-openjdk-alpine:11
+FROM azul/zulu-openjdk-alpine:16
 
 ENV DISCORD_TOKEN MY_TOKEN
 ENV TZ=Europe/Berlin
