@@ -1,4 +1,4 @@
-FROM maven:3-openjdk-16 as builder
+FROM maven:3-openjdk-17 as builder
 
 WORKDIR /usr/src/bot
 COPY src src
