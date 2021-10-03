@@ -13,6 +13,9 @@ import org.fuchss.deltabot.utils.logger
 import java.time.LocalDateTime
 import java.time.ZoneId
 
+/**
+ * A [Dialog] that uses [RssReader] to read RSS Feeds and present the current news.
+ */
 class News : Dialog(ID) {
     companion object {
         const val ID = "News"

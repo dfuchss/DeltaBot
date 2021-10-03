@@ -10,6 +10,9 @@ import org.fuchss.deltabot.utils.logger
 import java.io.InputStream
 import kotlin.random.Random
 
+/**
+ * The fallback [Dialog] that simply states that something has not been understood.
+ */
 class NotUnderstanding : Dialog(ID) {
     companion object {
         const val ID = "NotUnderstanding"

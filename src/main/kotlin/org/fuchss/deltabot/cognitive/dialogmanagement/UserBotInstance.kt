@@ -1,6 +1,7 @@
 package org.fuchss.deltabot.cognitive.dialogmanagement
 
 import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.User
 import org.fuchss.deltabot.Configuration
 import org.fuchss.deltabot.Language
 import org.fuchss.deltabot.cognitive.RasaService
@@ -13,6 +14,9 @@ import org.fuchss.deltabot.command.user.Help
 import org.fuchss.deltabot.utils.logger
 import java.util.*
 
+/**
+ * This class manages a set of [Dialogs][Dialog] for a [User] and starts specific dialogs depending on the messages of the user.
+ */
 class UserBotInstance(private val configuration: Configuration, private val commandRegistry: CommandRegistry) {
     private val rasaService = RasaService(configuration)
 
@@ -25,6 +29,9 @@ class UserBotInstance(private val configuration: Configuration, private val comm
         News()
     )
 
+    /**
+     * Handle a [Message] from a [User] with a certain [Language].
+     */
     fun handle(message: Message, language: Language) {
         val (intents, entities) = rasaService.recognize(message.contentDisplay, language.locale)
         logger.debug("Intents & Entities: $intents & $entities")

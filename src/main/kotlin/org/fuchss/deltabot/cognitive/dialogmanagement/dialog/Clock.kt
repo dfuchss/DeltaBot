@@ -10,6 +10,9 @@ import org.fuchss.deltabot.translate
 import org.fuchss.deltabot.utils.timestamp
 import java.time.LocalDateTime
 
+/**
+ * A [Dialog] that can simply show the current time to you.
+ */
 class Clock : Dialog(ID) {
     companion object {
         const val ID = "Clock"

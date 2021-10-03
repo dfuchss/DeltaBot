@@ -1,10 +1,14 @@
 package org.fuchss.deltabot.cognitive.dialogmanagement
 
+import org.fuchss.deltabot.cognitive.RasaService.IntentResult
 import org.fuchss.deltabot.cognitive.dialogmanagement.dialog.Clock
 import org.fuchss.deltabot.cognitive.dialogmanagement.dialog.News
 import org.fuchss.deltabot.cognitive.dialogmanagement.dialog.QnA
 
-class DialogRegistry {
+/**
+ * This class only contains a mapping for [IntentResult.name]<->[Dialog.dialogId]. It also contains the descriptions of the dialogs.
+ */
+class DialogRegistry private constructor() {
     companion object {
         val Intent2Dialog = sortedMapOf(
             "QnA".lowercase() to QnA.ID,
@@ -21,5 +25,9 @@ class DialogRegistry {
             Clock.ID to listOf("I can tell you the current time"),
             News.ID to listOf("I can inform you about the current news")
         )
+    }
+
+    init {
+        throw IllegalAccessError()
     }
 }

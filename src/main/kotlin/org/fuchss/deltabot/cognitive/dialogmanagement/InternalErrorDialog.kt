@@ -4,6 +4,9 @@ import net.dv8tion.jda.api.entities.Message
 import org.fuchss.deltabot.Language
 import org.fuchss.deltabot.cognitive.RasaService
 
+/**
+ * The fallback [Dialog] for internal errors.
+ */
 class InternalErrorDialog : Dialog(ID) {
     companion object {
         const val ID = "InternalError"

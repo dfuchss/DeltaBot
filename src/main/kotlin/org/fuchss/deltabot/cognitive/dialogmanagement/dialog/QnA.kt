@@ -10,6 +10,9 @@ import org.fuchss.deltabot.utils.logger
 import java.io.InputStream
 import kotlin.random.Random
 
+/**
+ * The [Dialog] that handles questions and answers from defined json files.
+ */
 class QnA : Dialog(ID) {
     companion object {
         const val ID = "QnA"
