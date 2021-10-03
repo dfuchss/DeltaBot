@@ -159,8 +159,8 @@ class SimplePoll(scheduler: Scheduler) : PollBase("./states/polls.json", schedul
         val onlyOneAnswer = poll.onlyOneAnswer
         internalPollState.remove(poll)
 
-        event.reply("Creating Poll ...".translate(event)).setEphemeral(true).complete()
-        createPoll(event.channel, null, user, question, options, onlyOneAnswer)
+        val hook = event.deferReply().complete()
+        createPoll(hook, null, user, question, options, onlyOneAnswer)
     }
 
 

@@ -37,11 +37,11 @@ class WeekdayPoll(scheduler: Scheduler) : PollBase("./states/weekday_poll.json",
     }
 
     private fun handleCreationOfSummon(event: SelectionMenuEvent) {
-        event.deferEdit().queue()
+        val hook = event.deferEdit().complete()
         val question = event.message.contentRaw.split("\n")[0]
         val weekdays = event.selectedOptions!!.map { o -> o.value }
         val options = getOptions(weekdays)
-        createPoll(event.channel, null, event.user, question, options, false)
+        createPoll(hook, null, event.user, question, options, false)
     }
 
 
@@ -60,7 +60,7 @@ class WeekdayPoll(scheduler: Scheduler) : PollBase("./states/weekday_poll.json",
         ).setMinValues(1).setMaxValues(Weekday.values().size).build()
 
         val msg = MessageBuilder().setContent(message).setActionRows(ActionRow.of(weekdays)).build()
-        event.reply(msg).setEphemeral(true).queue()
+        event.reply(msg).queue()
     }
 
 }

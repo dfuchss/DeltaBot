@@ -2,10 +2,14 @@ package org.fuchss.deltabot.command.user.polls
 
 import com.vdurmont.emoji.EmojiManager
 import net.dv8tion.jda.api.JDA
-import net.dv8tion.jda.api.entities.*
+import net.dv8tion.jda.api.entities.Emoji
+import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent
 import net.dv8tion.jda.api.hooks.EventListener
+import net.dv8tion.jda.api.interactions.InteractionHook
 import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.interactions.components.Button
 import net.dv8tion.jda.api.interactions.components.ButtonStyle
@@ -42,9 +46,19 @@ abstract class PollBase(configPath: String, protected val scheduler: Scheduler) 
     private fun initScheduler(jda: JDA) {
         for (update in pollState.polls)
             if (update.timestamp != null)
-                scheduler.queue({ terminate(jda.getGuildById(update.gid)!!.fetchMessage(update.cid, update.mid)!!, update.uid) }, update.timestamp!!)
+                scheduler.queue({ createTermination(jda, update) }, update.timestamp!!)
     }
 
+    private fun createTermination(jda: JDA, update: PollData) {
+        try {
+            val guild = jda.getGuildById(update.gid)!!
+            val message = guild.fetchMessage(update.cid, update.mid)!!
+            terminate(message, update.uid)
+        } catch (e: Exception) {
+            logger.error(e.message, e)
+            pollState.remove(update)
+        }
+    }
 
     private fun handleSummonButtonEvent(event: ButtonClickEvent, data: PollData) {
         val buttonId = event.button?.id ?: ""
@@ -129,12 +143,12 @@ abstract class PollBase(configPath: String, protected val scheduler: Scheduler) 
         message.editMessage(finalMessage).queue()
     }
 
-    protected fun createPoll(channel: MessageChannel, terminationTimestamp: Long?, author: User, response: String, options: Map<Emoji, Button>, onlyOneOption: Boolean) {
+    protected fun createPoll(hook: InteractionHook, terminationTimestamp: Long?, author: User, response: String, options: Map<Emoji, Button>, onlyOneOption: Boolean) {
         val components = options.values.toList<Component>().toActionRows().toMutableList()
         val globalActions = listOf(Button.secondary(finish.name + "", finish), Button.secondary(delete.name, delete))
         components.add(ActionRow.of(globalActions))
 
-        val msg = channel.sendMessage(response).setActionRows(components).complete()
+        val msg = hook.editOriginal(response).setActionRows(components).complete()
         msg.pinAndDelete()
 
         val data = PollData(terminationTimestamp, msg.guild.id, msg.channel.id, msg.id, author.id, options.keys.map { e -> EmojiDTO.create(e) }, onlyOneOption)
