@@ -15,6 +15,6 @@ class Debug(private val configuration: Configuration) : BotCommand {
     }
 
     override fun handle(event: SlashCommandEvent) {
-        event.reply("Debug is not ${configuration.toggleDebug()}").setEphemeral(true).queue()
+        event.reply("Debug is now ${configuration.toggleDebug()}").setEphemeral(true).queue()
     }
 }
