@@ -5,7 +5,7 @@ import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.interactions.commands.Command
 import net.dv8tion.jda.api.interactions.commands.privileges.CommandPrivilege
-import org.fuchss.deltabot.Configuration
+import org.fuchss.deltabot.DeltaBotConfiguration
 
 /**
  * Fix the permissions of different commands as user config have been changed.
@@ -14,7 +14,7 @@ import org.fuchss.deltabot.Configuration
  * @param[commands] the commands to consider
  * @param[changedUser] the user that have been changed
  */
-fun fixCommandPermissions(jda: JDA, configuration: Configuration, commands: List<BotCommand>, changedUser: User? = null) {
+fun fixCommandPermissions(jda: JDA, configuration: DeltaBotConfiguration, commands: List<BotCommand>, changedUser: User? = null) {
     val globalAdminCommands = commands.filter { c -> c.permissions == CommandPermissions.ADMIN && !c.isGlobal }
     val guildAdminCommands = commands.filter { c -> c.permissions == CommandPermissions.GUILD_ADMIN && !c.isGlobal }
 

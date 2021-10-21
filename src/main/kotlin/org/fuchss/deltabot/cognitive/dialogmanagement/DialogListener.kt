@@ -5,7 +5,7 @@ import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.EventListener
-import org.fuchss.deltabot.Configuration
+import org.fuchss.deltabot.DeltaBotConfiguration
 import org.fuchss.deltabot.command.CommandRegistry
 import org.fuchss.deltabot.language
 import org.fuchss.deltabot.translate
@@ -13,7 +13,7 @@ import org.fuchss.deltabot.translate
 /**
  * The manager for all registered [Dialogs][Dialog].
  */
-class DialogListener(private val configuration: Configuration, private val commandRegistry: CommandRegistry) : EventListener {
+class DialogListener(private val configuration: DeltaBotConfiguration, private val commandRegistry: CommandRegistry) : EventListener {
     private val user2instance = mutableMapOf<User, UserBotInstance>()
 
     /**

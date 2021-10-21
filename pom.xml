@@ -36,6 +36,11 @@
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
+        <repository>
+            <id>gh-fuchss</id>
+            <name>GitHub Maven Packages</name>
+            <url>https://packages.fuchss.org/github/releases/raw/branch/releases/</url>
+        </repository>
     </repositories>
 
     <build>
@@ -111,6 +116,16 @@
             <groupId>com.github.w3stling</groupId>
             <artifactId>rssreader</artifactId>
             <version>v2.5.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.fuchss</groupId>
+            <artifactId>object-casket</artifactId>
+            <version>0.9.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>3.34.0</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>

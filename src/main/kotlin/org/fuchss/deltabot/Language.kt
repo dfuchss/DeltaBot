@@ -5,7 +5,10 @@ import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.interaction.GenericInteractionCreateEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
+import org.fuchss.deltabot.db.load
+import org.fuchss.deltabot.db.settings.LanguageSettings
 import org.fuchss.deltabot.utils.*
+import org.fuchss.objectcasket.port.Session
 
 /**
  * Definition of all supported languages with their locales.
@@ -37,29 +40,27 @@ fun language(guild: Guild?, user: User?): Language {
     if (userLanguage != null)
         return userLanguage
 
-    return languageSettings.defaultLanguage
+    return languageSettings.defaultLanguage()
 }
 
 /**
  * Read the global [Language] of a [User].
  */
-fun User.internalLanguage() = languageSettings.userToLanguage[this.id]
+fun User.internalLanguage() = languageSettings.userToLanguage(this.id)
 
 /**
  * Read the guild override of a [Language] of a [User].
  */
-fun User.internalLanguage(guild: Guild) = languageSettings.userAndGuildToLanguage[this.id + guild.id]
+fun User.internalLanguage(guild: Guild) = languageSettings.userAndGuildToLanguage(this.id, guild.id)
 
 /**
  * Set the global [Language] for a [User].
  */
 fun User.setLanguage(language: Language?) {
     if (language == null)
-        languageSettings.userToLanguage.remove(this.id)
+        languageSettings.removeUserToLanguage(this.id)
     else
-        languageSettings.userToLanguage[this.id] = language
-
-    languageSettings.store()
+        languageSettings.setUserToLanguage(this, language)
 }
 
 /**
@@ -67,39 +68,33 @@ fun User.setLanguage(language: Language?) {
  */
 fun User.setLanguage(language: Language?, guild: Guild) {
     if (language == null)
-        languageSettings.userAndGuildToLanguage.remove(this.id + guild.id)
+        languageSettings.removeUserAndGuildToLanguage(this.id, guild.id)
     else
-        languageSettings.userAndGuildToLanguage[this.id + guild.id] = language
-
-    languageSettings.store()
+        languageSettings.setUserAndGuildToLanguage(this, guild, language)
 }
 
 /**
  * Get the global [Guild] language iff set.
  */
-fun Guild.internalLanguage() = languageSettings.guildToLanguage[this.id]
+fun Guild.internalLanguage() = languageSettings.guildToLanguage(this.id)
 
 /**
  * Set the global [Guild] language.
  */
 fun Guild.setLanguage(language: Language?) {
     if (language == null)
-        languageSettings.guildToLanguage.remove(this.id)
+        languageSettings.removeGuildToLanguage(this.id)
     else
-        languageSettings.guildToLanguage[this.id] = language
-
-    languageSettings.store()
+        languageSettings.setGuildToLanguage(this, language)
 }
 
 
-private val languageSettings = LanguageSettings().load("./states/languages.json")
+private var languageSettings: LanguageSettings = LanguageSettings()
 
-private data class LanguageSettings(
-    var guildToLanguage: MutableMap<String, Language> = mutableMapOf(),
-    var userToLanguage: MutableMap<String, Language> = mutableMapOf(),
-    var userAndGuildToLanguage: MutableMap<String, Language> = mutableMapOf(),
-    var defaultLanguage: Language = Language.ENGLISH
-) : Storable()
+fun initLanguage(session: Session) {
+    languageSettings = session.load(LanguageSettings::class.java, initializer = { l, s -> l.setSession(s) }, defaultValue = { LanguageSettings() })
+}
+
 
 private val translations = mutableMapOf<Language, MutableMap<String, String>>()
 
@@ -132,7 +127,7 @@ fun String.translate(event: MessageReceivedEvent, vararg attributes: Any) = this
  * Translate a string based on a [Language] and replace the "#" with the [attributes].
  */
 fun String.translate(language: Language?, vararg attributes: Any): String {
-    val lang = language ?: languageSettings.defaultLanguage
+    val lang = language ?: languageSettings.defaultLanguage()
     var text = this
     if (lang != Language.ENGLISH) {
         if (translations[lang] == null) {

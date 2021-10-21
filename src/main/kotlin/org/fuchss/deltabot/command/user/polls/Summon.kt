@@ -7,7 +7,7 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import net.dv8tion.jda.api.interactions.components.Button
 import net.dv8tion.jda.api.interactions.components.ButtonStyle
-import org.fuchss.deltabot.Configuration
+import org.fuchss.deltabot.DeltaBotConfiguration
 import org.fuchss.deltabot.cognitive.DucklingService
 import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.language
@@ -21,7 +21,7 @@ import kotlin.random.Random
 /**
  * A [Poll][PollBase] that asks [Members][Member] to play together.
  */
-class Summon(configuration: Configuration, scheduler: Scheduler) : PollBase("./states/summon.json", scheduler) {
+class Summon(configuration: DeltaBotConfiguration, scheduler: Scheduler) : PollBase("./states/summon.json", scheduler) {
 
     companion object {
         private val summonMsgs = listOf(

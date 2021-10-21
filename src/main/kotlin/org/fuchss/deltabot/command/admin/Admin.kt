@@ -4,7 +4,7 @@ import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
-import org.fuchss.deltabot.Configuration
+import org.fuchss.deltabot.DeltaBotConfiguration
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.command.fixCommandPermissions
@@ -12,7 +12,7 @@ import org.fuchss.deltabot.command.fixCommandPermissions
 /**
  * A [BotCommand] that toggles the admin state for a user.
  */
-class Admin(private val configuration: Configuration, private val commands: List<BotCommand>) : BotCommand {
+class Admin(private val configuration: DeltaBotConfiguration, private val commands: List<BotCommand>) : BotCommand {
 
     override val permissions: CommandPermissions get() = CommandPermissions.ADMIN
     override val isGlobal: Boolean get() = false

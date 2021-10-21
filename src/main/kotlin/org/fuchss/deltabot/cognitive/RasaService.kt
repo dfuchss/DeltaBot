@@ -2,15 +2,15 @@ package org.fuchss.deltabot.cognitive
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
-import org.fuchss.deltabot.Configuration
+import org.fuchss.deltabot.DeltaBotConfiguration
 import org.fuchss.deltabot.utils.createObjectMapper
 import org.fuchss.deltabot.utils.logger
 import org.fuchss.deltabot.utils.readKtValue
 
 /**
- * The implementation of an interface to a RASA Multi NLU service at a certain [endpoint url][Configuration.nluUrl].
+ * The implementation of an interface to a RASA Multi NLU service at a certain [endpoint url][DeltaBotConfiguration.nluUrl].
  */
-class RasaService(configuration: Configuration) {
+class RasaService(configuration: DeltaBotConfiguration) {
 
     private val endpoint = configuration.nluUrl
     private var version: String = ""

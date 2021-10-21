@@ -4,8 +4,8 @@ import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
-import org.fuchss.deltabot.Configuration
 import org.fuchss.deltabot.Constants
+import org.fuchss.deltabot.DeltaBotConfiguration
 import org.fuchss.deltabot.cognitive.dialogmanagement.DialogRegistry
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
@@ -13,7 +13,7 @@ import org.fuchss.deltabot.command.CommandPermissions
 /**
  * A [BotCommand] that prints a temporary help message.
  */
-open class Help(private val configuration: Configuration, protected val commands: List<BotCommand>) : BotCommand {
+open class Help(private val configuration: DeltaBotConfiguration, protected val commands: List<BotCommand>) : BotCommand {
 
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
     override val isGlobal: Boolean get() = true

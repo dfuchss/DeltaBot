@@ -2,7 +2,7 @@ package org.fuchss.deltabot.command
 
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.User
-import org.fuchss.deltabot.Configuration
+import org.fuchss.deltabot.DeltaBotConfiguration
 import org.fuchss.deltabot.command.admin.*
 import org.fuchss.deltabot.command.user.*
 import org.fuchss.deltabot.command.user.polls.SimplePoll
@@ -17,7 +17,7 @@ import org.fuchss.deltabot.utils.logger
  * @param[configuration] the configuration of the bot
  * @param[scheduler] the scheduler of the bot
  */
-class CommandRegistry(val configuration: Configuration, val scheduler: Scheduler) {
+class CommandRegistry(val configuration: DeltaBotConfiguration, val scheduler: Scheduler) {
 
     private val commands: MutableList<BotCommand>
     private val updateHooks = mutableListOf<Runnable>()

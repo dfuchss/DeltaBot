@@ -271,3 +271,4 @@ config.json*
 states
 config
 target/
+bot.sqlite
