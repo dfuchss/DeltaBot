@@ -9,6 +9,9 @@ import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.translate
 import kotlin.random.Random
 
+/**
+ * A [BotCommand] that rolls a dice.
+ */
 class Roll : BotCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
     override val isGlobal: Boolean get() = true

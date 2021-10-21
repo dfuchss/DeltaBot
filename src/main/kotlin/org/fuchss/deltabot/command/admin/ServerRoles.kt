@@ -12,6 +12,9 @@ import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.translate
 import org.fuchss.deltabot.utils.logger
 
+/**
+ * A [BotCommand] that manages (add or remove) the roles of a server with linked channels.
+ */
 class ServerRoles : BotCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.GUILD_ADMIN
     override val isGlobal: Boolean get() = false

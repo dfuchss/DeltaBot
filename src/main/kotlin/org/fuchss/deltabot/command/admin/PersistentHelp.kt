@@ -7,6 +7,9 @@ import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.command.user.Help
 
+/**
+ * A [BotCommand] that prints a persistent help message.
+ */
 class PersistentHelp(configuration: Configuration, commands: List<BotCommand>) : Help(configuration, commands) {
     override val permissions: CommandPermissions get() = CommandPermissions.GUILD_ADMIN
 

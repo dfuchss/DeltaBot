@@ -9,6 +9,9 @@ import org.fuchss.deltabot.utils.fetchCommands
 import org.fuchss.deltabot.utils.logger
 import java.io.File
 
+/**
+ * A [BotCommand] that resets the command states of all bot commands in discord.
+ */
 class ResetStateAndCommands(private val configuration: Configuration) : BotCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.ADMIN
     override val isGlobal: Boolean get() = true

@@ -1,6 +1,7 @@
 package org.fuchss.deltabot.command.user
 
 import net.dv8tion.jda.api.entities.User
+import net.dv8tion.jda.api.entities.VoiceChannel
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
@@ -10,6 +11,9 @@ import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.translate
 import kotlin.random.Random
 
+/**
+ * A [BotCommand] that distributes members of a [VoiceChannel] into teams.
+ */
 class Teams : BotCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
     override val isGlobal: Boolean get() = false

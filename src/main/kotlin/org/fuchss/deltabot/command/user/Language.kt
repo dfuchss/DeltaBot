@@ -11,6 +11,9 @@ import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.utils.withFirst
 
+/**
+ * A [BotCommand] that sets the [Language] for certain users.
+ */
 class Language : BotCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.GUILD_ADMIN
     override val isGlobal: Boolean get() = true

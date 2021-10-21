@@ -19,16 +19,27 @@ import org.fuchss.deltabot.language
 import org.fuchss.deltabot.translate
 import org.fuchss.deltabot.utils.*
 
+/**
+ * A base for [BotCommands][BotCommand] that create / handles polls.
+ * @param[configPath] the path to the config of the poll
+ * @param[scheduler] the scheduler instance for the poll
+ */
 abstract class PollBase(configPath: String, protected val scheduler: Scheduler) : BotCommand, EventListener {
 
     companion object {
         private val finish = ":octagonal_sign:".toEmoji()
         private val delete = ":put_litter_in_its_place:".toEmoji()
 
+        /**
+         * The text that will be used to indicate the end of a poll.
+         */
         @JvmStatic
         protected val pollFinished = "*Poll finished. You can't vote anymore :)*"
     }
 
+    /**
+     * The poll state of this type of poll.
+     */
     protected val pollState: PollState = PollState().load(configPath)
 
     final override fun registerJDA(jda: JDA) {

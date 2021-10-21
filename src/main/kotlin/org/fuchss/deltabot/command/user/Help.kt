@@ -10,6 +10,9 @@ import org.fuchss.deltabot.cognitive.dialogmanagement.DialogRegistry
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
 
+/**
+ * A [BotCommand] that prints a temporary help message.
+ */
 open class Help(private val configuration: Configuration, protected val commands: List<BotCommand>) : BotCommand {
 
     override val permissions: CommandPermissions get() = CommandPermissions.ALL

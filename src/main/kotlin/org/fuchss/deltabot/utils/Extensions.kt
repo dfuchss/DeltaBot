@@ -2,7 +2,6 @@ package org.fuchss.deltabot.utils
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.Module
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.KotlinModule
@@ -20,8 +19,15 @@ import kotlin.math.max
 import kotlin.math.min
 
 
+/**
+ * The one and only logger instance of the bot.
+ */
 val logger: Logger = LoggerFactory.getLogger("DeltaBot")
 
+/**
+ * Set the log level of a logger.
+ * @param[level] the new log level
+ */
 fun Logger.setLogLevel(level: Int) {
     try {
         val f: Field = this.javaClass.getDeclaredField("currentLogLevel")
@@ -32,9 +38,11 @@ fun Logger.setLogLevel(level: Int) {
     }
 }
 
+/**
+ * Create a new [ObjectMapper].
+ */
 fun createObjectMapper(): ObjectMapper {
-    @Suppress("CAST_NEVER_SUCCEEDS") // IntelliJ says cast impossible .. but that's false!
-    val objectMapper = ObjectMapper().registerModule(KotlinModule() as Module)
+    val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
     objectMapper.configure(SerializationFeature.INDENT_OUTPUT, true)
     objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
     objectMapper.setVisibility(
@@ -46,9 +54,27 @@ fun createObjectMapper(): ObjectMapper {
     )
 
     return objectMapper
-
 }
 
+/**
+ * Read a value using the [ObjectMapper].
+ * @param[data] the data
+ * @param[instance] a instance of the result type to get the class
+ * @return the deserialized instance
+ */
+fun <T : Any> ObjectMapper.readKtValue(data: String, instance: T): T = readValue(data, instance.javaClass)
+
+/**
+ * Read a value using the [ObjectMapper].
+ * @param[data] the data
+ * @param[instance] a instance of the result type to get the class
+ * @return the deserialized instance
+ */
+fun <T : Any> ObjectMapper.readKtValue(data: ByteArray, instance: T): T = readValue(data, instance.javaClass)
+
+/**
+ * Load a [Storable] from a certain [path].
+ */
 fun <L : Storable> L.load(path: String): L {
     val mapper = createObjectMapper()
 
@@ -72,6 +98,9 @@ fun <L : Storable> L.load(path: String): L {
     return this
 }
 
+/**
+ * Pin a [Message] and delete the response in Discord.
+ */
 fun Message.pinAndDelete() {
     try {
         pin().complete()
@@ -93,6 +122,11 @@ fun Message.pinAndDelete() {
     }
 }
 
+/**
+ * Create [ActionRows][ActionRow] out of a list of [Components][Component].
+ * @param[maxInRow] the maximum number of elements in a row
+ * @param[tryModZero] indicator whether the system shall try to create rows with equal amounts of elements
+ */
 fun <E : Component> List<E>.toActionRows(maxInRow: Int = 5, tryModZero: Boolean = true): List<ActionRow> {
     var maxItems = max(min(maxInRow, 5), 1)
     if (tryModZero && maxItems > 3) {
@@ -120,19 +154,37 @@ fun <E : Component> List<E>.toActionRows(maxInRow: Int = 5, tryModZero: Boolean 
     return rows
 }
 
+/**
+ * Convert a string emoji to an [Emoji].
+ */
 fun String.toEmoji(): Emoji = Emoji.fromUnicode(EmojiManager.getForAlias(this).unicode)
 
+/**
+ * The regex for discord emojis.
+ */
 val discordEmojiRegex = Regex("<:[A-Za-z0-9-]+:\\d+>")
 
-fun findAllEmojis(emoji: String): List<String> {
-    val defaultEmojis = EmojiParser.extractEmojis(emoji)
-    val discordEmojis = discordEmojiRegex.findAll(emoji).map { m -> m.value }
+/**
+ * Find all Emojis in a Discord Message.
+ * @param[text] the input text
+ */
+fun findAllEmojis(text: String): List<String> {
+    val defaultEmojis = EmojiParser.extractEmojis(text)
+    val discordEmojis = discordEmojiRegex.findAll(text).map { m -> m.value }
 
     return defaultEmojis + discordEmojis
 }
 
+/**
+ * Create a revered map.
+ */
 fun <K, V> Map<K, V>.reverseMap(): Map<V, List<K>> = entries.map { e -> e.value to e.key }.groupBy { e -> e.first }.map { e -> e.key to e.value.map { v -> v.second } }.toMap()
 
+/**
+ * Create a copy of a list with an additional element at the first index.
+ * @param[e] the new element
+ * @return the new list
+ */
 fun <E> List<E>.withFirst(e: E): List<E> {
     val newList = mutableListOf(e)
     newList.addAll(this)

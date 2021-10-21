@@ -5,6 +5,9 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
 
+/**
+ * A [BotCommand] that shutdown the bot.
+ */
 class Shutdown : BotCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.ADMIN
     override val isGlobal: Boolean get() = true

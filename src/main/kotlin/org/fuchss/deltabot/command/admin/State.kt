@@ -6,6 +6,9 @@ import org.fuchss.deltabot.Configuration
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
 
+/**
+ * A [BotCommand] that prints the current state of the bot to discord.
+ */
 class State(private val config: Configuration) : BotCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.ADMIN
     override val isGlobal: Boolean get() = true

@@ -1,5 +1,6 @@
 package org.fuchss.deltabot.command.admin
 
+import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.Command
 import net.dv8tion.jda.api.interactions.commands.OptionType
@@ -13,6 +14,9 @@ import org.fuchss.deltabot.setLanguage
 import org.fuchss.deltabot.translate
 import org.fuchss.deltabot.utils.withFirst
 
+/**
+ * A [BotCommand] that changes the [Language] of a [Guild].
+ */
 class GuildLanguage : BotCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.GUILD_ADMIN
     override val isGlobal: Boolean get() = false

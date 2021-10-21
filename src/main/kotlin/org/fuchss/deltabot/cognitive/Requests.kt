@@ -7,19 +7,36 @@ import java.net.URL
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 
-
+/**
+ * Perform a get request for a certain URL.
+ * @param[url] the url
+ * @return the response as a string
+ */
 fun get(url: String): String {
     val endpoint = URL(url)
     val urlConnection: HttpURLConnection = endpoint.openConnection() as HttpURLConnection
     urlConnection.requestMethod = "GET"
     urlConnection.useCaches = false
     urlConnection.setRequestProperty("charset", "utf-8")
-
     return readInputStream(urlConnection.inputStream)
 }
 
+/**
+ * Perform a post request for a certain URL.
+ * @param[url] the url
+ * @param[contentType] the content type
+ * @param[postData] the data that shall be transmitted
+ * @return the response as a string
+ */
 fun post(url: String, contentType: String, postData: String) = post(url, contentType, postData.toByteArray(StandardCharsets.UTF_8))
 
+/**
+ * Perform a post request for a certain URL.
+ * @param[url] the url
+ * @param[contentType] the content type
+ * @param[postData] the data that shall be transmitted
+ * @return the response as a string
+ */
 fun post(url: String, contentType: String, postData: ByteArray): String {
     val endpoint = URL(url)
     val urlConnection: HttpURLConnection = endpoint.openConnection() as HttpURLConnection

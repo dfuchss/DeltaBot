@@ -12,6 +12,11 @@ import org.fuchss.deltabot.utils.Scheduler
 import org.fuchss.deltabot.utils.fetchCommands
 import org.fuchss.deltabot.utils.logger
 
+/**
+ * The registry for commands.
+ * @param[configuration] the configuration of the bot
+ * @param[scheduler] the scheduler of the bot
+ */
 class CommandRegistry(val configuration: Configuration, val scheduler: Scheduler) {
 
     private val commands: MutableList<BotCommand>
@@ -57,9 +62,15 @@ class CommandRegistry(val configuration: Configuration, val scheduler: Scheduler
         fixCommandPermissions(jda, configuration, commands, u)
     }
 
+    /**
+     * Register command update hooks that will be triggered on all changes of commands.
+     */
     fun registerUpdateHook(r: Runnable) {
         updateHooks += r
     }
 
+    /**
+     * Get a list of all registered commands.
+     */
     fun getCommands() = commands.toList()
 }

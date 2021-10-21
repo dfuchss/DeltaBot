@@ -12,6 +12,9 @@ import org.fuchss.deltabot.utils.Storable
 import org.fuchss.deltabot.utils.fetchUser
 import org.fuchss.deltabot.utils.load
 
+/**
+ * A [Poll][PollBase] that provides generic polls.
+ */
 class SimplePoll(scheduler: Scheduler) : PollBase("./states/polls.json", scheduler) {
     private val internalPollState: InternalPollState = InternalPollState().load("./states/polls-internal.json")
 

@@ -14,6 +14,9 @@ import org.fuchss.deltabot.language
 import org.fuchss.deltabot.translate
 import org.fuchss.deltabot.utils.*
 
+/**
+ * A [BotCommand] that creates & manages reminder messages.
+ */
 class Reminder(configuration: Configuration, private val scheduler: Scheduler) : BotCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
     override val isGlobal: Boolean get() = true

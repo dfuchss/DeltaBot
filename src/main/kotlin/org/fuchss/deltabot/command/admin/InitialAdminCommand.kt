@@ -9,6 +9,9 @@ import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
 import java.util.function.BiConsumer
 
+/**
+ * A [BotCommand] that performs the task of creation of an initial admin user.
+ */
 class InitialAdminCommand(private val configuration: Configuration, private val adminAddedCallback: BiConsumer<JDA, User>) : BotCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
     override val isGlobal: Boolean get() = true

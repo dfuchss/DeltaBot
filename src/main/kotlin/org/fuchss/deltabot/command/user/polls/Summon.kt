@@ -18,6 +18,9 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import kotlin.random.Random
 
+/**
+ * A [Poll][PollBase] that asks [Members][Member] to play together.
+ */
 class Summon(configuration: Configuration, scheduler: Scheduler) : PollBase("./states/summon.json", scheduler) {
 
     companion object {

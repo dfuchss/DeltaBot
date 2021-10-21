@@ -9,6 +9,9 @@ import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.command.fixCommandPermissions
 
+/**
+ * A [BotCommand] that toggles the admin state for a user.
+ */
 class Admin(private val configuration: Configuration, private val commands: List<BotCommand>) : BotCommand {
 
     override val permissions: CommandPermissions get() = CommandPermissions.ADMIN

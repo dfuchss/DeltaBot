@@ -10,12 +10,18 @@ import org.fuchss.deltabot.cognitive.dialogmanagement.dialog.QnA
  */
 class DialogRegistry private constructor() {
     companion object {
+        /**
+         * Maps intents to [Dialog.dialogId].
+         */
         val Intent2Dialog = sortedMapOf(
             "QnA".lowercase() to QnA.ID,
             "Clock".lowercase() to Clock.ID,
             "News".lowercase() to News.ID
         )
 
+        /**
+         * Maps [Dialog.dialogId] to a list of descriptions for a certain dialog.
+         */
         val DialogToDescription = sortedMapOf(
             QnA.ID to listOf(
                 "I can tell Jokes",

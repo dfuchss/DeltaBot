@@ -7,6 +7,9 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
 
+/**
+ * A [BotCommand] that simply echos sent messages.
+ */
 class Echo : BotCommand {
     override fun createCommand(): CommandData {
         val cmd = CommandData("echo", "Simply Echo the text you are writing now ..")

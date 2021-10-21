@@ -15,6 +15,9 @@ import org.fuchss.deltabot.translate
 import org.fuchss.deltabot.utils.Scheduler
 import org.fuchss.deltabot.utils.Weekday
 
+/**
+ * A [Poll][PollBase] that provides polls for weekdays.
+ */
 class WeekdayPoll(scheduler: Scheduler) : PollBase("./states/weekday_poll.json", scheduler) {
 
     override val permissions: CommandPermissions get() = CommandPermissions.ALL

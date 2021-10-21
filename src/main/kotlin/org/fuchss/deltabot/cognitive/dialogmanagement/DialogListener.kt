@@ -16,6 +16,10 @@ import org.fuchss.deltabot.translate
 class DialogListener(private val configuration: Configuration, private val commandRegistry: CommandRegistry) : EventListener {
     private val user2instance = mutableMapOf<User, UserBotInstance>()
 
+    /**
+     * Handle [Events][GenericEvent] for registered [Dialogs][Dialog]
+     * @param[event] a discord event to handle
+     */
     override fun onEvent(event: GenericEvent) {
         if (event !is MessageReceivedEvent)
             return

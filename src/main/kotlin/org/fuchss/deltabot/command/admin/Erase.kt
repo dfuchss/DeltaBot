@@ -8,6 +8,9 @@ import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.utils.fetchHistory
 import org.fuchss.deltabot.utils.logger
 
+/**
+ * A [BotCommand] that removes every message from a channel.
+ */
 class Erase : BotCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.GUILD_ADMIN
     override val isGlobal: Boolean get() = false

@@ -1,9 +1,7 @@
 package org.fuchss.deltabot.command.user
 
 import net.dv8tion.jda.api.JDA
-import net.dv8tion.jda.api.entities.Emoji
-import net.dv8tion.jda.api.entities.Guild
-import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
@@ -19,6 +17,9 @@ import org.fuchss.deltabot.internalLanguage
 import org.fuchss.deltabot.translate
 import org.fuchss.deltabot.utils.*
 
+/**
+ * A [BotCommand] that provides tools to create messages that manages the [Roles][Role] of a [Member].
+ */
 class Roles : BotCommand, EventListener {
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
     override val isGlobal: Boolean get() = false
