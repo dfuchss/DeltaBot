@@ -5,12 +5,22 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import org.fuchss.deltabot.Configuration
 import org.fuchss.deltabot.utils.createObjectMapper
 import org.fuchss.deltabot.utils.logger
+import org.fuchss.deltabot.utils.readKtValue
 
+/**
+ * The implementation of an interface to a RASA Multi NLU service at a certain [endpoint url][Configuration.nluUrl].
+ */
 class RasaService(configuration: Configuration) {
 
     private val endpoint = configuration.nluUrl
     private var version: String = ""
 
+    /**
+     * Recognize [Intents][IntentResult] and [Entities][EntityResult] from a text.
+     * @param[content] the input text
+     * @param[lang] the language key to use
+     * @return the intents and entities
+     */
     fun recognize(content: String, lang: String): Pair<List<IntentResult>, List<EntityResult>> {
         val empty = emptyList<IntentResult>() to emptyList<EntityResult>()
 
@@ -25,18 +35,16 @@ class RasaService(configuration: Configuration) {
         if (cleanContent.isBlank())
             return empty
 
-        val orm = createObjectMapper()
-
-        try {
+        return try {
             val payload = "{ \"locale\": \"$lang\", \"text\": \"$cleanContent\" }"
             val dataString = post("$endpoint/nlu/", "application/json", payload)
 
-            val data: RecognitionResult = orm.readValue(dataString.toByteArray(), RecognitionResult().javaClass)
+            val data: RecognitionResult = createObjectMapper().readKtValue(dataString.toByteArray(), RecognitionResult())
             data.entities.forEach { e -> e.message = data.message }
-            return data.intents to data.entities
+            data.intents to data.entities
         } catch (e: Exception) {
             logger.error(e.message)
-            return empty
+            empty
         }
     }
 

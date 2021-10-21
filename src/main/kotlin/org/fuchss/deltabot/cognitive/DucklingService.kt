@@ -3,33 +3,36 @@ package org.fuchss.deltabot.cognitive
 import org.fuchss.deltabot.Language
 import org.fuchss.deltabot.utils.createObjectMapper
 import org.fuchss.deltabot.utils.logger
+import org.fuchss.deltabot.utils.readKtValue
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.*
 
-
+/**
+ * The implementation of an interface to a Duckling service at a certain [endpoint url][endpoint].
+ */
 class DucklingService(private val endpoint: String) {
 
     fun interpretTime(text: String, language: Language): List<LocalDateTime> {
-        val om = createObjectMapper()
         val tz = ZoneId.systemDefault().id
         val locale = language.locale
         val dims = "[\"time\"]"
 
-        val values = mapOf(
+        val payload = mapOf(
             "tz" to tz,
             "locale" to locale,
             "text" to text,
             "dims" to dims
         )
 
-        var foundTimes: Array<DucklingResponseData> = emptyArray()
+        val postData = getDataString(payload).toByteArray(StandardCharsets.UTF_8)
+
         return try {
-            val postData = getDataString(values).toByteArray(StandardCharsets.UTF_8)
             val rawResponse = post("$endpoint/parse", "application/x-www-form-urlencoded", postData)
-            foundTimes = om.readValue(rawResponse, foundTimes.javaClass)
+            val foundTimes: Array<DucklingResponseData> = createObjectMapper().readKtValue(rawResponse, emptyArray())
 
             val df = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
             val times = foundTimes.map { t -> extractTime(t.value) }.map { t -> LocalDateTime.parse(t, df) }
@@ -40,6 +43,7 @@ class DucklingService(private val endpoint: String) {
         }
     }
 
+
     private fun extractTime(t: DucklingResponseValue): String {
         return if (t.value == null) {
             // From & To are set ..
@@ -49,13 +53,11 @@ class DucklingService(private val endpoint: String) {
     }
 
     private fun getDataString(params: Map<String, Any>): String {
-        val result = StringBuilder()
-        var first = true
+        val result = StringJoiner("&")
         for ((key, value) in params) {
-            if (first) first = false else result.append("&")
-            result.append(URLEncoder.encode(key, "UTF-8"))
-            result.append("=")
-            result.append(URLEncoder.encode("$value", "UTF-8"))
+            val urlKey = URLEncoder.encode(key, "UTF-8")
+            val urlValue = URLEncoder.encode("$value", "UTF-8")
+            result.add("$urlKey=$urlValue")
         }
         return result.toString()
     }
@@ -77,3 +79,4 @@ class DucklingService(private val endpoint: String) {
     )
 
 }
+
