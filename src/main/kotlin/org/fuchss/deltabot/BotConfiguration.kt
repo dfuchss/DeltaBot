@@ -14,7 +14,7 @@ import javax.persistence.*
 
 @Entity
 @Table(name = "Configuration")
-class BotConfiguration {
+class BotConfiguration() {
     companion object {
         fun loadConfig(session: Session): BotConfiguration {
             val configs = session.getAllObjects(BotConfiguration::class.java)
@@ -68,6 +68,15 @@ class BotConfiguration {
      * Indicator whether the NLU Unit is disabled.
      */
     var disableNlu: Boolean = false
+
+    init {
+        if (runInDocker()) {
+            nluUrl = "http://deltabot-nlu:5005"
+            ducklingUrl = "http://deltabot-duckling:8000"
+        }
+    }
+
+    fun runInDocker() = System.getenv("RUN_IN_DOCKER") == "true"
 
     fun isAdmin(user: User): Boolean {
         return admins.any { u -> u.discordId == user.id }

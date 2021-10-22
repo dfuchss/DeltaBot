@@ -21,7 +21,8 @@ class State(private val config: BotConfiguration) : BotCommand {
         var msg = "Current State:\n"
         msg += "NLU: ${config.nluUrl}, Threshold: ${config.nluThreshold}, State: ${if (config.disableNlu) "disabled" else "enabled"}\n"
         msg += "Admins: ${config.getAdmins(event.jda).joinToString { u -> u.asMention }}\n"
-        msg += "Debug: ${config.debug}"
+        msg += "Debug: ${config.debug}\n"
+        msg += "Docker: ${config.runInDocker()}"
         event.reply(msg).setEphemeral(true).queue()
     }
 }

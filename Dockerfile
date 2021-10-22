@@ -7,6 +7,7 @@ RUN mvn clean package
 
 FROM azul/zulu-openjdk-alpine:16
 
+ENV RUN_IN_DOCKER true
 ENV DISCORD_TOKEN MY_TOKEN
 ENV TZ=Europe/Berlin
 ENV DB_PATH /usr/src/bot/data/data.sqlite
