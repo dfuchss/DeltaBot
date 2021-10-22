@@ -238,7 +238,7 @@ abstract class PollBase(private val pollType: String, protected val scheduler: S
     }
 
     @Entity
-    @Table(name = "polls")
+    @Table(name = "Poll")
     class Poll {
         @Id
         @GeneratedValue

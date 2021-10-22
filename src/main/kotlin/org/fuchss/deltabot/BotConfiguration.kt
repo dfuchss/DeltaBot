@@ -13,7 +13,7 @@ import org.slf4j.spi.LocationAwareLogger
 import javax.persistence.*
 
 @Entity
-@Table(name = "configuration")
+@Table(name = "Configuration")
 class BotConfiguration {
     companion object {
         fun loadConfig(session: Session): BotConfiguration {

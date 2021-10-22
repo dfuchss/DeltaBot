@@ -19,6 +19,7 @@ import org.fuchss.objectcasket.port.Session
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
 import javax.persistence.Id
+import javax.persistence.Table
 
 /**
  * A [BotCommand] that provides tools to create messages that manages the [Roles][Role] of a [Member].
@@ -262,6 +263,7 @@ class Roles(private val session: Session) : BotCommand, EventListener {
     }
 
     @Entity
+    @Table(name = "GuildRole")
     class GuildRoleState {
         @Id
         @GeneratedValue
