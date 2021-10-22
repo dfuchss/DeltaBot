@@ -1,5 +1,6 @@
 package org.fuchss.deltabot.command.user
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.events.GenericEvent
@@ -13,17 +14,20 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 import net.dv8tion.jda.api.interactions.components.Button
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
-import org.fuchss.deltabot.utils.Storable
 import org.fuchss.deltabot.utils.extensions.*
+import org.fuchss.objectcasket.port.Session
+import javax.persistence.Entity
+import javax.persistence.GeneratedValue
+import javax.persistence.Id
 
 /**
  * A [BotCommand] that provides tools to create messages that manages the [Roles][Role] of a [Member].
  */
-class Roles : BotCommand, EventListener {
+class Roles(private val session: Session) : BotCommand, EventListener {
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
     override val isGlobal: Boolean get() = false
 
-    private val rolesState = RolesState().load("./states/roles.json")
+    private val guildRoles: MutableSet<GuildRoleState> = mutableSetOf()
 
     companion object {
         private const val switcherText = "**Please choose your roles on this server :)**"
@@ -48,12 +52,19 @@ class Roles : BotCommand, EventListener {
 
     override fun registerJDA(jda: JDA) {
         jda.addEventListener(this)
+        initRoles()
+    }
+
+    private fun initRoles() {
+        val dbRoles = session.getAllObjects(GuildRoleState::class.java)
+        logger.info("Loaded ${dbRoles.size} guild role objects from the DB")
+        guildRoles.addAll(dbRoles)
     }
 
     override fun onEvent(event: GenericEvent) {
         if (event !is ButtonClickEvent)
             return
-        if (!rolesState.isGuildMessage(event.guild?.id ?: "", event.channel.id, event.messageId))
+        if (!isGuildMessage(event.guild?.id ?: "", event.channel.id, event.messageId))
             return
 
         handleRolesClick(event)
@@ -72,26 +83,27 @@ class Roles : BotCommand, EventListener {
 
     private fun handleInit(event: SlashCommandEvent) {
         val guild = event.guild!!
-        if (rolesState.hasRoleMessage(guild)) {
+        if (hasRoleMessage(guild)) {
             event.reply("Role message already found".translate(event)).setEphemeral(true).queue()
             return
         }
 
         val initialText = "$switcherText\n$noRoles"
         val msg = event.channel.sendMessage(initialText).complete()
-        rolesState.addRoleMessage(guild, msg)
+        addRoleMessage(guild, msg)
         event.reply("Role message created ..".translate(event)).setEphemeral(true).queue()
     }
 
+
     private fun handlePurge(event: SlashCommandEvent) {
         val guild = event.guild!!
-        if (!rolesState.hasRoleMessage(guild)) {
+        if (!hasRoleMessage(guild)) {
             event.reply("No role message found".translate(event)).setEphemeral(true).queue()
             return
         }
 
-        val state = rolesState.getGuildState(guild)!!
-        rolesState.removeRoleMessage(guild)
+        val state = getGuildState(guild)!!
+        removeRoleMessage(guild)
 
         val message = guild.fetchMessage(state.channelId, state.messageId)
         message?.delete()?.queue()
@@ -99,9 +111,10 @@ class Roles : BotCommand, EventListener {
         event.reply("Role message deleted ..".translate(event)).setEphemeral(true).queue()
     }
 
+
     private fun handleAdd(event: SlashCommandEvent) {
         val guild = event.guild!!
-        if (!rolesState.hasRoleMessage(guild)) {
+        if (!hasRoleMessage(guild)) {
             event.reply("No role message found".translate(event)).setEphemeral(true).queue()
             return
         }
@@ -112,7 +125,7 @@ class Roles : BotCommand, EventListener {
             event.reply("You must provide both .. role and emoji ..".translate(event)).setEphemeral(true).queue()
             return
         }
-        val guildState = rolesState.getGuildState(guild)!!
+        val guildState = getGuildState(guild)!!
 
         if (role.asMention in guildState.emojiToRole.values) {
             event.reply("Role already mapped ..".translate(event)).setEphemeral(true).queue()
@@ -130,8 +143,8 @@ class Roles : BotCommand, EventListener {
             return
         }
 
-        guildState.emojiToRole[emojis[0]] = role.asMention
-        rolesState.store()
+        guildState.setEmojiToRole(emojis[0], role.asMention)
+        session.persist(guildState)
 
         updateGuild(guild, guildState)
         event.reply("Updated role message".translate(event)).setEphemeral(true).queue()
@@ -140,7 +153,7 @@ class Roles : BotCommand, EventListener {
 
     private fun handleDel(event: SlashCommandEvent) {
         val guild = event.guild!!
-        if (!rolesState.hasRoleMessage(guild)) {
+        if (!hasRoleMessage(guild)) {
             event.reply("No role message found".translate(event)).setEphemeral(true).queue()
             return
         }
@@ -158,14 +171,14 @@ class Roles : BotCommand, EventListener {
             return
         }
 
-        val guildState = rolesState.getGuildState(guild)!!
+        val guildState = getGuildState(guild)!!
         if (emojis[0] !in guildState.emojiToRole.keys) {
             event.reply("I've found no mapping to this emoji".translate(event)).setEphemeral(true).queue()
             return
         }
 
-        guildState.emojiToRole.remove(emojis[0])
-        rolesState.store()
+        guildState.removeEmoji(emojis[0])
+        session.persist(guildState)
 
         updateGuild(guild, guildState)
         event.reply("Updated role message".translate(event)).setEphemeral(true).queue()
@@ -173,7 +186,7 @@ class Roles : BotCommand, EventListener {
 
     private fun handleRolesClick(event: ButtonClickEvent) {
         val guild = event.guild!!
-        val state = rolesState.getGuildState(guild)!!
+        val state = getGuildState(guild)!!
         val clickedId = event.button?.id ?: ""
 
         val roleMention = state.emojiToRole[clickedId]
@@ -200,7 +213,7 @@ class Roles : BotCommand, EventListener {
         }
     }
 
-    private fun updateGuild(guild: Guild, guildState: GuildState) {
+    private fun updateGuild(guild: Guild, guildState: GuildRoleState) {
         var message = "${switcherText.translate(guild.internalLanguage())}\n${noRoles.translate(guild.internalLanguage())}"
         var buttons = emptyList<Button>()
 
@@ -229,37 +242,61 @@ class Roles : BotCommand, EventListener {
         return Button.secondary(guildEmoji.asMention, Emoji.fromEmote(guildEmoji))
     }
 
+    private fun isGuildMessage(guildId: String, channelId: String, messageId: String): Boolean =
+        guildRoles.any { gr -> gr.guildId == guildId && gr.channelId == channelId && gr.messageId == messageId }
 
-    private data class RolesState(
-        var guild2Message: MutableMap<String, GuildState> = mutableMapOf()
-    ) : Storable() {
+    private fun hasRoleMessage(guild: Guild): Boolean = guildRoles.any { gr -> gr.guildId == guild.id }
 
-        fun addRoleMessage(guild: Guild, message: Message) {
-            guild2Message[guild.id] = GuildState(message.channel.id, message.id)
-            this.store()
-        }
+    private fun getGuildState(guild: Guild) = guildRoles.find { gr -> gr.guildId == guild.id }
 
-        fun removeRoleMessage(guild: Guild) {
-            guild2Message.remove(guild.id)
-            this.store()
-        }
-
-        fun hasRoleMessage(guild: Guild) = guild2Message.containsKey(guild.id)
-        fun getGuildState(guild: Guild) = guild2Message[guild.id]
-
-        fun isGuildMessage(guildId: String, channelId: String, messageId: String): Boolean {
-            if (!guild2Message.containsKey(guildId))
-                return false
-            val guildState = guild2Message[guildId]
-            return guildState != null && guildState.channelId == channelId && guildState.messageId == messageId
-        }
+    private fun addRoleMessage(guild: Guild, msg: Message) {
+        val state = GuildRoleState(guild.id, msg.channel.id, msg.id)
+        session.persist(state)
+        guildRoles.add(state)
     }
 
-    private data class GuildState(
-        var channelId: String,
-        var messageId: String,
-        var emojiToRole: MutableMap<String, String> = mutableMapOf()
-    )
+    private fun removeRoleMessage(guild: Guild) {
+        val state = getGuildState(guild) ?: return
+        session.delete(state)
+        guildRoles.remove(state)
+    }
+
+    @Entity
+    class GuildRoleState {
+        @Id
+        @GeneratedValue
+        var id: Int? = null
+        var guildId: String = ""
+        var channelId: String = ""
+        var messageId: String = ""
+
+        private var emojiToRoleData: String = "{}"
+        val emojiToRole: Map<String, String>
+            get() = om.readValue(emojiToRoleData)
+
+        companion object {
+            private val om = createObjectMapper()
+        }
+
+        constructor()
+
+        constructor(guildId: String, channelId: String, messageId: String) {
+            this.guildId = guildId
+            this.channelId = channelId
+            this.messageId = messageId
+        }
+
+
+        fun setEmojiToRole(emoji: String, roleAsMention: String) {
+            val newEmojiToRole = emojiToRole.toMutableMap()
+            newEmojiToRole[emoji] = roleAsMention
+            emojiToRoleData = om.writeValueAsString(newEmojiToRole)
+        }
+
+        fun removeEmoji(emoji: String) {
+            val newEmojiToRole = emojiToRole.toMutableMap()
+            newEmojiToRole.remove(emoji)
+            emojiToRoleData = om.writeValueAsString(newEmojiToRole)
+        }
+    }
 }
-
-

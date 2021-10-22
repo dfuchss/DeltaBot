@@ -33,7 +33,7 @@ class CommandRegistry(val configuration: BotConfiguration, val scheduler: Schedu
         commands.add(Admin(configuration, commands))
         commands.add(State(configuration))
         commands.add(Erase())
-        commands.add(Roles())
+        commands.add(Roles(session))
         commands.add(ResetStateAndCommands(configuration))
         commands.add(ServerRoles())
 

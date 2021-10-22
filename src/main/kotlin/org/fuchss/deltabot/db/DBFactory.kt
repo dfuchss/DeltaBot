@@ -2,6 +2,7 @@ package org.fuchss.deltabot.db
 
 import org.fuchss.deltabot.BotConfiguration
 import org.fuchss.deltabot.command.user.Reminder
+import org.fuchss.deltabot.command.user.Roles
 import org.fuchss.deltabot.command.user.polls.PollBase
 import org.fuchss.deltabot.db.dto.GuildDTO
 import org.fuchss.deltabot.db.dto.UserDTO
@@ -59,7 +60,8 @@ private fun registerClasses(session: Session) {
         LanguageDTO::class.java,
 
         Reminder.ReminderData::class.java,
-        PollBase.Poll::class.java
+        PollBase.Poll::class.java,
+        Roles.GuildRoleState::class.java
     )
 }
 
