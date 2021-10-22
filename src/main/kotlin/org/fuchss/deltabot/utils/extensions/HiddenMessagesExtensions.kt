@@ -31,6 +31,11 @@ fun initHiddenMessages(jda: JDA, scheduler: Scheduler, session: Session) {
     hiddenMessages.init(jda, session, scheduler)
 }
 
+fun unhideAll(jda: JDA) {
+    if (!hiddenMessages.isInitialized())
+        error("Hidden Messages are not initialized")
+    hiddenMessages.unhideAll(jda)
+}
 
 private const val hideId = "hide-message"
 private val hideEmote = ":arrow_down_small:".toEmoji()
@@ -209,6 +214,26 @@ private class HiddenMessageManager : EventListener {
         if (!isInitialized())
             error("Hidden Messages are not initialized")
         session!!.persist(hiddenMessage)
+    }
+
+    fun unhideAll(jda: JDA) {
+        val messages = hiddenMessagesData.toList()
+        messages.forEach { hm ->
+            run {
+                try {
+                    val msg = if (hm.isPrivateChannel) {
+                        val channel = jda.openPrivateChannelById(hm.uid).complete()
+                        channel!!.retrieveMessageById(hm.mid).complete()
+                    } else {
+                        val channel = jda.fetchTextChannel(hm.gid, hm.cid)
+                        channel!!.retrieveMessageById(hm.mid).complete()
+                    }
+                    msg!!.unhide()
+                } catch (e: Exception) {
+                    logger.error(e.message)
+                }
+            }
+        }
     }
 }
 
