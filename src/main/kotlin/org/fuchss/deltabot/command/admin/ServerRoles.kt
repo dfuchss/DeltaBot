@@ -9,8 +9,8 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
-import org.fuchss.deltabot.translate
-import org.fuchss.deltabot.utils.logger
+import org.fuchss.deltabot.utils.extensions.logger
+import org.fuchss.deltabot.utils.extensions.translate
 
 /**
  * A [BotCommand] that manages (add or remove) the roles of a server with linked channels.

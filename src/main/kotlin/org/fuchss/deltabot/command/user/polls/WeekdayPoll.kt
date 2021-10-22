@@ -11,9 +11,9 @@ import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption
 import net.dv8tion.jda.api.interactions.components.selections.SelectionMenu
 import org.fuchss.deltabot.command.CommandPermissions
-import org.fuchss.deltabot.translate
 import org.fuchss.deltabot.utils.Scheduler
 import org.fuchss.deltabot.utils.Weekday
+import org.fuchss.deltabot.utils.extensions.translate
 
 /**
  * A [Poll][PollBase] that provides polls for weekdays.

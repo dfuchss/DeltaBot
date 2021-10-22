@@ -7,9 +7,9 @@ import org.fuchss.deltabot.Language
 import org.fuchss.deltabot.cognitive.RasaService
 import org.fuchss.deltabot.cognitive.dialogmanagement.Dialog
 import org.fuchss.deltabot.cognitive.dialogmanagement.DialogResult
-import org.fuchss.deltabot.language
-import org.fuchss.deltabot.translate
-import org.fuchss.deltabot.utils.logger
+import org.fuchss.deltabot.utils.extensions.language
+import org.fuchss.deltabot.utils.extensions.logger
+import org.fuchss.deltabot.utils.extensions.translate
 import java.time.LocalDateTime
 import java.time.ZoneId
 

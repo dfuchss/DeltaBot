@@ -4,21 +4,17 @@ import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.ReadyEvent
 import net.dv8tion.jda.api.events.ShutdownEvent
 import net.dv8tion.jda.api.hooks.EventListener
+import org.fuchss.deltabot.utils.extensions.logger
 import java.time.Instant
 import java.util.*
 import java.util.concurrent.locks.ReentrantLock
 
-class Scheduler : EventListener {
+class Scheduler(private val sleepInterval: Int = 5) : EventListener {
+
     private val priorityQueue = PriorityQueue<QueueElement>()
     private val lock = ReentrantLock()
 
-    private val sleepInterval: Int
-    private var thread: Thread?
-
-    constructor(sleepInterval: Int = 5) {
-        this.thread = null
-        this.sleepInterval = sleepInterval
-    }
+    private var thread: Thread? = null
 
     override fun onEvent(event: GenericEvent) {
         if (event is ReadyEvent)

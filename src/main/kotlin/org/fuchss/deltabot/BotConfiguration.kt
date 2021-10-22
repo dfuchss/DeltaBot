@@ -4,23 +4,23 @@ import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.User
 import org.fuchss.deltabot.db.dto.UserDTO
-import org.fuchss.deltabot.utils.fetchMember
-import org.fuchss.deltabot.utils.fetchUser
-import org.fuchss.deltabot.utils.logger
-import org.fuchss.deltabot.utils.setLogLevel
+import org.fuchss.deltabot.utils.extensions.fetchMember
+import org.fuchss.deltabot.utils.extensions.fetchUser
+import org.fuchss.deltabot.utils.extensions.logger
+import org.fuchss.deltabot.utils.extensions.setLogLevel
 import org.fuchss.objectcasket.port.Session
 import org.slf4j.spi.LocationAwareLogger
 import javax.persistence.*
 
 @Entity
 @Table(name = "configuration")
-class DeltaBotConfiguration {
+class BotConfiguration {
     companion object {
-        fun loadConfig(session: Session): DeltaBotConfiguration {
-            val configs = session.getAllObjects(DeltaBotConfiguration::class.java)
+        fun loadConfig(session: Session): BotConfiguration {
+            val configs = session.getAllObjects(BotConfiguration::class.java)
 
             val config = if (configs.isEmpty()) {
-                val newConfig = DeltaBotConfiguration()
+                val newConfig = BotConfiguration()
                 session.persist(newConfig)
                 newConfig
             } else {

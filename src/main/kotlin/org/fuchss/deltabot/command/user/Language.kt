@@ -5,11 +5,10 @@ import net.dv8tion.jda.api.interactions.commands.Command
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
-import org.fuchss.deltabot.*
 import org.fuchss.deltabot.Language
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
-import org.fuchss.deltabot.utils.withFirst
+import org.fuchss.deltabot.utils.extensions.*
 
 /**
  * A [BotCommand] that sets the [Language] for certain users.

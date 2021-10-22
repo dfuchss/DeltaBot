@@ -13,9 +13,8 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 import net.dv8tion.jda.api.interactions.components.Button
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
-import org.fuchss.deltabot.internalLanguage
-import org.fuchss.deltabot.translate
-import org.fuchss.deltabot.utils.*
+import org.fuchss.deltabot.utils.Storable
+import org.fuchss.deltabot.utils.extensions.*
 
 /**
  * A [BotCommand] that provides tools to create messages that manages the [Roles][Role] of a [Member].

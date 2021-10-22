@@ -1,11 +1,11 @@
 package org.fuchss.deltabot.db
 
-import org.fuchss.deltabot.DeltaBotConfiguration
+import org.fuchss.deltabot.BotConfiguration
 import org.fuchss.deltabot.db.dto.GuildDTO
 import org.fuchss.deltabot.db.dto.UserDTO
 import org.fuchss.deltabot.db.settings.LanguageDTO
 import org.fuchss.deltabot.db.settings.LanguageSettings
-import org.fuchss.deltabot.utils.logger
+import org.fuchss.deltabot.utils.extensions.logger
 import org.fuchss.objectcasket.ObjectCasketFactory
 import org.fuchss.objectcasket.port.Configuration
 import org.fuchss.objectcasket.port.Session
@@ -51,7 +51,7 @@ private fun registerClasses(session: Session) {
         UserDTO::class.java,
         GuildDTO::class.java,
 
-        DeltaBotConfiguration::class.java,
+        BotConfiguration::class.java,
 
         LanguageSettings::class.java,
         LanguageDTO::class.java

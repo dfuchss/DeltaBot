@@ -2,14 +2,14 @@ package org.fuchss.deltabot.command.admin
 
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
-import org.fuchss.deltabot.DeltaBotConfiguration
+import org.fuchss.deltabot.BotConfiguration
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
 
 /**
  * A [BotCommand] that prints the current state of the bot to discord.
  */
-class State(private val config: DeltaBotConfiguration) : BotCommand {
+class State(private val config: BotConfiguration) : BotCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.ADMIN
     override val isGlobal: Boolean get() = true
 

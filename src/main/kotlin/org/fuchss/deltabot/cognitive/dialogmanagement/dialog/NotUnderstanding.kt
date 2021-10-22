@@ -5,8 +5,8 @@ import org.fuchss.deltabot.Language
 import org.fuchss.deltabot.cognitive.RasaService
 import org.fuchss.deltabot.cognitive.dialogmanagement.Dialog
 import org.fuchss.deltabot.cognitive.dialogmanagement.DialogResult
-import org.fuchss.deltabot.utils.createObjectMapper
-import org.fuchss.deltabot.utils.logger
+import org.fuchss.deltabot.utils.extensions.createObjectMapper
+import org.fuchss.deltabot.utils.extensions.logger
 import java.io.InputStream
 import kotlin.random.Random
 

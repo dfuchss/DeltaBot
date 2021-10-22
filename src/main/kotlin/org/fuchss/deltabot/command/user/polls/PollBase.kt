@@ -15,9 +15,9 @@ import net.dv8tion.jda.api.interactions.components.Button
 import net.dv8tion.jda.api.interactions.components.ButtonStyle
 import net.dv8tion.jda.api.interactions.components.Component
 import org.fuchss.deltabot.command.BotCommand
-import org.fuchss.deltabot.language
-import org.fuchss.deltabot.translate
-import org.fuchss.deltabot.utils.*
+import org.fuchss.deltabot.utils.Scheduler
+import org.fuchss.deltabot.utils.Storable
+import org.fuchss.deltabot.utils.extensions.*
 
 /**
  * A base for [BotCommands][BotCommand] that create / handles polls.

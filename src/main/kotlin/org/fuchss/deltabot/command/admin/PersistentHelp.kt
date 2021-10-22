@@ -2,7 +2,7 @@ package org.fuchss.deltabot.command.admin
 
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
-import org.fuchss.deltabot.DeltaBotConfiguration
+import org.fuchss.deltabot.BotConfiguration
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.command.user.Help
@@ -10,7 +10,7 @@ import org.fuchss.deltabot.command.user.Help
 /**
  * A [BotCommand] that prints a persistent help message.
  */
-class PersistentHelp(configuration: DeltaBotConfiguration, commands: List<BotCommand>) : Help(configuration, commands) {
+class PersistentHelp(configuration: BotConfiguration, commands: List<BotCommand>) : Help(configuration, commands) {
     override val permissions: CommandPermissions get() = CommandPermissions.GUILD_ADMIN
 
     override fun createCommand(): CommandData {

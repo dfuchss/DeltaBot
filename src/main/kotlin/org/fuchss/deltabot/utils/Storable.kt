@@ -1,6 +1,8 @@
 package org.fuchss.deltabot.utils
 
 import com.fasterxml.jackson.annotation.JsonIgnore
+import org.fuchss.deltabot.utils.extensions.createObjectMapper
+import org.fuchss.deltabot.utils.extensions.logger
 import java.io.File
 
 abstract class Storable {

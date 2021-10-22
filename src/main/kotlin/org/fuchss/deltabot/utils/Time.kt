@@ -2,6 +2,7 @@ package org.fuchss.deltabot.utils
 
 import org.fuchss.deltabot.Language
 import org.fuchss.deltabot.cognitive.DucklingService
+import org.fuchss.deltabot.utils.extensions.logger
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneId

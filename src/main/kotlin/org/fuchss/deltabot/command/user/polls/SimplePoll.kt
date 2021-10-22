@@ -6,11 +6,11 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 import org.fuchss.deltabot.command.CommandPermissions
-import org.fuchss.deltabot.translate
 import org.fuchss.deltabot.utils.Scheduler
 import org.fuchss.deltabot.utils.Storable
-import org.fuchss.deltabot.utils.fetchUser
-import org.fuchss.deltabot.utils.load
+import org.fuchss.deltabot.utils.extensions.fetchUser
+import org.fuchss.deltabot.utils.extensions.load
+import org.fuchss.deltabot.utils.extensions.translate
 
 /**
  * A [Poll][PollBase] that provides generic polls.

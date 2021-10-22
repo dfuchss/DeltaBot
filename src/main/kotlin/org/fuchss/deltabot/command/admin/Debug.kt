@@ -2,14 +2,14 @@ package org.fuchss.deltabot.command.admin
 
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
-import org.fuchss.deltabot.DeltaBotConfiguration
+import org.fuchss.deltabot.BotConfiguration
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
 
 /**
  * A [BotCommand] that toggles the debug state.
  */
-class Debug(private val configuration: DeltaBotConfiguration) : BotCommand {
+class Debug(private val configuration: BotConfiguration) : BotCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.ADMIN
     override val isGlobal: Boolean get() = true
 

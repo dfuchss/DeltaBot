@@ -2,7 +2,7 @@ package org.fuchss.deltabot.cognitive.dialogmanagement
 
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
-import org.fuchss.deltabot.DeltaBotConfiguration
+import org.fuchss.deltabot.BotConfiguration
 import org.fuchss.deltabot.Language
 import org.fuchss.deltabot.cognitive.RasaService
 import org.fuchss.deltabot.cognitive.dialogmanagement.dialog.Clock
@@ -11,13 +11,13 @@ import org.fuchss.deltabot.cognitive.dialogmanagement.dialog.NotUnderstanding
 import org.fuchss.deltabot.cognitive.dialogmanagement.dialog.QnA
 import org.fuchss.deltabot.command.CommandRegistry
 import org.fuchss.deltabot.command.user.Help
-import org.fuchss.deltabot.utils.logger
+import org.fuchss.deltabot.utils.extensions.logger
 import java.util.*
 
 /**
  * This class manages a set of [Dialogs][Dialog] for a [User] and starts specific dialogs depending on the messages of the user.
  */
-class UserBotInstance(private val configuration: DeltaBotConfiguration, private val commandRegistry: CommandRegistry) {
+class UserBotInstance(private val configuration: BotConfiguration, private val commandRegistry: CommandRegistry) {
     private val rasaService = RasaService(configuration)
 
     private val activeDialogs: Stack<String> = Stack()

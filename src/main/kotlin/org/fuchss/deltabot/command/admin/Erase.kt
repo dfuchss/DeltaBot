@@ -5,8 +5,8 @@ import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
-import org.fuchss.deltabot.utils.fetchHistory
-import org.fuchss.deltabot.utils.logger
+import org.fuchss.deltabot.utils.extensions.fetchHistory
+import org.fuchss.deltabot.utils.extensions.logger
 
 /**
  * A [BotCommand] that removes every message from a channel.

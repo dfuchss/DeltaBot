@@ -6,18 +6,19 @@ import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
-import org.fuchss.deltabot.DeltaBotConfiguration
+import org.fuchss.deltabot.BotConfiguration
 import org.fuchss.deltabot.cognitive.DucklingService
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
-import org.fuchss.deltabot.language
-import org.fuchss.deltabot.translate
-import org.fuchss.deltabot.utils.*
+import org.fuchss.deltabot.utils.Scheduler
+import org.fuchss.deltabot.utils.Storable
+import org.fuchss.deltabot.utils.extensions.*
+import org.fuchss.deltabot.utils.timestamp
 
 /**
  * A [BotCommand] that creates & manages reminder messages.
  */
-class Reminder(configuration: DeltaBotConfiguration, private val scheduler: Scheduler) : BotCommand {
+class Reminder(configuration: BotConfiguration, private val scheduler: Scheduler) : BotCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
     override val isGlobal: Boolean get() = true
 
