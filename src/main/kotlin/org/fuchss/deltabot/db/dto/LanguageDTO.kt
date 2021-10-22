@@ -35,7 +35,7 @@ class LanguageDTO {
 
     @Id
     @GeneratedValue
-    private var id: Int? = null
+    var id: Int? = null
 
     @ManyToOne
     var userDTO: UserDTO?
