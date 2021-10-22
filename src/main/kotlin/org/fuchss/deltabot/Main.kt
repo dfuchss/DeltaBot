@@ -36,7 +36,7 @@ fun main() {
 
     val builder = JDABuilder.createDefault(token)
     val jda = builder.addEventListeners(scheduler, LoggerListener(config), ActivityChanger(), CommandHandler(config, commandRegistry), DialogListener(config, commandRegistry)).build()
-    initHiddenMessages(jda, scheduler)
+    initHiddenMessages(jda, scheduler, database)
 
     jda.awaitReady()
 }

@@ -8,6 +8,7 @@ import org.fuchss.deltabot.db.dto.GuildDTO
 import org.fuchss.deltabot.db.dto.UserDTO
 import org.fuchss.deltabot.db.settings.LanguageDTO
 import org.fuchss.deltabot.db.settings.LanguageSettings
+import org.fuchss.deltabot.utils.extensions.HiddenMessage
 import org.fuchss.deltabot.utils.extensions.logger
 import org.fuchss.objectcasket.ObjectCasketFactory
 import org.fuchss.objectcasket.port.Configuration
@@ -61,7 +62,8 @@ private fun registerClasses(session: Session) {
 
         Reminder.ReminderData::class.java,
         PollBase.Poll::class.java,
-        Roles.GuildRoleState::class.java
+        Roles.GuildRoleState::class.java,
+        HiddenMessage::class.java
     )
 }
 
