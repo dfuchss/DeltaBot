@@ -6,14 +6,13 @@ import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.interaction.GenericInteractionCreateEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import org.fuchss.deltabot.Language
-import org.fuchss.deltabot.db.load
-import org.fuchss.deltabot.db.settings.LanguageSettings
+import org.fuchss.deltabot.LanguageSettings
 import org.fuchss.objectcasket.port.Session
 
-private var _languageSettings: LanguageSettings? = null
-fun languageSettings(): LanguageSettings = _languageSettings ?: error("Language is not initialized")
+private var internalLanguageSettings: LanguageSettings? = null
+fun languageSettings(): LanguageSettings = internalLanguageSettings ?: error("Language is not initialized")
 fun initLanguage(session: Session) {
-    _languageSettings = session.load(LanguageSettings::class.java, initializer = { l, s -> l.setSession(s) }, defaultValue = { LanguageSettings() })
+    internalLanguageSettings = LanguageSettings(session)
 }
 
 

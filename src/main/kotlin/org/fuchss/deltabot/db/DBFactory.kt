@@ -5,9 +5,8 @@ import org.fuchss.deltabot.command.user.Reminder
 import org.fuchss.deltabot.command.user.Roles
 import org.fuchss.deltabot.command.user.polls.PollBase
 import org.fuchss.deltabot.db.dto.GuildDTO
+import org.fuchss.deltabot.db.dto.LanguageDTO
 import org.fuchss.deltabot.db.dto.UserDTO
-import org.fuchss.deltabot.db.settings.LanguageDTO
-import org.fuchss.deltabot.db.settings.LanguageSettings
 import org.fuchss.deltabot.utils.extensions.HiddenMessage
 import org.fuchss.deltabot.utils.extensions.logger
 import org.fuchss.objectcasket.ObjectCasketFactory
@@ -56,8 +55,6 @@ private fun registerClasses(session: Session) {
         GuildDTO::class.java,
 
         BotConfiguration::class.java,
-
-        LanguageSettings::class.java,
         LanguageDTO::class.java,
 
         Reminder.ReminderData::class.java,

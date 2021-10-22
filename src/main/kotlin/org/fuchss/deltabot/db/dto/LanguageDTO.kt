@@ -1,8 +1,6 @@
-package org.fuchss.deltabot.db.settings
+package org.fuchss.deltabot.db.dto
 
 import org.fuchss.deltabot.Language
-import org.fuchss.deltabot.db.dto.GuildDTO
-import org.fuchss.deltabot.db.dto.UserDTO
 import javax.persistence.*
 
 @Entity
