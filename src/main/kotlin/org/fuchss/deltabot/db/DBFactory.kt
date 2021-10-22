@@ -1,6 +1,7 @@
 package org.fuchss.deltabot.db
 
 import org.fuchss.deltabot.BotConfiguration
+import org.fuchss.deltabot.command.user.Reminder
 import org.fuchss.deltabot.db.dto.GuildDTO
 import org.fuchss.deltabot.db.dto.UserDTO
 import org.fuchss.deltabot.db.settings.LanguageDTO
@@ -54,7 +55,9 @@ private fun registerClasses(session: Session) {
         BotConfiguration::class.java,
 
         LanguageSettings::class.java,
-        LanguageDTO::class.java
+        LanguageDTO::class.java,
+
+        Reminder.ReminderData::class.java
     )
 }
 

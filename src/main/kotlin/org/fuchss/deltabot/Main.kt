@@ -32,7 +32,7 @@ fun main() {
     logger.info("Creating Bot ..")
 
     val scheduler = Scheduler()
-    val commandRegistry = CommandRegistry(config, scheduler)
+    val commandRegistry = CommandRegistry(config, scheduler, database)
 
     val builder = JDABuilder.createDefault(token)
     val jda = builder.addEventListeners(scheduler, LoggerListener(config), ActivityChanger(), CommandHandler(config, commandRegistry), DialogListener(config, commandRegistry)).build()

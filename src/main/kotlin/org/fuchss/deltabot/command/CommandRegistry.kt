@@ -11,13 +11,14 @@ import org.fuchss.deltabot.command.user.polls.WeekdayPoll
 import org.fuchss.deltabot.utils.Scheduler
 import org.fuchss.deltabot.utils.extensions.fetchCommands
 import org.fuchss.deltabot.utils.extensions.logger
+import org.fuchss.objectcasket.port.Session
 
 /**
  * The registry for commands.
  * @param[configuration] the configuration of the bot
  * @param[scheduler] the scheduler of the bot
  */
-class CommandRegistry(val configuration: BotConfiguration, val scheduler: Scheduler) {
+class CommandRegistry(val configuration: BotConfiguration, val scheduler: Scheduler, val session: Session) {
 
     private val commands: MutableList<BotCommand>
     private val updateHooks = mutableListOf<Runnable>()
@@ -42,7 +43,7 @@ class CommandRegistry(val configuration: BotConfiguration, val scheduler: Schedu
         commands.add(Roll())
         commands.add(Teams())
         commands.add(Summon(configuration, scheduler))
-        commands.add(Reminder(configuration, scheduler))
+        commands.add(Reminder(configuration, scheduler, session))
         commands.add(WeekdayPoll(scheduler))
         commands.add(SimplePoll(scheduler))
 

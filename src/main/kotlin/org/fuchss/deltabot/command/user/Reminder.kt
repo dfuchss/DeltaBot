@@ -11,18 +11,22 @@ import org.fuchss.deltabot.cognitive.DucklingService
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.utils.Scheduler
-import org.fuchss.deltabot.utils.Storable
 import org.fuchss.deltabot.utils.extensions.*
 import org.fuchss.deltabot.utils.timestamp
+import org.fuchss.objectcasket.port.Session
+import javax.persistence.Entity
+import javax.persistence.GeneratedValue
+import javax.persistence.Id
+import javax.persistence.Table
 
 /**
  * A [BotCommand] that creates & manages reminder messages.
  */
-class Reminder(configuration: BotConfiguration, private val scheduler: Scheduler) : BotCommand {
+class Reminder(configuration: BotConfiguration, private val scheduler: Scheduler, private val session: Session) : BotCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
     override val isGlobal: Boolean get() = true
 
-    private val reminderState = ReminderState().load("./states/reminder.json")
+    private val reminders: MutableSet<ReminderData> = mutableSetOf()
     private val ducklingService: DucklingService = DucklingService(configuration.ducklingUrl)
 
     override fun createCommand(): CommandData {
@@ -35,11 +39,18 @@ class Reminder(configuration: BotConfiguration, private val scheduler: Scheduler
     }
 
     override fun registerJDA(jda: JDA) {
+        initReminders()
         initScheduler(jda)
     }
 
+    private fun initReminders() {
+        val reminders = session.getAllObjects(ReminderData::class.java)
+        logger.info("Loaded ${reminders.size} reminders from DB ..")
+        reminders.addAll(reminders)
+    }
+
     private fun initScheduler(jda: JDA) {
-        for (reminder in reminderState.reminders)
+        for (reminder in reminders)
             scheduler.queue({ remind(reminder, jda) }, reminder.timestamp)
     }
 
@@ -66,46 +77,46 @@ class Reminder(configuration: BotConfiguration, private val scheduler: Scheduler
         val ts = time.timestamp()
         val reminder =
             if (event.channelType == ChannelType.PRIVATE)
-                ReminderData(ts, "", "", true, event.user.id, message)
+                ReminderData(null, ts, "", "", true, event.user.id, message)
             else
-                ReminderData(ts, event.guild!!.id, event.channel.id, false, event.user.id, message)
+                ReminderData(null, ts, event.guild!!.id, event.channel.id, false, event.user.id, message)
 
-        reminderState.add(reminder)
+        persistReminder(reminder)
         scheduler.queue({ remind(reminder, event.jda) }, ts)
         event.reply("I'll remind you <t:#:R>: '#'".translate(language, ts, message)).setEphemeral(true).queue()
     }
 
+
     private fun remind(reminder: ReminderData, jda: JDA) {
-        reminderState.remove(reminder)
+        removeReminder(reminder)
 
         val user = jda.fetchUser(reminder.uid)!!
         val channel = if (reminder.isDirectChannel) user.openPrivateChannel().complete() else jda.fetchTextChannel(reminder.gid, reminder.cid)!!
         channel.sendMessage("**Reminder ${user.asMention}**\n${reminder.message}").queue()
     }
 
-
-    private data class ReminderState(
-        var reminders: MutableList<ReminderData> = mutableListOf()
-    ) : Storable() {
-
-        fun add(data: ReminderData) {
-            this.reminders.add(data)
-            this.store()
-        }
-
-        fun remove(data: ReminderData) {
-            this.reminders.remove(data)
-            this.store()
-        }
+    private fun persistReminder(reminder: ReminderData) {
+        reminders.add(reminder)
+        session.persist(reminder)
     }
 
-    private data class ReminderData(
-        var timestamp: Long,
-        var gid: String,
-        var cid: String,
-        var isDirectChannel: Boolean,
-        var uid: String,
-        var message: String
+    private fun removeReminder(reminder: ReminderData) {
+        reminders.remove(reminder)
+        session.delete(reminder)
+    }
+
+    @Entity
+    @Table(name = "reminders")
+    data class ReminderData(
+        @Id
+        @GeneratedValue
+        var id: Int? = null,
+        var timestamp: Long = -1,
+        var gid: String = "",
+        var cid: String = "",
+        var isDirectChannel: Boolean = false,
+        var uid: String = "",
+        var message: String = ""
     )
 }
 
