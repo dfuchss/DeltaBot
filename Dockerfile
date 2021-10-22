@@ -9,11 +9,11 @@ FROM azul/zulu-openjdk-alpine:16
 
 ENV DISCORD_TOKEN MY_TOKEN
 ENV TZ=Europe/Berlin
-ENV CONF_PATH /usr/src/bot/config/config.json
+ENV DB_PATH /usr/src/bot/data/data.sqlite
 
 WORKDIR /usr/src/bot
 COPY --from=builder /usr/src/bot/target/deltabot-*-jar-with-dependencies.jar deltabot.jar
 
-VOLUME /usr/src/bot/config
-VOLUME /usr/src/bot/states
+VOLUME /usr/src/bot/data
+
 ENTRYPOINT java -jar /usr/src/bot/deltabot.jar

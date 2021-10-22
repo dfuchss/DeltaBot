@@ -4,8 +4,7 @@ services:
     image: ghcr.io/dfuchss/deltabot
     restart: unless-stopped
     volumes:
-      - ./config:/usr/src/bot/config
-      - ./states:/usr/src/bot/states
+      - ./data:/usr/src/bot/data
     environment:
       - DISCORD_TOKEN=$DISCORD_TOKEN
     networks:

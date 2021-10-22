@@ -270,5 +270,6 @@ rasa-unknown
 config.json*
 states
 config
+data
 target/
 bot.sqlite
