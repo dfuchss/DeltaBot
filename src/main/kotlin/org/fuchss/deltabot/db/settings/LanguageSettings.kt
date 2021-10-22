@@ -103,8 +103,9 @@ class LanguageSettings {
     private fun userAndGuildDTOToLanguage() = languages.filter { l -> l.userDTO != null && l.guildDTO != null }.associateBy { l -> l.userDTO!! to l.guildDTO!! }
 
     private fun store() {
-        this.session!!.persist(this)
         this.languages.mapNotNull { l -> l.userDTO }.forEach { u -> this.session!!.persist(u) }
         this.languages.mapNotNull { l -> l.guildDTO }.forEach { u -> this.session!!.persist(u) }
+        this.languages.forEach { l -> this.session!!.persist(l) }
+        this.session!!.persist(this)
     }
 }
