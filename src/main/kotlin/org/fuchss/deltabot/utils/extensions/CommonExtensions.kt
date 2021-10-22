@@ -8,10 +8,8 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.vdurmont.emoji.EmojiManager
 import com.vdurmont.emoji.EmojiParser
 import net.dv8tion.jda.api.entities.Emoji
-import org.fuchss.deltabot.utils.Storable
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.io.File
 import java.lang.reflect.Field
 
 
@@ -67,32 +65,6 @@ fun <T : Any> ObjectMapper.readKtValue(data: String, instance: T): T = readValue
  * @return the deserialized instance
  */
 fun <T : Any> ObjectMapper.readKtValue(data: ByteArray, instance: T): T = readValue(data, instance.javaClass)
-
-/**
- * Load a [Storable] from a certain [path].
- */
-fun <L : Storable> L.load(path: String): L {
-    val mapper = createObjectMapper()
-
-    this.path = path
-    val configFile = File(path)
-
-    if (configFile.exists()) {
-        try {
-            val config: L = mapper.readValue(configFile, this.javaClass)
-            logger.info("Loaded $config")
-            config.path = path
-            return config
-        } catch (e: Exception) {
-            logger.error(e.message)
-            // Try to overwrite corrupted data :)
-            this.store()
-        }
-    } else {
-        this.store()
-    }
-    return this
-}
 
 /**
  * Convert a string emoji to an [Emoji].
