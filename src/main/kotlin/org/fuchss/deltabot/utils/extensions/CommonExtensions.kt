@@ -130,3 +130,14 @@ fun <E> List<E>.withFirst(e: E): List<E> {
     newList.addAll(this)
     return newList
 }
+
+/**
+ * Create a copy of a list without a certain element.
+ * @param[e] the new element
+ * @return the new list
+ */
+fun <E> List<E>.without(e: E): List<E> {
+    val newList = this.toMutableList()
+    newList.remove(e)
+    return newList
+}

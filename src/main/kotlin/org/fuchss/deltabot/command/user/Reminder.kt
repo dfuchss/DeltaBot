@@ -107,7 +107,7 @@ class Reminder(configuration: BotConfiguration, private val scheduler: Scheduler
 
     @Entity
     @Table(name = "reminders")
-    data class ReminderData(
+    class ReminderData(
         @Id
         @GeneratedValue
         var id: Int? = null,
