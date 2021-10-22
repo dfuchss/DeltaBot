@@ -46,7 +46,7 @@ class Reminder(configuration: BotConfiguration, private val scheduler: Scheduler
     private fun initReminders() {
         val reminders = session.getAllObjects(ReminderData::class.java)
         logger.info("Loaded ${reminders.size} reminders from DB ..")
-        reminders.addAll(reminders)
+        this.reminders.addAll(reminders)
     }
 
     private fun initScheduler(jda: JDA) {

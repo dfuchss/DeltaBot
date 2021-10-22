@@ -42,10 +42,10 @@ class CommandRegistry(val configuration: BotConfiguration, val scheduler: Schedu
         commands.add(PersistentHelp(configuration, commands))
         commands.add(Roll())
         commands.add(Teams())
-        commands.add(Summon(configuration, scheduler))
+        commands.add(Summon(configuration, scheduler, session))
         commands.add(Reminder(configuration, scheduler, session))
-        commands.add(WeekdayPoll(scheduler))
-        commands.add(SimplePoll(scheduler))
+        commands.add(WeekdayPoll(scheduler, session))
+        commands.add(SimplePoll(scheduler, session))
 
         if (!configuration.hasAdmins()) {
             logger.info("Missing initial admin .. adding initial admin command ..")

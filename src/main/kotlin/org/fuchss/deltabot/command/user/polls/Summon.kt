@@ -14,6 +14,7 @@ import org.fuchss.deltabot.utils.Scheduler
 import org.fuchss.deltabot.utils.extensions.*
 import org.fuchss.deltabot.utils.findGenericTimespan
 import org.fuchss.deltabot.utils.timestamp
+import org.fuchss.objectcasket.port.Session
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -22,7 +23,7 @@ import kotlin.random.Random
 /**
  * A [Poll][PollBase] that asks [Members][Member] to play together.
  */
-class Summon(configuration: BotConfiguration, scheduler: Scheduler) : PollBase("./states/summon.json", scheduler) {
+class Summon(configuration: BotConfiguration, scheduler: Scheduler, session: Session) : PollBase("summon", scheduler, session) {
 
     companion object {
         private val summonMsgs = listOf(
@@ -85,8 +86,8 @@ class Summon(configuration: BotConfiguration, scheduler: Scheduler) : PollBase("
 
     override fun terminate(oldMessage: Message, uid: String) {
         val msg = oldMessage.refresh()
-        val data = pollState.getPollData(msg.id)
-        pollState.remove(data)
+        val data = polls.find { p -> p.mid == msg.id }
+        removePoll(data)
 
         val user = oldMessage.jda.fetchUser(uid)
         val newContent = msg.contentRaw + "\n\n${pollFinished.translate(language(msg.guild, user))}"

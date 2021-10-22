@@ -14,11 +14,12 @@ import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.utils.Scheduler
 import org.fuchss.deltabot.utils.Weekday
 import org.fuchss.deltabot.utils.extensions.translate
+import org.fuchss.objectcasket.port.Session
 
 /**
  * A [Poll][PollBase] that provides polls for weekdays.
  */
-class WeekdayPoll(scheduler: Scheduler) : PollBase("./states/weekday_poll.json", scheduler) {
+class WeekdayPoll(scheduler: Scheduler, session: Session) : PollBase("weekday", scheduler, session) {
 
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
     override val isGlobal: Boolean get() = false

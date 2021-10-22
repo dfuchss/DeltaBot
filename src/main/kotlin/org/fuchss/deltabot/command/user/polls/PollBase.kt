@@ -16,15 +16,17 @@ import net.dv8tion.jda.api.interactions.components.ButtonStyle
 import net.dv8tion.jda.api.interactions.components.Component
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.utils.Scheduler
-import org.fuchss.deltabot.utils.Storable
 import org.fuchss.deltabot.utils.extensions.*
+import org.fuchss.objectcasket.port.Session
+import java.io.Serializable
+import javax.persistence.*
 
 /**
  * A base for [BotCommands][BotCommand] that create / handles polls.
- * @param[configPath] the path to the config of the poll
+ * @param[pollType] the type of the poll (simply a uid of the class)
  * @param[scheduler] the scheduler instance for the poll
  */
-abstract class PollBase(configPath: String, protected val scheduler: Scheduler) : BotCommand, EventListener {
+abstract class PollBase(private val pollType: String, protected val scheduler: Scheduler, protected val session: Session) : BotCommand, EventListener {
 
     companion object {
         private val finish = ":octagonal_sign:".toEmoji()
@@ -40,38 +42,46 @@ abstract class PollBase(configPath: String, protected val scheduler: Scheduler) 
     /**
      * The poll state of this type of poll.
      */
-    protected val pollState: PollState = PollState().load(configPath)
+    protected val polls: MutableSet<Poll> = mutableSetOf()
 
     final override fun registerJDA(jda: JDA) {
         jda.addEventListener(this)
+        initPolls()
         initScheduler(jda)
+    }
+
+    private fun initPolls() {
+        val dbPolls = session.getAllObjects(Poll::class.java).filter { p -> p.pollType == pollType }
+        logger.info("Loaded ${dbPolls.size} polls from DB for ${this.javaClass.simpleName}")
+        polls.addAll(dbPolls)
     }
 
     override fun onEvent(event: GenericEvent) {
         if (event !is ButtonClickEvent)
             return
-        val data = pollState.getPollData(event.messageId) ?: return
-        handleSummonButtonEvent(event, data)
+        val data = polls.find { p -> p.mid == event.messageId } ?: return
+        handleButtonEvent(event, data)
     }
 
     private fun initScheduler(jda: JDA) {
-        for (update in pollState.polls)
+        for (update in polls)
             if (update.timestamp != null)
                 scheduler.queue({ createTermination(jda, update) }, update.timestamp!!)
     }
 
-    private fun createTermination(jda: JDA, update: PollData) {
+    private fun createTermination(jda: JDA, update: Poll) {
         try {
             val guild = jda.getGuildById(update.gid)!!
             val message = guild.fetchMessage(update.cid, update.mid)!!
             terminate(message, update.uid)
         } catch (e: Exception) {
             logger.error(e.message, e)
-            pollState.remove(update)
+            removePoll(update)
         }
     }
 
-    private fun handleSummonButtonEvent(event: ButtonClickEvent, data: PollData) {
+
+    private fun handleButtonEvent(event: ButtonClickEvent, data: Poll) {
         val buttonId = event.button?.id ?: ""
         if (finish.name == buttonId) {
             if (!isOwner(event, data))
@@ -87,7 +97,7 @@ abstract class PollBase(configPath: String, protected val scheduler: Scheduler) 
                 return
 
             event.deferEdit().queue()
-            pollState.remove(data)
+            removePoll(data)
             event.message.delete().queue()
             return
         }
@@ -95,12 +105,12 @@ abstract class PollBase(configPath: String, protected val scheduler: Scheduler) 
         event.deferEdit().queue()
 
         updateUser(event.user.id, buttonId, data)
-        pollState.store()
+        persistPoll(data)
 
         recreateMessage(event.message, data)
     }
 
-    private fun updateUser(uid: String, buttonId: String, data: PollData) {
+    private fun updateUser(uid: String, buttonId: String, data: Poll) {
         val reactions = data.user2React[uid] ?: listOf()
 
         if (data.onlyOneOption) {
@@ -130,14 +140,14 @@ abstract class PollBase(configPath: String, protected val scheduler: Scheduler) 
         data.react2User.entries.removeIf { (_, v) -> v.isEmpty() }
     }
 
-    private fun isOwner(event: ButtonClickEvent, data: PollData): Boolean {
+    private fun isOwner(event: ButtonClickEvent, data: Poll): Boolean {
         if (data.uid == event.user.id)
             return true
         event.reply("Since you are not the owner of the poll, you can't do this action".translate(event)).setEphemeral(true).queue()
         return false
     }
 
-    private fun recreateMessage(message: Message, data: PollData) {
+    private fun recreateMessage(message: Message, data: Poll) {
         val jda = message.jda
         val intro = message.contentRaw.split("\n")[0]
 
@@ -162,8 +172,8 @@ abstract class PollBase(configPath: String, protected val scheduler: Scheduler) 
         val msg = hook.editOriginal(response).setActionRows(components).complete()
         msg.pinAndDelete()
 
-        val data = PollData(terminationTimestamp, msg.guild.id, msg.channel.id, msg.id, author.id, options.keys.map { e -> EmojiDTO.create(e) }, onlyOneOption)
-        pollState.add(data)
+        val data = Poll(null, pollType, terminationTimestamp, msg.guild.id, msg.channel.id, msg.id, author.id, options.keys.map { e -> EmojiDTO.create(e) }, onlyOneOption)
+        persistPoll(data)
         if (terminationTimestamp != null)
             scheduler.queue({ terminate(msg, author.id) }, terminationTimestamp)
     }
@@ -191,8 +201,8 @@ abstract class PollBase(configPath: String, protected val scheduler: Scheduler) 
 
     protected open fun terminate(oldMessage: Message, uid: String) {
         val msg = oldMessage.refresh()
-        val data = pollState.getPollData(msg.id)
-        pollState.remove(data)
+        val data = polls.find { p -> p.mid == msg.id }
+        removePoll(data)
         if (data == null) {
             msg.editMessageComponents(listOf()).complete().hide(directHide = false)
             if (msg.isPinned)
@@ -215,34 +225,37 @@ abstract class PollBase(configPath: String, protected val scheduler: Scheduler) 
             msg.unpin().complete()
     }
 
-    protected data class PollState(
-        var polls: MutableList<PollData> = mutableListOf()
-    ) : Storable() {
-
-        fun getPollData(messageId: String): PollData? {
-            return polls.find { d -> d.mid == messageId }
-        }
-
-        fun add(data: PollData) {
-            this.polls.add(data)
-            this.store()
-        }
-
-        fun remove(data: PollData?) {
-            this.polls.remove(data)
-            this.store()
-        }
+    private fun persistPoll(poll: Poll) {
+        session.persist(poll)
+        if (poll !in polls)
+            polls.add(poll)
     }
 
-    protected data class PollData(
-        var timestamp: Long?,
-        var gid: String,
-        var cid: String,
-        var mid: String,
-        var uid: String,
+    protected fun removePoll(poll: Poll?) {
+        if (poll == null)
+            return
+        polls.remove(poll)
+        session.delete(poll)
+    }
+
+    @Entity
+    @Table(name = "polls")
+    data class Poll(
+        @Id
+        @GeneratedValue
+        var id: Int? = null,
+        var pollType: String = "",
+        var timestamp: Long? = null,
+        var gid: String = "",
+        var cid: String = "",
+        var mid: String = "",
+        var uid: String = "",
+        @Column(columnDefinition = "BLOB")
         var options: List<EmojiDTO> = mutableListOf(),
-        var onlyOneOption: Boolean,
+        var onlyOneOption: Boolean = false,
+        @Column(columnDefinition = "BLOB")
         var react2User: MutableMap<String, MutableList<String>> = mutableMapOf(),
+        @Column(columnDefinition = "BLOB")
         var user2React: MutableMap<String, MutableList<String>> = mutableMapOf()
     ) {
         fun getEmojis(guild: Guild): List<Emoji> {
@@ -250,10 +263,10 @@ abstract class PollBase(configPath: String, protected val scheduler: Scheduler) 
         }
     }
 
-    protected data class EmojiDTO(
+    data class EmojiDTO(
         var id: String,
         var name: String
-    ) {
+    ) : Serializable {
 
         fun getEmoji(guild: Guild): Emoji {
             if (id == "0")
