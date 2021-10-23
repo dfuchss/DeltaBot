@@ -1,6 +1,5 @@
 package org.fuchss.deltabot.command.user
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.events.GenericEvent
@@ -16,10 +15,7 @@ import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.utils.extensions.*
 import org.fuchss.objectcasket.port.Session
-import javax.persistence.Entity
-import javax.persistence.GeneratedValue
-import javax.persistence.Id
-import javax.persistence.Table
+import javax.persistence.*
 
 /**
  * A [BotCommand] that provides tools to create messages that manages the [Roles][Role] of a [Member].
@@ -272,13 +268,8 @@ class Roles(private val session: Session) : BotCommand, EventListener {
         var channelId: String = ""
         var messageId: String = ""
 
-        private var emojiToRoleData: String = "{}"
-        val emojiToRole: Map<String, String>
-            get() = om.readValue(emojiToRoleData)
-
-        companion object {
-            private val om = createObjectMapper()
-        }
+        @Column(columnDefinition = "JSON")
+        var emojiToRole: MutableMap<String, String> = mutableMapOf()
 
         constructor()
 
@@ -290,15 +281,11 @@ class Roles(private val session: Session) : BotCommand, EventListener {
 
 
         fun setEmojiToRole(emoji: String, roleAsMention: String) {
-            val newEmojiToRole = emojiToRole.toMutableMap()
-            newEmojiToRole[emoji] = roleAsMention
-            emojiToRoleData = om.writeValueAsString(newEmojiToRole)
+            emojiToRole[emoji] = roleAsMention
         }
 
         fun removeEmoji(emoji: String) {
-            val newEmojiToRole = emojiToRole.toMutableMap()
-            newEmojiToRole.remove(emoji)
-            emojiToRoleData = om.writeValueAsString(newEmojiToRole)
+            emojiToRole.remove(emoji)
         }
     }
 }
