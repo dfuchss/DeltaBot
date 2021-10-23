@@ -2,12 +2,9 @@ package org.fuchss.deltabot.cognitive.dialogmanagement.dialog
 
 import com.apptastic.rssreader.Item
 import com.apptastic.rssreader.RssReader
-import net.dv8tion.jda.api.entities.Message
-import org.fuchss.deltabot.Language
-import org.fuchss.deltabot.cognitive.RasaService
+import org.fuchss.deltabot.cognitive.dialogmanagement.Context
 import org.fuchss.deltabot.cognitive.dialogmanagement.Dialog
 import org.fuchss.deltabot.cognitive.dialogmanagement.DialogResult
-import org.fuchss.deltabot.utils.extensions.language
 import org.fuchss.deltabot.utils.extensions.logger
 import org.fuchss.deltabot.utils.extensions.translate
 import java.time.LocalDateTime
@@ -33,8 +30,8 @@ class News : Dialog(ID) {
         this.steps.add(this::selectNews)
     }
 
-    private fun selectNews(message: Message, intents: List<RasaService.IntentResult>, entities: List<RasaService.EntityResult>, language: Language): DialogResult {
-        val newsEntities = entities.filter { e -> e.group == "news" }
+    private fun selectNews(context: Context): DialogResult {
+        val newsEntities = context.entities.filter { e -> e.group == "news" }
         val categories = newsEntities.map { e -> e.name }
 
         if (categories.isNotEmpty()) {
@@ -42,21 +39,21 @@ class News : Dialog(ID) {
             return DialogResult.NEXT
         }
 
-        val categoryNames = providers.keys.map { n -> n.translate(message.language()) }
-        val question = "Which categories are you interested in? #".translate(language, categoryNames.joinToString(", "))
-        message.reply(question).complete()
+        val categoryNames = providers.keys.map { n -> n.translate(context.language) }
+        val question = "Which categories are you interested in? #".translate(context.language, categoryNames.joinToString(", "))
+        context.message.reply(question).complete()
         this.steps.add(this::newsStep)
 
         return DialogResult.WAIT_FOR_INPUT
     }
 
-    private fun newsStep(message: Message, intents: List<RasaService.IntentResult>, entities: List<RasaService.EntityResult>, language: Language): DialogResult {
-        val newsEntities = entities.filter { e -> e.group == "news" }
+    private fun newsStep(context: Context): DialogResult {
+        val newsEntities = context.entities.filter { e -> e.group == "news" }
         val categories = newsEntities.map { e -> e.name }
 
         if (categories.isEmpty()) {
-            val response = "Unfortunately I did not recognize any category. End dialog for now ;)".translate(message.language())
-            message.reply(response).queue()
+            val response = "Unfortunately I did not recognize any category. End dialog for now ;)".translate(context.language)
+            context.message.reply(response).queue()
             return DialogResult.NEXT
         }
 
@@ -73,12 +70,12 @@ class News : Dialog(ID) {
                 }
                 if (feed.isNotEmpty()) {
                     sent = true
-                    message.reply(response).queue()
+                    context.message.reply(response).queue()
                 }
             }
         }
         if (!sent) {
-            message.reply("No new news".translate(language)).queue()
+            context.message.reply("No new news".translate(context.language)).queue()
         }
 
         return DialogResult.NEXT

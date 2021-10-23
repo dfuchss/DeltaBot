@@ -1,9 +1,5 @@
 package org.fuchss.deltabot.cognitive.dialogmanagement
 
-import net.dv8tion.jda.api.entities.Message
-import org.fuchss.deltabot.Language
-import org.fuchss.deltabot.cognitive.RasaService
-
 /**
  * The fallback [Dialog] for internal errors.
  */
@@ -16,8 +12,8 @@ class InternalErrorDialog : Dialog(ID) {
         this.steps.add(this::internalError)
     }
 
-    private fun internalError(message: Message, intents: List<RasaService.IntentResult>, entities: List<RasaService.EntityResult>, language: Language): DialogResult {
-        message.reply("Internal Error occurred .. please contact the bot admin!").queue()
+    private fun internalError(context: Context): DialogResult {
+        context.message.reply("Internal Error occurred .. please contact the bot admin!").queue()
         return DialogResult.NEXT
     }
 }

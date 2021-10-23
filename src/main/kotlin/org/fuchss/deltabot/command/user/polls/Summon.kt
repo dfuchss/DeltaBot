@@ -59,11 +59,11 @@ class Summon(configuration: BotConfiguration, scheduler: Scheduler, session: Ses
         val game = event.getOption("game")!!.asRole
         val time = event.getOption("time")?.asString ?: ""
 
-        createSummon(event, event.guild!!, event.user, event.channel, game, time)
+        createSummon(event, event.guild!!, event.user, game, time)
     }
 
 
-    private fun createSummon(event: SlashCommandEvent, guild: Guild, user: User, channel: MessageChannel, game: Role, time: String) {
+    private fun createSummon(event: SlashCommandEvent, guild: Guild, user: User, game: Role, time: String) {
         // TODO maybe specify default time to another time ..
         val extractedTime = findGenericTimespan(time, event.language(), ducklingService) ?: LocalDateTime.of(LocalDate.now(), LocalTime.of(20, 0))
 
