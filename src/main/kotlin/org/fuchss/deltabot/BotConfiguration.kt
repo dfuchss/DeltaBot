@@ -27,6 +27,9 @@ class BotConfiguration() {
                 configs.first()
             }
             config.session = session
+
+            logger.info("Loaded Config: ${config.nluUrl}, ${config.nluThreshold}, ${config.ducklingUrl}, Admins: '${config.admins}', Debug: ${config.debug}")
+
             return config
         }
     }

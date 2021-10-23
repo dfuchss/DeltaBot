@@ -54,4 +54,6 @@ class UserDTO {
     }
 
     override fun hashCode(): Int = discordId.hashCode()
+
+    override fun toString(): String = "User($readableName)"
 }
