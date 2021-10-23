@@ -1,20 +1,14 @@
 package org.fuchss.deltabot.db
 
-import org.fuchss.deltabot.BotConfiguration
-import org.fuchss.deltabot.command.user.Reminder
-import org.fuchss.deltabot.command.user.Roles
-import org.fuchss.deltabot.command.user.polls.PollBase
-import org.fuchss.deltabot.db.dto.GuildDTO
-import org.fuchss.deltabot.db.dto.LanguageDTO
-import org.fuchss.deltabot.db.dto.UserDTO
-import org.fuchss.deltabot.utils.extensions.HiddenMessage
 import org.fuchss.deltabot.utils.extensions.logger
 import org.fuchss.objectcasket.ObjectCasketFactory
 import org.fuchss.objectcasket.port.Configuration
 import org.fuchss.objectcasket.port.Session
+import org.reflections.Reflections
 import org.sqlite.JDBC
 import java.io.File
 import java.sql.Driver
+import javax.persistence.Entity
 
 
 val DRIVER: Class<out Driver?> = JDBC::class.java
@@ -50,18 +44,10 @@ fun <T> Session.load(type: Class<T>, initializer: (T, Session) -> Unit, defaultV
 }
 
 private fun registerClasses(session: Session) {
-    session.declareClass(
-        UserDTO::class.java,
-        GuildDTO::class.java,
-
-        BotConfiguration::class.java,
-        LanguageDTO::class.java,
-
-        Reminder.ReminderData::class.java,
-        PollBase.Poll::class.java,
-        Roles.GuildRoleState::class.java,
-        HiddenMessage::class.java
-    )
+    val reflections = Reflections("org.fuchss.deltabot")
+    val entities = reflections.getTypesAnnotatedWith(Entity::class.java)
+    logger.info("Registering ${entities.size} entities to the DB: ${entities.map { e -> e.simpleName }.sorted()}")
+    session.declareClass(*entities.toTypedArray())
 }
 
 private fun createConfig(dbFile: File): Configuration {

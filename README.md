@@ -1,6 +1,7 @@
 # DeltaBot - My simple Discord Bot (Version 2)
 
 **Important:**
+
 * Since discord.py will be discontinued, I've recreated DeltaBot using Kotlin and JDA.
 * You can find the old version of DeltaBot [here](https://github.com/dfuchss/DeltaBot/releases/tag/v1.0) or in a separate [project](https://github.com/dfuchss/DeltaBot-Legacy).
 
@@ -62,5 +63,4 @@ To start the bot simply run:
 
 * Create volume mappings (see dockerfile)
 * Store token to environment: `echo "DISCORD_TOKEN=YOUR-Discord-TOKEN" > .env`
-* Change the config urls to the internal docker container urls (e.g. `http://deltabot-nlu:5005`)
 * Start the Bot: `docker-compose up -d`
