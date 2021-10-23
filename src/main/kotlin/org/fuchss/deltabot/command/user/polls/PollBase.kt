@@ -22,7 +22,7 @@ import javax.persistence.*
 
 /**
  * A base for [BotCommands][BotCommand] that create / handles polls.
- * @param[pollType] the type of the poll (simply a uid of the class)
+ * @param[pollType] the type of the poll (simply a universal id of the class)
  * @param[scheduler] the scheduler instance for the poll
  */
 abstract class PollBase(private val pollType: String, protected val scheduler: Scheduler, protected val session: Session) : BotCommand, EventListener {

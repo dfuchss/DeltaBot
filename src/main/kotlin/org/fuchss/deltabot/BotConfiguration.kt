@@ -14,7 +14,7 @@ import javax.persistence.*
 
 @Entity
 @Table(name = "Configuration")
-class BotConfiguration() {
+class BotConfiguration {
     companion object {
         fun loadConfig(session: Session): BotConfiguration {
             val configs = session.getAllObjects(BotConfiguration::class.java)

@@ -26,7 +26,7 @@ import kotlin.random.Random
 class Summon(configuration: BotConfiguration, scheduler: Scheduler, session: Session) : PollBase("summon", scheduler, session) {
 
     companion object {
-        private val summonMsgs = listOf(
+        private val summonMessages = listOf(
             "###USER###: Who wants to play ###MENTION### ###TIME###?",
             "###USER###: Who would be up for playing ###MENTION### ###TIME###?"
         )
@@ -74,7 +74,7 @@ class Summon(configuration: BotConfiguration, scheduler: Scheduler, session: Ses
 
         val reply = event.deferReply().complete()
 
-        var response = summonMsgs[Random.nextInt(summonMsgs.size)].translate(event.language())
+        var response = summonMessages[Random.nextInt(summonMessages.size)].translate(event.language())
         response = response.replace("###USER###", user.asMention)
         response = response.replace("###MENTION###", game.asMention)
         response = response.replace("###TIME###", "<t:${extractedTime.timestamp()}:R>")

@@ -10,7 +10,7 @@ import org.fuchss.deltabot.utils.extensions.translate
 import kotlin.random.Random
 
 /**
- * A [BotCommand] that rolls a dice.
+ * A [BotCommand] that rolls a die.
  */
 class Roll : BotCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.ALL

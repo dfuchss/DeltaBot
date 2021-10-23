@@ -84,16 +84,16 @@ class News : Dialog(ID) {
     private fun readFeed(provider: String): List<Item> {
         val now = LocalDateTime.now()
         val nowM24h = now.minusHours(24)
-        try {
+        return try {
             val feed = RssReader().read(provider).toList()
             val entries = feed
                 .filter { i -> i.pubDateZonedDateTime.isPresent }
                 .filter { i -> i.pubDateZonedDateTime.get() >= nowM24h.atZone(ZoneId.systemDefault()) }
                 .sortedByDescending { i -> i.pubDateZonedDateTime.get() }
-            return entries.toList().take(maxNews).toList()
+            entries.toList().take(maxNews).toList()
         } catch (e: Exception) {
             logger.error(e.message, e)
-            return listOf()
+            listOf()
         }
     }
 

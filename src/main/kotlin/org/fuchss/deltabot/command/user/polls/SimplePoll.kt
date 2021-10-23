@@ -132,10 +132,10 @@ class SimplePoll(scheduler: Scheduler, session: Session) : PollBase("SimplePoll"
 
         if (polls.size == 1) {
             var msg = "Poll **${polls[0].name}**: "
-            if (polls[0].options.isEmpty()) {
-                msg += "*No Options*".translate(event)
+            msg += if (polls[0].options.isEmpty()) {
+                "*No Options*".translate(event)
             } else {
-                msg += "\n" + polls[0].options.joinToString("\n") { s -> "- $s" }
+                "\n" + polls[0].options.joinToString("\n") { s -> "- $s" }
             }
             event.reply(msg).setEphemeral(true).queue()
         } else {

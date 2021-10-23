@@ -1,3 +1,5 @@
+@file:Suppress("RedundantLambdaArrow")
+
 package org.fuchss.deltabot.utils
 
 import org.fuchss.deltabot.Language
@@ -44,7 +46,7 @@ private val genericTimeSpansDE = listOf(
     ("in \\d+ woche(n)?" to { s: String -> s.split(" ")[1].toInt() } to Duration.ofDays(7)),
     ("in einer woche" to { _: String -> 1 } to Duration.ofDays(7)),
 
-    ("nächstes Wochende" to { _: String -> nextWeekend() } to Duration.ofDays(1)),
+    ("nächstes wochenende" to { _: String -> nextWeekend() } to Duration.ofDays(1)),
     ("heute" to { _: String -> 0 } to Duration.ofDays(1)),
     ("morgen" to { _: String -> 1 } to Duration.ofDays(1)),
     ("übermorgen" to { _: String -> 1 } to Duration.ofDays(2))
@@ -76,7 +78,7 @@ fun findGenericTimespan(message: String, language: Language, ducklingService: Du
     }
 
     for (timespan in genericTimeSpans[language] ?: listOf()) {
-        val rgx = Regex(regex(timespan))
+        val rgx = Regex(regex(timespan), RegexOption.IGNORE_CASE)
         val match = rgx.findAll(message).toList()
 
         if (match.size != 1)
