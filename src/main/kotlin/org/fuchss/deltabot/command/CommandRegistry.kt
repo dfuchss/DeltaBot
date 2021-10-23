@@ -2,22 +2,23 @@ package org.fuchss.deltabot.command
 
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.User
-import org.fuchss.deltabot.Configuration
+import org.fuchss.deltabot.BotConfiguration
 import org.fuchss.deltabot.command.admin.*
 import org.fuchss.deltabot.command.user.*
 import org.fuchss.deltabot.command.user.polls.SimplePoll
 import org.fuchss.deltabot.command.user.polls.Summon
 import org.fuchss.deltabot.command.user.polls.WeekdayPoll
 import org.fuchss.deltabot.utils.Scheduler
-import org.fuchss.deltabot.utils.fetchCommands
-import org.fuchss.deltabot.utils.logger
+import org.fuchss.deltabot.utils.extensions.fetchCommands
+import org.fuchss.deltabot.utils.extensions.logger
+import org.fuchss.objectcasket.port.Session
 
 /**
  * The registry for commands.
  * @param[configuration] the configuration of the bot
  * @param[scheduler] the scheduler of the bot
  */
-class CommandRegistry(val configuration: Configuration, val scheduler: Scheduler) {
+class CommandRegistry(val configuration: BotConfiguration, val scheduler: Scheduler, val session: Session) {
 
     private val commands: MutableList<BotCommand>
     private val updateHooks = mutableListOf<Runnable>()
@@ -32,19 +33,20 @@ class CommandRegistry(val configuration: Configuration, val scheduler: Scheduler
         commands.add(Admin(configuration, commands))
         commands.add(State(configuration))
         commands.add(Erase())
-        commands.add(Roles())
+        commands.add(Roles(session))
         commands.add(ResetStateAndCommands(configuration))
         commands.add(ServerRoles())
+        commands.add(UnhideAll())
 
         commands.add(Language())
         commands.add(Help(configuration, commands))
         commands.add(PersistentHelp(configuration, commands))
         commands.add(Roll())
         commands.add(Teams())
-        commands.add(Summon(configuration, scheduler))
-        commands.add(Reminder(configuration, scheduler))
-        commands.add(WeekdayPoll(scheduler))
-        commands.add(SimplePoll(scheduler))
+        commands.add(Summon(configuration, scheduler, session))
+        commands.add(Reminder(configuration, scheduler, session))
+        commands.add(WeekdayPoll(scheduler, session))
+        commands.add(SimplePoll(scheduler, session))
 
         if (!configuration.hasAdmins()) {
             logger.info("Missing initial admin .. adding initial admin command ..")

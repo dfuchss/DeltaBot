@@ -9,15 +9,15 @@ import net.dv8tion.jda.api.hooks.EventListener
 import net.dv8tion.jda.api.interactions.commands.Command
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
-import org.fuchss.deltabot.Configuration
-import org.fuchss.deltabot.utils.logger
+import org.fuchss.deltabot.BotConfiguration
+import org.fuchss.deltabot.utils.extensions.logger
 
 /**
  * The command handler of the bot.
  * @param[configuration] the configuration of the bot
  * @param[commandRegistry] the registry of all commands
  */
-class CommandHandler(private val configuration: Configuration, private val commandRegistry: CommandRegistry) : EventListener {
+class CommandHandler(private val configuration: BotConfiguration, private val commandRegistry: CommandRegistry) : EventListener {
     private var commands: List<BotCommand> = commandRegistry.getCommands()
     private var nameToCommand: MutableMap<String, BotCommand> = commands.associateBy { m -> m.name }.toMutableMap()
 

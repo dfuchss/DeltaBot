@@ -1,11 +1,11 @@
 package org.fuchss.deltabot
 
 import net.dv8tion.jda.api.entities.Guild
-import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
-import net.dv8tion.jda.api.events.interaction.GenericInteractionCreateEvent
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent
-import org.fuchss.deltabot.utils.*
+import org.fuchss.deltabot.db.dto.GuildDTO
+import org.fuchss.deltabot.db.dto.LanguageDTO
+import org.fuchss.deltabot.db.dto.UserDTO
+import org.fuchss.objectcasket.port.Session
 
 /**
  * Definition of all supported languages with their locales.
@@ -19,140 +19,86 @@ enum class Language(val locale: String) {
     }
 }
 
-/**
- * Calculate the [Language] based on the current [Guild] and current [User].
- */
-fun language(guild: Guild?, user: User?): Language {
-    if (guild != null) {
-        val usersGuildLanguage = user?.internalLanguage(guild)
-        if (usersGuildLanguage != null)
-            return usersGuildLanguage
+class LanguageSettings(private val session: Session) {
+    private var languages: MutableSet<LanguageDTO> = mutableSetOf()
 
-        val guildLanguage = guild.internalLanguage()
-        if (guildLanguage != null)
-            return guildLanguage
+    init {
+        val dbLanguages = session.getAllObjects(LanguageDTO::class.java)
+        languages.addAll(dbLanguages)
     }
 
-    val userLanguage = user?.internalLanguage()
-    if (userLanguage != null)
-        return userLanguage
 
-    return languageSettings.defaultLanguage
-}
+    fun defaultLanguage() = Language.ENGLISH
 
-/**
- * Read the global [Language] of a [User].
- */
-fun User.internalLanguage() = languageSettings.userToLanguage[this.id]
-
-/**
- * Read the guild override of a [Language] of a [User].
- */
-fun User.internalLanguage(guild: Guild) = languageSettings.userAndGuildToLanguage[this.id + guild.id]
-
-/**
- * Set the global [Language] for a [User].
- */
-fun User.setLanguage(language: Language?) {
-    if (language == null)
-        languageSettings.userToLanguage.remove(this.id)
-    else
-        languageSettings.userToLanguage[this.id] = language
-
-    languageSettings.store()
-}
-
-/**
- * Set the [Language] in a specific [Guild] for a [User].
- */
-fun User.setLanguage(language: Language?, guild: Guild) {
-    if (language == null)
-        languageSettings.userAndGuildToLanguage.remove(this.id + guild.id)
-    else
-        languageSettings.userAndGuildToLanguage[this.id + guild.id] = language
-
-    languageSettings.store()
-}
-
-/**
- * Get the global [Guild] language iff set.
- */
-fun Guild.internalLanguage() = languageSettings.guildToLanguage[this.id]
-
-/**
- * Set the global [Guild] language.
- */
-fun Guild.setLanguage(language: Language?) {
-    if (language == null)
-        languageSettings.guildToLanguage.remove(this.id)
-    else
-        languageSettings.guildToLanguage[this.id] = language
-
-    languageSettings.store()
-}
-
-
-private val languageSettings = LanguageSettings().load("./states/languages.json")
-
-private data class LanguageSettings(
-    var guildToLanguage: MutableMap<String, Language> = mutableMapOf(),
-    var userToLanguage: MutableMap<String, Language> = mutableMapOf(),
-    var userAndGuildToLanguage: MutableMap<String, Language> = mutableMapOf(),
-    var defaultLanguage: Language = Language.ENGLISH
-) : Storable()
-
-private val translations = mutableMapOf<Language, MutableMap<String, String>>()
-
-/**
- * Calculate the language based on a [GenericInteractionCreateEvent].
- */
-fun GenericInteractionCreateEvent.language(): Language = language(guild, user)
-
-/**
- * Calculate the language based on a [MessageReceivedEvent].
- */
-fun MessageReceivedEvent.language(): Language = language(message.optionalGuild(), message.author)
-
-/**
- * Calculate the language based on a [Message] of a [User].
- */
-fun Message.language(): Language = language(optionalGuild(), author)
-
-/**
- * Translate a string based the language retrieved for the [GenericInteractionCreateEvent].
- */
-fun String.translate(event: GenericInteractionCreateEvent, vararg attributes: Any) = this.translate(event.language(), *attributes)
-
-/**
- * Translate a string based the language retrieved for the [MessageReceivedEvent].
- */
-fun String.translate(event: MessageReceivedEvent, vararg attributes: Any) = this.translate(event.language(), *attributes)
-
-/**
- * Translate a string based on a [Language] and replace the "#" with the [attributes].
- */
-fun String.translate(language: Language?, vararg attributes: Any): String {
-    val lang = language ?: languageSettings.defaultLanguage
-    var text = this
-    if (lang != Language.ENGLISH) {
-        if (translations[lang] == null) {
-            var data: MutableMap<String, String> = mutableMapOf()
-            val file = "/translations/${lang.locale}.json"
-            val loader = object : Any() {}
-            val rawData = loader.javaClass.getResourceAsStream(file)
-            data = if (rawData != null) createObjectMapper().readValue(rawData, data.javaClass) else mutableMapOf()
-            translations[lang] = data
-        }
-        text = translations[lang]?.get(this) ?: ""
-        if (text.isBlank()) {
-            text = "[Translate to $lang]: $this"
-            logger.error("Missing Translation: $text")
-        }
+    fun userToLanguage(userId: String): Language? {
+        val user = UserDTO.findDBUser(session, userId) ?: return null
+        return userDTOToLanguage()[user]?.language()
     }
 
-    for (attr in attributes) {
-        text = text.replaceFirst("#", attr.toString())
+
+    fun userAndGuildToLanguage(userId: String, guildId: String): Language? {
+        val userDTO = UserDTO.findDBUser(session, userId) ?: return null
+        val guildDTO = GuildDTO.findDBGuild(session, guildId) ?: return null
+        return userAndGuildDTOToLanguage()[userDTO to guildDTO]?.language()
     }
 
-    return text
+
+    fun setUserToLanguage(user: User, language: Language) {
+        removeUserToLanguage(user.id)
+
+        val userDTO = UserDTO.findDBUser(session, user) ?: UserDTO(user)
+        val lang = LanguageDTO(userDTO, language)
+        session.persist(lang)
+        languages += lang
+    }
+
+    fun removeUserToLanguage(userId: String) {
+        val userDTO = UserDTO.findDBUser(session, userId) ?: return
+        val lang = languages.find { l -> l.userDTO == userDTO && l.guildDTO == null } ?: return
+        session.delete(lang)
+        languages.remove(lang)
+    }
+
+    fun removeUserAndGuildToLanguage(userId: String, guildId: String) {
+        val userDTO = UserDTO.findDBUser(session, userId) ?: return
+        val guildDTO = GuildDTO.findDBGuild(session, guildId) ?: return
+        val lang = languages.find { l -> l.userDTO == userDTO && l.guildDTO == guildDTO } ?: return
+        session.delete(lang)
+        languages.remove(lang)
+    }
+
+    fun setUserAndGuildToLanguage(user: User, guild: Guild, language: Language) {
+        removeUserAndGuildToLanguage(user.id, guild.id)
+
+        val userDTO = UserDTO.findDBUser(session, user) ?: UserDTO(user)
+        val guildDTO = GuildDTO.findDBGuild(session, guild) ?: GuildDTO(guild)
+        val lang = LanguageDTO(userDTO, guildDTO, language)
+        session.persist(lang)
+        languages += lang
+    }
+
+    fun guildToLanguage(guildId: String): Language? {
+        val guildDTO = GuildDTO.findDBGuild(session, guildId) ?: return null
+        return guildDTOToLanguage()[guildDTO]?.language()
+    }
+
+    fun removeGuildToLanguage(guildId: String) {
+        val guildDTO = GuildDTO.findDBGuild(session, guildId) ?: return
+        val lang = languages.find { l -> l.userDTO == null && l.guildDTO == guildDTO } ?: return
+        session.delete(lang)
+        languages.remove(lang)
+    }
+
+    fun setGuildToLanguage(guild: Guild, language: Language) {
+        removeGuildToLanguage(guild.id)
+
+        val guildDTO = GuildDTO.findDBGuild(session, guild) ?: GuildDTO(guild)
+        val lang = LanguageDTO(guildDTO, language)
+        session.persist(lang)
+        languages += lang
+    }
+
+    private fun userDTOToLanguage() = languages.filter { l -> l.userDTO != null && l.guildDTO == null }.associateBy { l -> l.userDTO!! }
+    private fun guildDTOToLanguage() = languages.filter { l -> l.userDTO == null && l.guildDTO != null }.associateBy { l -> l.guildDTO!! }
+    private fun userAndGuildDTOToLanguage() = languages.filter { l -> l.userDTO != null && l.guildDTO != null }.associateBy { l -> l.userDTO!! to l.guildDTO!! }
 }

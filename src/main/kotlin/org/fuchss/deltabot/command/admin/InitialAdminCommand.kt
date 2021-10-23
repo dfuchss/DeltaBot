@@ -4,7 +4,7 @@ import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
-import org.fuchss.deltabot.Configuration
+import org.fuchss.deltabot.BotConfiguration
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
 import java.util.function.BiConsumer
@@ -12,7 +12,7 @@ import java.util.function.BiConsumer
 /**
  * A [BotCommand] that performs the task of creation of an initial admin user.
  */
-class InitialAdminCommand(private val configuration: Configuration, private val adminAddedCallback: BiConsumer<JDA, User>) : BotCommand {
+class InitialAdminCommand(private val configuration: BotConfiguration, private val adminAddedCallback: BiConsumer<JDA, User>) : BotCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
     override val isGlobal: Boolean get() = true
 

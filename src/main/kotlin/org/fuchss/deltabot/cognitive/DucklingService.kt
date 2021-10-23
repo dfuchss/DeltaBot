@@ -1,9 +1,9 @@
 package org.fuchss.deltabot.cognitive
 
 import org.fuchss.deltabot.Language
-import org.fuchss.deltabot.utils.createObjectMapper
-import org.fuchss.deltabot.utils.logger
-import org.fuchss.deltabot.utils.readKtValue
+import org.fuchss.deltabot.utils.extensions.createObjectMapper
+import org.fuchss.deltabot.utils.extensions.logger
+import org.fuchss.deltabot.utils.extensions.readKtValue
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime

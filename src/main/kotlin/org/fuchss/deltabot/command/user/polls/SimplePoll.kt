@@ -6,17 +6,15 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 import org.fuchss.deltabot.command.CommandPermissions
-import org.fuchss.deltabot.translate
 import org.fuchss.deltabot.utils.Scheduler
-import org.fuchss.deltabot.utils.Storable
-import org.fuchss.deltabot.utils.fetchUser
-import org.fuchss.deltabot.utils.load
+import org.fuchss.deltabot.utils.extensions.fetchUser
+import org.fuchss.deltabot.utils.extensions.translate
+import org.fuchss.objectcasket.port.Session
 
 /**
  * A [Poll][PollBase] that provides generic polls.
  */
-class SimplePoll(scheduler: Scheduler) : PollBase("./states/polls.json", scheduler) {
-    private val internalPollState: InternalPollState = InternalPollState().load("./states/polls-internal.json")
+class SimplePoll(scheduler: Scheduler, session: Session) : PollBase("SimplePoll", scheduler, session) {
 
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
     override val isGlobal: Boolean get() = false
@@ -49,6 +47,8 @@ class SimplePoll(scheduler: Scheduler) : PollBase("./states/polls.json", schedul
         )
         return command
     }
+
+    private val internalPollState = InternalPollState()
 
     override fun handle(event: SlashCommandEvent) {
         when (event.subcommandName) {
@@ -97,7 +97,6 @@ class SimplePoll(scheduler: Scheduler) : PollBase("./states/polls.json", schedul
         }
 
         poll.options.add(option)
-        internalPollState.store()
 
         event.reply("Option '#' added to **#**".translate(event, option, name)).setEphemeral(true).queue()
     }
@@ -112,7 +111,6 @@ class SimplePoll(scheduler: Scheduler) : PollBase("./states/polls.json", schedul
         }
 
         poll.options.remove(option)
-        internalPollState.store()
 
         event.reply("Option '#' removed from **#**".translate(event, option, name)).setEphemeral(true).queue()
     }
@@ -183,7 +181,7 @@ class SimplePoll(scheduler: Scheduler) : PollBase("./states/polls.json", schedul
 
     private data class InternalPollState(
         var polls: MutableList<InternalPoll> = mutableListOf()
-    ) : Storable() {
+    ) {
 
         fun getPollData(name: String, uid: String): InternalPoll? {
             return polls.find { d -> d.name == name && d.uid == uid }
@@ -191,12 +189,10 @@ class SimplePoll(scheduler: Scheduler) : PollBase("./states/polls.json", schedul
 
         fun add(data: InternalPoll) {
             this.polls.add(data)
-            this.store()
         }
 
         fun remove(data: InternalPoll?) {
             this.polls.remove(data)
-            this.store()
         }
     }
 

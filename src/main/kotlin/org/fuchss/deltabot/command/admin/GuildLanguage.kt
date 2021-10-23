@@ -9,10 +9,10 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import org.fuchss.deltabot.Language
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
-import org.fuchss.deltabot.internalLanguage
-import org.fuchss.deltabot.setLanguage
-import org.fuchss.deltabot.translate
-import org.fuchss.deltabot.utils.withFirst
+import org.fuchss.deltabot.utils.extensions.internalLanguage
+import org.fuchss.deltabot.utils.extensions.setLanguage
+import org.fuchss.deltabot.utils.extensions.translate
+import org.fuchss.deltabot.utils.extensions.withFirst
 
 /**
  * A [BotCommand] that changes the [Language] of a [Guild].

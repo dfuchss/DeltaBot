@@ -1,19 +1,20 @@
-FROM maven:3-openjdk-16 as builder
+FROM maven:3-openjdk-17 as builder
 
 WORKDIR /usr/src/bot
 COPY src src
 COPY pom.xml pom.xml
 RUN mvn clean package
 
-FROM azul/zulu-openjdk-alpine:16
+FROM azul/zulu-openjdk-alpine:17
 
+ENV RUN_IN_DOCKER true
 ENV DISCORD_TOKEN MY_TOKEN
 ENV TZ=Europe/Berlin
-ENV CONF_PATH /usr/src/bot/config/config.json
+ENV DB_PATH /usr/src/bot/data/data.sqlite
 
 WORKDIR /usr/src/bot
 COPY --from=builder /usr/src/bot/target/deltabot-*-jar-with-dependencies.jar deltabot.jar
 
-VOLUME /usr/src/bot/config
-VOLUME /usr/src/bot/states
+VOLUME /usr/src/bot/data
+
 ENTRYPOINT java -jar /usr/src/bot/deltabot.jar

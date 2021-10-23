@@ -1,12 +1,10 @@
 package org.fuchss.deltabot.cognitive.dialogmanagement.dialog
 
-import net.dv8tion.jda.api.entities.Message
-import org.fuchss.deltabot.Language
-import org.fuchss.deltabot.cognitive.RasaService
+import org.fuchss.deltabot.cognitive.dialogmanagement.Context
 import org.fuchss.deltabot.cognitive.dialogmanagement.Dialog
 import org.fuchss.deltabot.cognitive.dialogmanagement.DialogResult
-import org.fuchss.deltabot.utils.createObjectMapper
-import org.fuchss.deltabot.utils.logger
+import org.fuchss.deltabot.utils.extensions.createObjectMapper
+import org.fuchss.deltabot.utils.extensions.logger
 import java.io.InputStream
 import kotlin.random.Random
 
@@ -22,12 +20,12 @@ class NotUnderstanding : Dialog(ID) {
         this.steps.add(this::notUnderstanding)
     }
 
-    private fun notUnderstanding(message: Message, intents: List<RasaService.IntentResult>, entities: List<RasaService.EntityResult>, language: Language): DialogResult {
-        val qnaFile = "/QnA/${language.locale}/NotUnderstanding.json"
+    private fun notUnderstanding(context: Context): DialogResult {
+        val qnaFile = "/QnA/${context.language.locale}/NotUnderstanding.json"
         val stream = this.javaClass.getResourceAsStream(qnaFile)!!
         val answer = getAnswer(stream)
         stream.close()
-        message.reply(answer!!).complete()
+        context.message.reply(answer!!).complete()
         return DialogResult.NEXT
     }
 

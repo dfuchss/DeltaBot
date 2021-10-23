@@ -1,4 +1,4 @@
-package org.fuchss.deltabot.utils
+package org.fuchss.deltabot.utils.extensions
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect
 import com.fasterxml.jackson.databind.DeserializationFeature
@@ -8,15 +8,9 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.vdurmont.emoji.EmojiManager
 import com.vdurmont.emoji.EmojiParser
 import net.dv8tion.jda.api.entities.Emoji
-import net.dv8tion.jda.api.entities.Message
-import net.dv8tion.jda.api.interactions.components.ActionRow
-import net.dv8tion.jda.api.interactions.components.Component
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.io.File
 import java.lang.reflect.Field
-import kotlin.math.max
-import kotlin.math.min
 
 
 /**
@@ -73,88 +67,6 @@ fun <T : Any> ObjectMapper.readKtValue(data: String, instance: T): T = readValue
 fun <T : Any> ObjectMapper.readKtValue(data: ByteArray, instance: T): T = readValue(data, instance.javaClass)
 
 /**
- * Load a [Storable] from a certain [path].
- */
-fun <L : Storable> L.load(path: String): L {
-    val mapper = createObjectMapper()
-
-    this.path = path
-    val configFile = File(path)
-
-    if (configFile.exists()) {
-        try {
-            val config: L = mapper.readValue(configFile, this.javaClass)
-            logger.info("Loaded $config")
-            config.path = path
-            return config
-        } catch (e: Exception) {
-            logger.error(e.message)
-            // Try to overwrite corrupted data :)
-            this.store()
-        }
-    } else {
-        this.store()
-    }
-    return this
-}
-
-/**
- * Pin a [Message] and delete the response in Discord.
- */
-fun Message.pinAndDelete() {
-    try {
-        pin().complete()
-        val history = channel.history.retrievePast(1).complete()
-        if (history.isEmpty())
-            return
-
-        val pinned = history[0] ?: return
-        if (!pinned.author.isBot)
-            return
-        if (pinned.id == this.id)
-            return
-        if (pinned.messageReference?.messageId != this.id)
-            return
-
-        pinned.delete().complete()
-    } catch (e: Exception) {
-        logger.error(e.message)
-    }
-}
-
-/**
- * Create [ActionRows][ActionRow] out of a list of [Components][Component].
- * @param[maxInRow] the maximum number of elements in a row
- * @param[tryModZero] indicator whether the system shall try to create rows with equal amounts of elements
- */
-fun <E : Component> List<E>.toActionRows(maxInRow: Int = 5, tryModZero: Boolean = true): List<ActionRow> {
-    var maxItems = max(min(maxInRow, 5), 1)
-    if (tryModZero && maxItems > 3) {
-        for (i in maxItems downTo 3) {
-            if (this.size % i == 0) {
-                maxItems = i
-                break
-            }
-        }
-    }
-
-    val rows = mutableListOf<ActionRow>()
-    var row = mutableListOf<E>()
-    for (c in this) {
-        if (row.size >= maxItems) {
-            rows.add(ActionRow.of(row))
-            row = mutableListOf()
-        }
-        row.add(c)
-    }
-
-    if (row.isNotEmpty())
-        rows.add(ActionRow.of(row))
-
-    return rows
-}
-
-/**
  * Convert a string emoji to an [Emoji].
  */
 fun String.toEmoji(): Emoji = Emoji.fromUnicode(EmojiManager.getForAlias(this).unicode)
@@ -188,5 +100,16 @@ fun <K, V> Map<K, V>.reverseMap(): Map<V, List<K>> = entries.map { e -> e.value 
 fun <E> List<E>.withFirst(e: E): List<E> {
     val newList = mutableListOf(e)
     newList.addAll(this)
+    return newList
+}
+
+/**
+ * Create a copy of a list without a certain element.
+ * @param[e] the new element
+ * @return the new list
+ */
+fun <E> List<E>.without(e: E): List<E> {
+    val newList = this.toMutableList()
+    newList.remove(e)
     return newList
 }

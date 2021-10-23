@@ -1,12 +1,10 @@
 package org.fuchss.deltabot.cognitive.dialogmanagement.dialog
 
-import net.dv8tion.jda.api.entities.Message
-import org.fuchss.deltabot.Language
-import org.fuchss.deltabot.cognitive.RasaService
+import org.fuchss.deltabot.cognitive.dialogmanagement.Context
 import org.fuchss.deltabot.cognitive.dialogmanagement.Dialog
 import org.fuchss.deltabot.cognitive.dialogmanagement.DialogResult
-import org.fuchss.deltabot.language
-import org.fuchss.deltabot.translate
+import org.fuchss.deltabot.utils.extensions.language
+import org.fuchss.deltabot.utils.extensions.translate
 import org.fuchss.deltabot.utils.timestamp
 import java.time.LocalDateTime
 
@@ -22,10 +20,10 @@ class Clock : Dialog(ID) {
         this.steps.add(this::timeStep)
     }
 
-    private fun timeStep(message: Message, intents: List<RasaService.IntentResult>, entities: List<RasaService.EntityResult>, language: Language): DialogResult {
+    private fun timeStep(context: Context): DialogResult {
         val time = LocalDateTime.now().timestamp()
-        val timeResponse = "Current Point in Time: <t:#:F>".translate(message.language(), time)
-        message.reply(timeResponse).queue()
+        val timeResponse = "Current Point in Time: <t:#:F>".translate(context.message.language(), time)
+        context.message.reply(timeResponse).queue()
         return DialogResult.NEXT
     }
 

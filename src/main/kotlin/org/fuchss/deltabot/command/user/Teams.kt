@@ -8,7 +8,7 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
-import org.fuchss.deltabot.translate
+import org.fuchss.deltabot.utils.extensions.translate
 import kotlin.random.Random
 
 /**
