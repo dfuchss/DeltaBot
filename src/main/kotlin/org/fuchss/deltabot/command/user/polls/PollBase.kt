@@ -211,8 +211,8 @@ abstract class PollBase(private val pollType: String, protected val scheduler: S
         val reactionsToUser: Map<String, List<String>> = data.react2User.mapKeys { (k, _) -> buttonMapping[k]!! }
 
         var finalMsg = oldMessage.contentRaw.split("\n")[0] + "\n\n"
-        for ((d, users) in reactionsToUser.entries.sortedBy { (k, _) -> k }) {
-            finalMsg += "$d: ${if (users.isEmpty()) "--" else users.mapNotNull { u -> oldMessage.jda.fetchUser(u)?.asMention }.joinToString(" ")}\n"
+        for ((option, users) in reactionsToUser.entries) {
+            finalMsg += "$option: ${if (users.isEmpty()) "--" else users.mapNotNull { u -> oldMessage.jda.fetchUser(u)?.asMention }.joinToString(" ")}\n"
         }
         finalMsg += "\n${pollFinished.translate(language(msg.guild, user))}"
 
