@@ -47,6 +47,7 @@ class CommandRegistry(val configuration: BotConfiguration, val scheduler: Schedu
         commands.add(Reminder(configuration, scheduler, session))
         commands.add(WeekdayPoll(scheduler, session))
         commands.add(SimplePoll(scheduler, session))
+        commands.add(Emojify())
 
         if (!configuration.hasAdmins()) {
             logger.info("Missing initial admin .. adding initial admin command ..")
