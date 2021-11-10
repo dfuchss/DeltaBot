@@ -33,6 +33,7 @@ class Summon(configuration: BotConfiguration, scheduler: Scheduler, session: Ses
 
         private val summonReactionsDefault = listOf(":+1:", ":thinking:", ":question:", ":pensive:", ":-1").map { e -> e.toEmoji() }
         private val summonReactionsDefaultStyle = listOf(ButtonStyle.SUCCESS, ButtonStyle.SECONDARY, ButtonStyle.SECONDARY, ButtonStyle.SECONDARY, ButtonStyle.DANGER)
+        private const val GraceTimeInMinutes = 15L
     }
 
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
@@ -80,7 +81,7 @@ class Summon(configuration: BotConfiguration, scheduler: Scheduler, session: Ses
         response = response.replace("###TIME###", "<t:${extractedTime.timestamp()}:R>")
 
         val options = getEmojis(guild).zip(getButtons(guild)).toMap()
-        createPoll(reply, extractedTime.timestamp(), user, response, options, true)
+        createPoll(reply, extractedTime.plusMinutes(GraceTimeInMinutes).timestamp(), user, response, options, true)
     }
 
 
