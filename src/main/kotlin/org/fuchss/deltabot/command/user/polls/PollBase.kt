@@ -30,6 +30,7 @@ abstract class PollBase(private val pollType: String, protected val scheduler: S
     companion object {
         private val finish = ":octagonal_sign:".toEmoji()
         private val delete = ":put_litter_in_its_place:".toEmoji()
+        private val refresh = ":cyclone:".toEmoji()
 
         /**
          * The text that will be used to indicate the end of a poll.
@@ -101,6 +102,14 @@ abstract class PollBase(private val pollType: String, protected val scheduler: S
             return
         }
 
+        if (refresh.name == buttonId) {
+            if (!isOwner(event, data))
+                return
+            event.deferEdit().queue()
+            refreshPoll(event.message, data)
+            return
+        }
+
         event.deferEdit().queue()
 
         updateUser(event.user.id, buttonId, data)
@@ -162,7 +171,7 @@ abstract class PollBase(private val pollType: String, protected val scheduler: S
 
     protected fun createPoll(hook: InteractionHook, terminationTimestamp: Long?, author: User, response: String, options: Map<Emoji, Button>, onlyOneOption: Boolean) {
         val components = options.values.toList<Component>().toActionRows().toMutableList()
-        val globalActions = listOf(Button.secondary(finish.name + "", finish), Button.secondary(delete.name, delete))
+        val globalActions = listOf(Button.secondary(finish.name + "", finish), Button.secondary(delete.name, delete), Button.secondary(refresh.name, refresh))
         components.add(ActionRow.of(globalActions))
 
         val msg = hook.editOriginal(response).setActionRows(components).complete()
@@ -231,6 +240,14 @@ abstract class PollBase(private val pollType: String, protected val scheduler: S
             return
         polls.remove(poll)
         session.delete(poll)
+    }
+
+    private fun refreshPoll(pollMessage: Message, poll: Poll) {
+        val newMessage = pollMessage.channel.sendMessage(pollMessage.contentRaw.split("\n")[0]).setActionRows(pollMessage.actionRows).complete()
+        recreateMessage(newMessage, poll)
+        poll.mid = newMessage.id
+        session.persist(poll)
+        pollMessage.delete().queue()
     }
 
     @Entity
