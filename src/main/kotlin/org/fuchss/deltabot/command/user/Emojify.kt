@@ -9,6 +9,10 @@ import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.utils.extensions.translate
 
 class Emojify : BotCommand {
+    companion object {
+        private val ValidSpecialChars = listOf(' ', '!', '?')
+    }
+
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
     override val isGlobal: Boolean get() = true
 
@@ -20,7 +24,7 @@ class Emojify : BotCommand {
 
     override fun handle(event: SlashCommandEvent) {
         val rawText = (event.getOption("text")?.asString ?: "").lowercase()
-        val text = rawText.mapNotNull { c -> c.takeIf { (it in 'a'..'z') || (it in '0'..'9') || it == ' ' } }.joinToString("")
+        val text = rawText.mapNotNull { c -> c.takeIf { (it in 'a'..'z') || (it in '0'..'9') || it in ValidSpecialChars } }.joinToString("")
 
         if (text.isBlank()) {
             event.reply("You should provide at least one valid letter [A..Za..z0..9] :)".translate(event)).queue()
@@ -33,6 +37,8 @@ class Emojify : BotCommand {
 
     private fun emojify(letter: Char): String = when (letter) {
         ' ' -> " "
+        '?' -> ":question:"
+        '!' -> ":exclamation:"
         '0' -> ":zero:"
         '1' -> ":one:"
         '2' -> ":two:"
