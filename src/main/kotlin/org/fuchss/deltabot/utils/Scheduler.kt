@@ -84,5 +84,5 @@ class Scheduler(private val sleepInterval: Int = 5) : EventListener {
         }
     }
 
-
+    fun size(): Int = priorityQueue.size
 }

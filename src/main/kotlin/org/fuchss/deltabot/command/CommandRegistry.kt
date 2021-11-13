@@ -31,7 +31,7 @@ class CommandRegistry(val configuration: BotConfiguration, val scheduler: Schedu
         commands.add(GuildLanguage())
         commands.add(Echo())
         commands.add(Admin(configuration, commands))
-        commands.add(State(configuration))
+        commands.add(State(configuration, scheduler, session))
         commands.add(Erase())
         commands.add(Roles(session))
         commands.add(ResetStateAndCommands(configuration))
