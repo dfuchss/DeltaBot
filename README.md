@@ -22,7 +22,7 @@ For details take a look at [commands.md](./commands.md)
 → add: add a new role with text and voice channel
 → del: remove role and connected text and voice channels
 
-
+/emojify: 'emojify' a text
 /summon: summon players and make a poll to play a game
 /teams: create a team based on the people in your voice channel
 
