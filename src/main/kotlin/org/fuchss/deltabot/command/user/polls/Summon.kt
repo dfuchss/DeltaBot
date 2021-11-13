@@ -1,5 +1,6 @@
 package org.fuchss.deltabot.command.user.polls
 
+import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.*
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
@@ -85,12 +86,11 @@ class Summon(configuration: BotConfiguration, scheduler: Scheduler, session: Ses
     }
 
 
-    override fun terminate(oldMessage: Message, uid: String) {
-        val msg = oldMessage.refresh()
-        val data = polls.find { p -> p.mid == msg.id }
+    override fun terminate(data: Poll, jda: JDA, eventMessage: Message?, uid: String) {
         removePoll(data)
+        val msg = eventMessage?.refresh() ?: jda.getGuildById(data.gid)?.fetchMessage(data.cid, data.mid) ?: return
 
-        val user = oldMessage.jda.fetchUser(uid)
+        val user = jda.fetchUser(uid)
         val newContent = msg.contentRaw + "\n\n${pollFinished.translate(language(msg.guild, user))}"
         msg.editMessage(newContent).setActionRows(listOf()).complete().hide(directHide = false)
         if (msg.isPinned)

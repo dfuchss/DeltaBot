@@ -71,9 +71,7 @@ abstract class PollBase(private val pollType: String, protected val scheduler: S
 
     private fun createTermination(jda: JDA, update: Poll) {
         try {
-            val guild = jda.getGuildById(update.gid)!!
-            val message = guild.fetchMessage(update.cid, update.mid)!!
-            terminate(message, update.uid)
+            terminate(update, jda, null, update.uid)
         } catch (e: Exception) {
             logger.error(e.message, e)
             removePoll(update)
@@ -88,7 +86,7 @@ abstract class PollBase(private val pollType: String, protected val scheduler: S
                 return
 
             event.deferEdit().queue()
-            terminate(event.message, event.user.id)
+            terminate(data, event.jda, event.message, event.user.id)
             return
         }
 
@@ -180,7 +178,7 @@ abstract class PollBase(private val pollType: String, protected val scheduler: S
         val data = Poll(pollType, terminationTimestamp, msg.guild.id, msg.channel.id, msg.id, author.id, options.keys.map { e -> EmojiDTO.create(e) }, onlyOneOption)
         persistPoll(data)
         if (terminationTimestamp != null)
-            scheduler.queue({ terminate(msg, author.id) }, terminationTimestamp)
+            scheduler.queue({ terminate(data, hook.jda, null, author.id) }, terminationTimestamp)
     }
 
     protected fun getOptions(options: List<String>): Map<Emoji, Button> {
@@ -204,24 +202,17 @@ abstract class PollBase(private val pollType: String, protected val scheduler: S
     }
 
 
-    protected open fun terminate(oldMessage: Message, uid: String) {
-        val msg = oldMessage.refresh()
-        val data = polls.find { p -> p.mid == msg.id }
+    protected open fun terminate(data: Poll, jda: JDA, eventMessage: Message?, uid: String) {
         removePoll(data)
-        if (data == null) {
-            msg.editMessageComponents(listOf()).complete().hide(directHide = false)
-            if (msg.isPinned)
-                msg.unpin().complete()
-            return
-        }
+        val msg = eventMessage?.refresh() ?: jda.getGuildById(data.gid)?.fetchMessage(data.cid, data.mid) ?: return
 
-        val user = oldMessage.jda.fetchUser(uid)
+        val user = jda.fetchUser(uid)
         val buttonMapping = msg.buttons.associate { b -> b.id!! to b.label }
         val reactionsToUser: Map<String, List<String>> = data.react2User.mapKeys { (k, _) -> buttonMapping[k]!! }
 
-        var finalMsg = oldMessage.contentRaw.split("\n")[0] + "\n\n"
+        var finalMsg = msg.contentRaw.split("\n")[0] + "\n\n"
         for ((option, users) in reactionsToUser.entries) {
-            finalMsg += "$option: ${if (users.isEmpty()) "--" else users.mapNotNull { u -> oldMessage.jda.fetchUser(u)?.asMention }.joinToString(" ")}\n"
+            finalMsg += "$option: ${if (users.isEmpty()) "--" else users.mapNotNull { u -> jda.fetchUser(u)?.asMention }.joinToString(" ")}\n"
         }
         finalMsg += "\n${pollFinished.translate(language(msg.guild, user))}"
 
@@ -244,6 +235,7 @@ abstract class PollBase(private val pollType: String, protected val scheduler: S
 
     private fun refreshPoll(pollMessage: Message, poll: Poll) {
         val newMessage = pollMessage.channel.sendMessage(pollMessage.contentRaw.split("\n")[0]).setActionRows(pollMessage.actionRows).complete()
+        newMessage.pinAndDelete()
         recreateMessage(newMessage, poll)
         poll.mid = newMessage.id
         session.persist(poll)
