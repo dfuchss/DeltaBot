@@ -7,7 +7,6 @@ import net.dv8tion.jda.api.entities.PrivateChannel
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent
 import net.dv8tion.jda.api.events.message.MessageDeleteEvent
-import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent
 import net.dv8tion.jda.api.hooks.EventListener
 import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.interactions.components.Button
@@ -41,6 +40,13 @@ private const val hideId = "hide-message"
 private val hideEmote = ":arrow_down_small:".toEmoji()
 
 private const val maxContent = 24
+
+fun Message.isHidden(): Boolean {
+    if (!hiddenMessages.isInitialized())
+        error("Hidden Messages are not initialized")
+    
+    return hiddenMessages.findMessage(this) != null
+}
 
 fun Message.hide(directHide: Boolean = true): Message {
     val rawMessage = this.channel.retrieveMessageById(this.id).complete()
@@ -154,11 +160,6 @@ private class HiddenMessageManager : EventListener {
             return
         }
 
-        if (event is MessageReactionAddEvent) {
-            checkForHide(event)
-            return
-        }
-
         if (event !is ButtonClickEvent || event.button?.id != hideId)
             return
 
@@ -172,28 +173,6 @@ private class HiddenMessageManager : EventListener {
             unhideMessage(scheduler, event.message, hiddenMessage)
         else
             hideMessage(event.message, hiddenMessage)
-    }
-
-    private fun checkForHide(event: MessageReactionAddEvent) {
-        if (!isInitialized())
-            return
-
-        if (!event.reactionEmote.isEmoji || event.reactionEmote.emoji != hideEmote.name)
-            return
-
-        val msg = event.retrieveMessage().complete()
-        if (msg.author.id != event.jda.selfUser.id)
-            return
-
-        val hidden = findMessage(msg)
-
-        if (hidden != null)
-            msg.unhide()
-        else
-            msg.hide()
-
-        msg.clearReactions().queue()
-
     }
 
     fun addHM(hiddenMessage: HiddenMessage) {

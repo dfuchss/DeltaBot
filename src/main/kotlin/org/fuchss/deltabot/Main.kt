@@ -4,6 +4,7 @@ import net.dv8tion.jda.api.JDABuilder
 import org.fuchss.deltabot.cognitive.dialogmanagement.DialogListener
 import org.fuchss.deltabot.command.CommandHandler
 import org.fuchss.deltabot.command.CommandRegistry
+import org.fuchss.deltabot.command.react.ReactionHandler
 import org.fuchss.deltabot.db.getDatabase
 import org.fuchss.deltabot.utils.ActivityChanger
 import org.fuchss.deltabot.utils.LoggerListener
@@ -35,7 +36,8 @@ fun main() {
     val commandRegistry = CommandRegistry(config, scheduler, database)
 
     val builder = JDABuilder.createDefault(token)
-    val jda = builder.addEventListeners(scheduler, LoggerListener(config), ActivityChanger(), CommandHandler(config, commandRegistry), DialogListener(config, commandRegistry)).build()
+    val jda =
+        builder.addEventListeners(scheduler, LoggerListener(config), ActivityChanger(), ReactionHandler(), CommandHandler(config, commandRegistry), DialogListener(config, commandRegistry)).build()
     initHiddenMessages(jda, scheduler, database)
 
     jda.awaitReady()
