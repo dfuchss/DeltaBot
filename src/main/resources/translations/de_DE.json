@@ -58,6 +58,8 @@
   "Option '#' added to **#**": "Option '#' zu **#** hinzugefügt",
   "Option '#' removed from **#**": "Option '#' von **#** entfernt",
   "No poll(s) found!": "Keine Umfrage(n) gefunden!",
+  "Poll was not found!": "Umfrage wurde nicht gefunden!",
+  "This is the Admin Area of the Poll. Feel free to do what you want :)": "Dies ist der Admin-Bereich der Umfrage. Mach hier, was Du willst :)",
   "*No Options*": "*Keine Optionen*",
   "Please add options to your poll!": "Bitte füge der Umfrage Optionen hinzu!",
   "Creating Poll ...": "Erstelle Umfrage ...",
