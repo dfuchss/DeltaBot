@@ -19,7 +19,7 @@ import org.fuchss.objectcasket.port.Session
 /**
  * A [Poll][PollBase] that provides polls for weekdays.
  */
-class WeekdayPoll(scheduler: Scheduler, session: Session) : PollBase("weekday", scheduler, session) {
+class WeekdayPoll(pollAdmin: IPollAdmin, scheduler: Scheduler, session: Session) : PollBase(pollAdmin, "weekday", scheduler, session) {
 
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
     override val isGlobal: Boolean get() = false

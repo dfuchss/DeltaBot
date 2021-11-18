@@ -5,6 +5,7 @@ import org.fuchss.deltabot.cognitive.dialogmanagement.DialogListener
 import org.fuchss.deltabot.command.CommandHandler
 import org.fuchss.deltabot.command.CommandRegistry
 import org.fuchss.deltabot.command.react.ReactionHandler
+import org.fuchss.deltabot.command.user.polls.PollAdmin
 import org.fuchss.deltabot.db.getDatabase
 import org.fuchss.deltabot.utils.ActivityChanger
 import org.fuchss.deltabot.utils.LoggerListener
@@ -33,11 +34,13 @@ fun main() {
     logger.info("Creating Bot ..")
 
     val scheduler = Scheduler()
-    val commandRegistry = CommandRegistry(config, scheduler, database)
+    val pollAdmin = PollAdmin()
+    val commandRegistry = CommandRegistry(config, scheduler, database, pollAdmin)
 
     val builder = JDABuilder.createDefault(token)
     val jda =
-        builder.addEventListeners(scheduler, LoggerListener(config), ActivityChanger(), ReactionHandler(), CommandHandler(config, commandRegistry), DialogListener(config, commandRegistry)).build()
+        builder.addEventListeners(scheduler, LoggerListener(config), ActivityChanger(), ReactionHandler(), pollAdmin, CommandHandler(config, commandRegistry), DialogListener(config, commandRegistry))
+            .build()
     initHiddenMessages(jda, scheduler, database)
 
     jda.awaitReady()

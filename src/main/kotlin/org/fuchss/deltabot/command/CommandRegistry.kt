@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.entities.User
 import org.fuchss.deltabot.BotConfiguration
 import org.fuchss.deltabot.command.admin.*
 import org.fuchss.deltabot.command.user.*
+import org.fuchss.deltabot.command.user.polls.IPollAdmin
 import org.fuchss.deltabot.command.user.polls.SimplePoll
 import org.fuchss.deltabot.command.user.polls.Summon
 import org.fuchss.deltabot.command.user.polls.WeekdayPoll
@@ -18,7 +19,7 @@ import org.fuchss.objectcasket.port.Session
  * @param[configuration] the configuration of the bot
  * @param[scheduler] the scheduler of the bot
  */
-class CommandRegistry(val configuration: BotConfiguration, val scheduler: Scheduler, val session: Session) {
+class CommandRegistry(val configuration: BotConfiguration, val scheduler: Scheduler, val session: Session, val pollAdmin: IPollAdmin) {
 
     private val commands: MutableList<BotCommand>
     private val updateHooks = mutableListOf<Runnable>()
@@ -43,10 +44,10 @@ class CommandRegistry(val configuration: BotConfiguration, val scheduler: Schedu
         commands.add(PersistentHelp(configuration, commands))
         commands.add(Roll())
         commands.add(Teams())
-        commands.add(Summon(configuration, scheduler, session))
+        commands.add(Summon(pollAdmin, configuration, scheduler, session))
         commands.add(Reminder(configuration, scheduler, session))
-        commands.add(WeekdayPoll(scheduler, session))
-        commands.add(SimplePoll(scheduler, session))
+        commands.add(WeekdayPoll(pollAdmin, scheduler, session))
+        commands.add(SimplePoll(pollAdmin, scheduler, session))
         commands.add(Emojify())
 
         if (!configuration.hasAdmins()) {

@@ -18,19 +18,16 @@ import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.utils.Scheduler
 import org.fuchss.deltabot.utils.extensions.*
 import org.fuchss.objectcasket.port.Session
-import javax.persistence.*
 
 /**
  * A base for [BotCommands][BotCommand] that create / handles polls.
  * @param[pollType] the type of the poll (simply a universal id of the class)
  * @param[scheduler] the scheduler instance for the poll
  */
-abstract class PollBase(private val pollType: String, protected val scheduler: Scheduler, protected val session: Session) : BotCommand, EventListener {
+abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType: String, protected val scheduler: Scheduler, protected val session: Session) : BotCommand, EventListener, IPollBase {
 
     companion object {
-        private val finish = ":octagonal_sign:".toEmoji()
-        private val delete = ":put_litter_in_its_place:".toEmoji()
-        private val refresh = ":cyclone:".toEmoji()
+        private val admin = ":crown:".toEmoji()
 
         /**
          * The text that will be used to indicate the end of a poll.
@@ -43,6 +40,38 @@ abstract class PollBase(private val pollType: String, protected val scheduler: S
      * The poll state of this type of poll.
      */
     protected val polls: MutableSet<Poll> = mutableSetOf()
+
+    init {
+        @Suppress("LeakingThis")
+        pollAdmin.register(pollType, this)
+    }
+
+    // IPollBase
+    override fun terminate(jda: JDA, user: User, mid: String) {
+        val data = polls.find { p -> p.mid == mid } ?: return
+        terminate(data, jda, null, user.id)
+    }
+
+    override fun removePoll(jda: JDA, user: User, mid: String) {
+        val data = polls.find { p -> p.mid == mid } ?: return
+        removePollFromDB(data)
+        jda.getGuildById(data.gid)?.fetchMessage(data.cid, data.mid)?.delete()?.queue()
+    }
+
+    override fun refreshPoll(jda: JDA, user: User, mid: String) {
+        val data = polls.find { p -> p.mid == mid } ?: return
+        val message = jda.getGuildById(data.gid)?.fetchMessage(data.cid, data.mid) ?: return
+        refreshPoll(message, data)
+    }
+
+    override fun isOwner(event: ButtonClickEvent, mid: String): Boolean {
+        val data = polls.find { p -> p.mid == mid }
+        if (data == null) {
+            event.reply("Poll was not found!".translate(event)).setEphemeral(true).queue()
+            return false
+        }
+        return isOwner(event, data)
+    }
 
     final override fun registerJDA(jda: JDA) {
         jda.addEventListener(this)
@@ -74,44 +103,27 @@ abstract class PollBase(private val pollType: String, protected val scheduler: S
             terminate(update, jda, null, update.uid)
         } catch (e: Exception) {
             logger.error(e.message, e)
-            removePoll(update)
+            removePollFromDB(update)
         }
     }
 
 
     private fun handleButtonEvent(event: ButtonClickEvent, data: Poll) {
         val buttonId = event.button?.id ?: ""
-        if (finish.name == buttonId) {
+
+        if (admin.name == buttonId) {
             if (!isOwner(event, data))
                 return
 
-            event.deferEdit().queue()
-            terminate(data, event.jda, event.message, event.user.id)
-            return
-        }
-
-        if (delete.name == buttonId) {
-            if (!isOwner(event, data))
-                return
-
-            event.deferEdit().queue()
-            removePoll(data)
-            event.message.delete().queue()
-            return
-        }
-
-        if (refresh.name == buttonId) {
-            if (!isOwner(event, data))
-                return
-            event.deferEdit().queue()
-            refreshPoll(event.message, data)
+            val reply = event.deferReply(true).complete()
+            pollAdmin.createAdminArea(reply, data)
             return
         }
 
         event.deferEdit().queue()
 
         updateUser(event.user.id, buttonId, data)
-        persistPoll(data)
+        savePollToDB(data)
 
         recreateMessage(event.message, data)
     }
@@ -150,6 +162,7 @@ abstract class PollBase(private val pollType: String, protected val scheduler: S
         return false
     }
 
+
     private fun recreateMessage(message: Message, data: Poll) {
         val jda = message.jda
         val intro = message.contentRaw.split("\n")[0]
@@ -169,14 +182,14 @@ abstract class PollBase(private val pollType: String, protected val scheduler: S
 
     protected fun createPoll(hook: InteractionHook, terminationTimestamp: Long?, author: User, response: String, options: Map<Emoji, Button>, onlyOneOption: Boolean) {
         val components = options.values.toList<Component>().toActionRows().toMutableList()
-        val globalActions = listOf(Button.secondary(finish.name + "", finish), Button.secondary(delete.name, delete), Button.secondary(refresh.name, refresh))
+        val globalActions = listOf(Button.of(ButtonStyle.SECONDARY, admin.name + "", "Admin Area", admin))
         components.add(ActionRow.of(globalActions))
 
         val msg = hook.editOriginal(response).setActionRows(components).complete()
         msg.pinAndDelete()
 
         val data = Poll(pollType, terminationTimestamp, msg.guild.id, msg.channel.id, msg.id, author.id, options.keys.map { e -> EmojiDTO.create(e) }, onlyOneOption)
-        persistPoll(data)
+        savePollToDB(data)
         if (terminationTimestamp != null)
             scheduler.queue({ terminate(data, hook.jda, null, author.id) }, terminationTimestamp)
     }
@@ -184,7 +197,7 @@ abstract class PollBase(private val pollType: String, protected val scheduler: S
     protected fun getOptions(options: List<String>): Map<Emoji, Button> {
         val map = LinkedHashMap<Emoji, Button>()
 
-        val usedEmoji = mutableListOf(finish.name, delete.name)
+        val usedEmoji = mutableListOf(admin.name)
         for (o in options) {
             val randomEmoji = randomEmoji(usedEmoji)
             usedEmoji.add(randomEmoji.name)
@@ -203,7 +216,7 @@ abstract class PollBase(private val pollType: String, protected val scheduler: S
 
 
     protected open fun terminate(data: Poll, jda: JDA, eventMessage: Message?, uid: String) {
-        removePoll(data)
+        removePollFromDB(data)
         val msg = eventMessage?.refresh() ?: jda.getGuildById(data.gid)?.fetchMessage(data.cid, data.mid) ?: return
 
         val user = jda.fetchUser(uid)
@@ -221,17 +234,18 @@ abstract class PollBase(private val pollType: String, protected val scheduler: S
             msg.unpin().complete()
     }
 
-    private fun persistPoll(poll: Poll) {
+    private fun savePollToDB(poll: Poll) {
         polls.add(poll)
         session.persist(poll)
     }
 
-    protected fun removePoll(poll: Poll?) {
+    protected fun removePollFromDB(poll: Poll?) {
         if (poll == null)
             return
         polls.remove(poll)
         session.delete(poll)
     }
+
 
     private fun refreshPoll(pollMessage: Message, poll: Poll) {
         val newMessage = pollMessage.channel.sendMessage(pollMessage.contentRaw.split("\n")[0]).setActionRows(pollMessage.actionRows).complete()
@@ -240,78 +254,6 @@ abstract class PollBase(private val pollType: String, protected val scheduler: S
         poll.mid = newMessage.id
         session.persist(poll)
         pollMessage.delete().queue()
-    }
-
-    @Entity
-    @Table(name = "Poll")
-    class Poll {
-        @Id
-        @GeneratedValue
-        var id: Int? = null
-        var pollType: String = ""
-        var timestamp: Long? = null
-        var gid: String = ""
-        var cid: String = ""
-        var mid: String = ""
-        var uid: String = ""
-        var onlyOneOption: Boolean = false
-
-        @Column(columnDefinition = "JSON")
-        var options: MutableList<EmojiDTO> = mutableListOf()
-
-        @Column(columnDefinition = "JSON")
-        var react2User: MutableMap<String, MutableList<String>> = mutableMapOf()
-
-        @Column(columnDefinition = "JSON")
-        var user2React: MutableMap<String, MutableList<String>> = mutableMapOf()
-
-        constructor()
-
-        constructor(pollType: String, timestamp: Long?, gid: String, cid: String, mid: String, uid: String, options: List<EmojiDTO>, onlyOneOption: Boolean) {
-            this.pollType = pollType
-            this.timestamp = timestamp
-            this.gid = gid
-            this.cid = cid
-            this.mid = mid
-            this.uid = uid
-            this.options = options.toMutableList()
-            this.onlyOneOption = onlyOneOption
-        }
-
-        fun getEmojis(guild: Guild): List<Emoji> {
-            return options.map { dto -> dto.getEmoji(guild) }
-        }
-
-        fun cleanup() {
-            val emptyFieldsU2R = user2React.filter { e -> e.value.isEmpty() }
-            val emptyFieldsR2U = react2User.filter { e -> e.value.isEmpty() }
-            emptyFieldsU2R.forEach { e -> user2React.remove(e.key) }
-            emptyFieldsR2U.forEach { e -> react2User.remove(e.key) }
-        }
-
-        fun addReact2User(react: String, uid: String) {
-            react2User[react] = (react2User[react] ?: mutableListOf()).withFirst(uid).toMutableList()
-        }
-
-        fun addUser2React(uid: String, react: String) {
-            user2React[uid] = (user2React[uid] ?: mutableListOf()).withFirst(react).toMutableList()
-        }
-
-        fun removeReact2User(react: String, uid: String) {
-            react2User[react] = (react2User[react] ?: mutableListOf()).without(uid).toMutableList()
-        }
-
-        fun removeUser2React(uid: String) {
-            user2React.remove(uid)
-        }
-
-        fun removeUser2React(uid: String, react: String) {
-            user2React[uid] = (user2React[uid] ?: mutableListOf()).without(react).toMutableList()
-        }
-
-        fun setUser2React(uid: String, newReactions: MutableList<String>) {
-            user2React[uid] = newReactions
-        }
     }
 
     class EmojiDTO {
@@ -340,5 +282,7 @@ abstract class PollBase(private val pollType: String, protected val scheduler: S
         }
     }
 }
+
+
 
 

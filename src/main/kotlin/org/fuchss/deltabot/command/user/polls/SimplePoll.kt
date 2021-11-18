@@ -14,7 +14,7 @@ import org.fuchss.objectcasket.port.Session
 /**
  * A [Poll][PollBase] that provides generic polls.
  */
-class SimplePoll(scheduler: Scheduler, session: Session) : PollBase("SimplePoll", scheduler, session) {
+class SimplePoll(pollAdmin: IPollAdmin, scheduler: Scheduler, session: Session) : PollBase(pollAdmin, "SimplePoll", scheduler, session) {
 
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
     override val isGlobal: Boolean get() = false

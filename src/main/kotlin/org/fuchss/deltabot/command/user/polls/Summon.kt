@@ -24,7 +24,7 @@ import kotlin.random.Random
 /**
  * A [Poll][PollBase] that asks [Members][Member] to play together.
  */
-class Summon(configuration: BotConfiguration, scheduler: Scheduler, session: Session) : PollBase("summon", scheduler, session) {
+class Summon(pollAdmin: IPollAdmin, configuration: BotConfiguration, scheduler: Scheduler, session: Session) : PollBase(pollAdmin, "summon", scheduler, session) {
 
     companion object {
         private val summonMessages = listOf(
@@ -87,7 +87,7 @@ class Summon(configuration: BotConfiguration, scheduler: Scheduler, session: Ses
 
 
     override fun terminate(data: Poll, jda: JDA, eventMessage: Message?, uid: String) {
-        removePoll(data)
+        removePollFromDB(data)
         val msg = eventMessage?.refresh() ?: jda.getGuildById(data.gid)?.fetchMessage(data.cid, data.mid) ?: return
 
         val user = jda.fetchUser(uid)
