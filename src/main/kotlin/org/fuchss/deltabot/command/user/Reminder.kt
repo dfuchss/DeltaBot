@@ -51,7 +51,7 @@ class Reminder(configuration: BotConfiguration, private val scheduler: Scheduler
 
     private fun initScheduler(jda: JDA) {
         for (reminder in reminders)
-            scheduler.queue({ remind(reminder, jda) }, reminder.timestamp)
+            scheduler.queue(null, { remind(reminder, jda) }, reminder.timestamp)
     }
 
 
@@ -82,7 +82,7 @@ class Reminder(configuration: BotConfiguration, private val scheduler: Scheduler
                 ReminderData(null, ts, event.guild!!.id, event.channel.id, false, event.user.id, message)
 
         persistReminder(reminder)
-        scheduler.queue({ remind(reminder, event.jda) }, ts)
+        scheduler.queue(null, { remind(reminder, event.jda) }, ts)
         event.reply("I'll remind you <t:#:R>: '#'".translate(language, ts, message)).setEphemeral(true).queue()
     }
 

@@ -66,13 +66,23 @@ class Scheduler(private val sleepInterval: Int = 5) : EventListener {
         }
     }
 
-    fun queue(runnable: Runnable, timestamp: Long) {
+    fun queue(id: String?, runnable: Runnable, timestamp: Long) {
         lock.lock()
-        priorityQueue.add(QueueElement(runnable, timestamp))
+        priorityQueue.add(QueueElement(id, runnable, timestamp))
         lock.unlock()
     }
 
-    private class QueueElement(val runnable: Runnable, val timestamp: Long) : Comparable<QueueElement> {
+    fun reschedule(id: String, newTimestamp: Long) {
+        lock.lock()
+        val element = priorityQueue.find { qe -> qe.id == id }
+        if (element != null) {
+            priorityQueue.remove(element)
+            priorityQueue.add(QueueElement(id, element.runnable, newTimestamp))
+        }
+        lock.unlock()
+    }
+
+    private class QueueElement(val id: String?, val runnable: Runnable, val timestamp: Long) : Comparable<QueueElement> {
         override fun compareTo(other: QueueElement): Int = timestamp.compareTo(other.timestamp)
     }
 

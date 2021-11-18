@@ -44,7 +44,7 @@ private const val maxContent = 24
 fun Message.isHidden(): Boolean {
     if (!hiddenMessages.isInitialized())
         error("Hidden Messages are not initialized")
-    
+
     return hiddenMessages.findMessage(this) != null
 }
 
@@ -114,7 +114,7 @@ private fun unhideMessage(scheduler: Scheduler?, message: Message, hiddenMessage
     message.editMessage(hiddenMessage.content).complete()
     hiddenMessage.hidden = false
     hiddenMessages.persist(hiddenMessage)
-    scheduler?.queue({ hideMessage(message, hiddenMessage) }, (LocalDateTime.now() + Duration.ofSeconds(30)).timestamp())
+    scheduler?.queue(null, { hideMessage(message, hiddenMessage) }, (LocalDateTime.now() + Duration.ofSeconds(30)).timestamp())
 }
 
 private class HiddenMessageManager : EventListener {

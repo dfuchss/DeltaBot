@@ -64,6 +64,24 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
         refreshPoll(message, data)
     }
 
+    override fun postpone(jda: JDA, user: User, mid: String, minutes: Int) {
+        val data = polls.find { p -> p.mid == mid } ?: return
+
+        data.timestamp = data.timestamp!! + (60 * minutes)
+        savePollToDB(data)
+
+        val message = jda.getGuildById(data.gid)?.fetchMessage(data.cid, data.mid) ?: return
+        var rawMessage = message.contentRaw
+        val timeRegex = Regex("<\\w:\\d+:\\w>")
+        val time = timeRegex.find(rawMessage)!!.value
+        val newTimeValue = time.substring(3, time.length - 3).toLong() + (60 * minutes)
+        val newTime = "<${time[1]}:$newTimeValue:${time.reversed()[1]}>"
+        rawMessage = rawMessage.replaceFirst(time, newTime)
+
+        message.editMessage(rawMessage).queue()
+        scheduler.reschedule(mid, newTimeValue)
+    }
+
     override fun isOwner(event: ButtonClickEvent, mid: String): Boolean {
         val data = polls.find { p -> p.mid == mid }
         if (data == null) {
@@ -72,6 +90,7 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
         }
         return isOwner(event, data)
     }
+
 
     final override fun registerJDA(jda: JDA) {
         jda.addEventListener(this)
@@ -95,7 +114,7 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
     private fun initScheduler(jda: JDA) {
         for (update in polls)
             if (update.timestamp != null)
-                scheduler.queue({ createTermination(jda, update) }, update.timestamp!!)
+                scheduler.queue(update.mid, { createTermination(jda, update) }, update.timestamp!!)
     }
 
     private fun createTermination(jda: JDA, update: Poll) {
@@ -182,7 +201,7 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
 
     protected fun createPoll(hook: InteractionHook, terminationTimestamp: Long?, author: User, response: String, options: Map<Emoji, Button>, onlyOneOption: Boolean) {
         val components = options.values.toList<Component>().toActionRows().toMutableList()
-        val globalActions = listOf(Button.of(ButtonStyle.SECONDARY, admin.name + "", "Admin Area", admin))
+        val globalActions = listOf(Button.of(ButtonStyle.PRIMARY, admin.name + "", "Admin Area", admin))
         components.add(ActionRow.of(globalActions))
 
         val msg = hook.editOriginal(response).setActionRows(components).complete()
@@ -191,7 +210,7 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
         val data = Poll(pollType, terminationTimestamp, msg.guild.id, msg.channel.id, msg.id, author.id, options.keys.map { e -> EmojiDTO.create(e) }, onlyOneOption)
         savePollToDB(data)
         if (terminationTimestamp != null)
-            scheduler.queue({ terminate(data, hook.jda, null, author.id) }, terminationTimestamp)
+            scheduler.queue(msg.id, { terminate(data, hook.jda, null, author.id) }, terminationTimestamp)
     }
 
     protected fun getOptions(options: List<String>): Map<Emoji, Button> {

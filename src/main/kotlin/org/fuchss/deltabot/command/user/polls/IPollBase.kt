@@ -9,4 +9,5 @@ interface IPollBase {
     fun removePoll(jda: JDA, user: User, mid: String)
     fun refreshPoll(jda: JDA, user: User, mid: String)
     fun isOwner(event: ButtonClickEvent, mid: String): Boolean
+    fun postpone(jda: JDA, user: User, mid: String, minutes: Int)
 }

@@ -14,6 +14,9 @@ class PollAdmin : EventListener, IPollAdmin {
         private val delete = ":put_litter_in_its_place:".toEmoji()
         private val refresh = ":cyclone:".toEmoji()
 
+        private val postpone_60 = ":clock12:".toEmoji()
+        private val postpone_15 = ":clock3:".toEmoji()
+
         private const val pollTypeLine = "PollType: "
         private const val pollIdLine = "PollId: "
     }
@@ -26,7 +29,7 @@ class PollAdmin : EventListener, IPollAdmin {
         }
 
         val buttonId = event.button?.id ?: ""
-        if (buttonId !in listOf(finish, delete, refresh).map { e -> e.name })
+        if (buttonId !in listOf(finish, delete, refresh, postpone_15, postpone_60).map { e -> e.name })
             return
 
         val rawMessage = event.message.contentRaw.lines()
@@ -51,6 +54,8 @@ class PollAdmin : EventListener, IPollAdmin {
             finish.name -> handler.terminate(event.jda, event.user, mid)
             delete.name -> handler.removePoll(event.jda, event.user, mid)
             refresh.name -> handler.refreshPoll(event.jda, event.user, mid)
+            postpone_15.name -> handler.postpone(event.jda, event.user, mid, 15)
+            postpone_60.name -> handler.postpone(event.jda, event.user, mid, 60)
             else -> logger.error("ButtonId was $buttonId, but no method is registered!")
         }
     }
@@ -61,18 +66,24 @@ class PollAdmin : EventListener, IPollAdmin {
         message += "$pollIdLine${data.mid}\n\n"
         message += "This is the Admin Area of the Poll. Feel free to do what you want :)".translate(reply.interaction.user.internalLanguage())
 
-        val globalActions = listOf( //
+        val globalActions = mutableListOf( //
             Button.of(ButtonStyle.SECONDARY, finish.name + "", "Finish", finish),  //
             Button.of(ButtonStyle.SECONDARY, delete.name, "Delete", delete), //
-            Button.of(ButtonStyle.SECONDARY, refresh.name, "Refresh", refresh) //
+            Button.of(ButtonStyle.SECONDARY, refresh.name, "Refresh", refresh)
         )
-        reply.editOriginal(message).setActionRows(globalActions.toActionRows()).queue()
+
+        if (data.timestamp != null) {
+            globalActions += Button.of(ButtonStyle.SECONDARY, postpone_15.name, "+ 15 min", postpone_15)
+            globalActions += Button.of(ButtonStyle.SECONDARY, postpone_60.name, "+ 1 h", postpone_60)
+        }
+
+        reply.editOriginal(message).setActionRows(globalActions.toActionRows(3)).queue()
     }
 
     override fun register(pollType: String, manager: IPollBase) {
         pollXmanager[pollType] = manager
     }
- 
+
     override fun onEvent(event: GenericEvent) {
         if (event !is ButtonClickEvent)
             return
