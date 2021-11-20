@@ -9,15 +9,15 @@ import org.fuchss.deltabot.cognitive.dialogmanagement.dialog.Clock
 import org.fuchss.deltabot.cognitive.dialogmanagement.dialog.News
 import org.fuchss.deltabot.cognitive.dialogmanagement.dialog.NotUnderstanding
 import org.fuchss.deltabot.cognitive.dialogmanagement.dialog.QnA
-import org.fuchss.deltabot.command.CommandRegistry
 import org.fuchss.deltabot.command.user.Help
+import org.fuchss.deltabot.utils.extensions.fetchCommands
 import org.fuchss.deltabot.utils.extensions.logger
 import java.util.*
 
 /**
  * This class manages a set of [Dialogs][Dialog] for a [User] and starts specific dialogs depending on the messages of the user.
  */
-class UserBotInstance(private val configuration: BotConfiguration, private val commandRegistry: CommandRegistry) {
+class UserBotInstance(private val configuration: BotConfiguration) {
     private val rasaService = RasaService(configuration)
 
     private val activeDialogs: Stack<String> = Stack()
@@ -52,7 +52,7 @@ class UserBotInstance(private val configuration: BotConfiguration, private val c
             } else if (intent == "QnA-Tasks") {
                 // Simply print help message ..
                 val botName = if (message.isFromGuild) message.guild.selfMember.effectiveName else message.jda.selfUser.name
-                val reply = Help.generateText(botName, commandRegistry.getCommands())
+                val reply = Help.generateText(botName, message.fetchCommands())
                 message.replyEmbeds(reply).complete()
                 return
             } else if (intent.startsWith("QnA")) {

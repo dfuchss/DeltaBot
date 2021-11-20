@@ -5,16 +5,18 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import org.fuchss.deltabot.BotConfiguration
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
+import org.fuchss.deltabot.command.GlobalCommand
 import org.fuchss.deltabot.utils.extensions.fetchCommands
 import org.fuchss.deltabot.utils.extensions.logger
+import org.fuchss.objectcasket.ObjectCasketFactory
+import org.fuchss.objectcasket.port.Session
 import java.io.File
 
 /**
  * A [BotCommand] that resets the command states of all bot commands in discord.
  */
-class ResetStateAndCommands(private val configuration: BotConfiguration) : BotCommand {
+class ResetStateAndCommands(private val configuration: BotConfiguration, private val dbLocation: String, private val session: Session) : GlobalCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.ADMIN
-    override val isGlobal: Boolean get() = true
 
     override fun createCommand(): CommandData {
         return CommandData("deinit", "main reset command. resets the states and deletes all registered commands")
@@ -26,13 +28,13 @@ class ResetStateAndCommands(private val configuration: BotConfiguration) : BotCo
             return
         }
 
-        event.reply("Executing deinit & reset ..").setEphemeral(true).queue()
+        event.reply("Executing deinit & reset ..").setEphemeral(true).complete()
 
-        // Remove state files
+        // Remove database files
         try {
-            val states = File("./states")
-            states.listFiles()?.forEach { f -> f.exists() && f.isFile && f.delete() }
-            logger.info("Remove state files done")
+            ObjectCasketFactory.FACTORY.ObjectCasketPort().sessionManager().terminate(session)
+            File(dbLocation).delete()
+            logger.info("Remove database files done")
         } catch (e: Exception) {
             logger.error(e.message)
         }

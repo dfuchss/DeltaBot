@@ -1,41 +1,50 @@
 package org.fuchss.deltabot.command.admin
 
+import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.MessageChannel
+import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
+import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
+import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
+import org.fuchss.deltabot.command.GuildCommand
 import org.fuchss.deltabot.utils.extensions.fetchHistory
 import org.fuchss.deltabot.utils.extensions.logger
 
 /**
  * A [BotCommand] that removes every message from a channel.
  */
-class Erase : BotCommand {
+class Erase : GuildCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.GUILD_ADMIN
-    override val isGlobal: Boolean get() = false
 
-    override fun createCommand(): CommandData {
-        return CommandData("erase", "erase all content of a channel")
+    override fun createCommand(guild: Guild): CommandData {
+        val command = CommandData("erase", "erase all content of a channel")
+        command.addOptions(OptionData(OptionType.USER, "user", "an optional user to select certain messages").setRequired(false))
+        return command
     }
 
     override fun handle(event: SlashCommandEvent) {
         event.reply("Starting the deletion of all messages ... if not all messages will be deleted restart your client or ask the bot owner").setEphemeral(true).queue()
+        val userToDelete = event.getOption("user")?.asUser
 
-        val deletion = Thread { deleteMessages(event.channel) }
+        val deletion = Thread { deleteMessages(event.channel, userToDelete) }
         deletion.isDaemon = true
         deletion.start()
     }
 
-    private fun deleteMessages(channel: MessageChannel) {
+    private fun deleteMessages(channel: MessageChannel, user: User?) {
         val retrieveMax = 20
         try {
-            var history = channel.history.fetchHistory(retrieveMax)
-            while (history.isNotEmpty()) {
-                for (m in history) {
-                    m.delete().queue()
+            val history = channel.history
+            var messages = history.fetchHistory(retrieveMax)
+            while (messages.isNotEmpty()) {
+                for (m in messages) {
+                    if (user == null || m.author.id == user.id)
+                        m.delete().queue()
                 }
-                history = channel.history.fetchHistory(retrieveMax)
+                messages = history.fetchHistory(retrieveMax)
             }
         } catch (e: Exception) {
             logger.error(e.message, e)

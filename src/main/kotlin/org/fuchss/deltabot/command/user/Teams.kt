@@ -1,5 +1,6 @@
 package org.fuchss.deltabot.command.user
 
+import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.VoiceChannel
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
@@ -8,17 +9,17 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
+import org.fuchss.deltabot.command.GuildCommand
 import org.fuchss.deltabot.utils.extensions.translate
 import kotlin.random.Random
 
 /**
  * A [BotCommand] that distributes members of a [VoiceChannel] into teams.
  */
-class Teams : BotCommand {
+class Teams : GuildCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
-    override val isGlobal: Boolean get() = false
 
-    override fun createCommand(): CommandData {
+    override fun createCommand(guild: Guild): CommandData {
         val command = CommandData("teams", "create a team based on the people in your voice channel")
         command.addOptions(OptionData(OptionType.INTEGER, "amount", "the amount of teams (default: 2)").setRequired(false))
         return command

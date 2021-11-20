@@ -26,6 +26,17 @@ fun Guild.fetchCommands(): List<Command> {
     }
 }
 
+fun JDA.fetchCommands(): List<Command> {
+    return try {
+        this.retrieveCommands().complete()
+    } catch (e: Exception) {
+        logger.error(e.message)
+        return listOf()
+    }
+}
+
+fun Message.fetchCommands(): List<Command> = if (this.isFromGuild) this.guild.fetchCommands() else this.jda.fetchCommands()
+
 fun Guild.fetchMember(uid: String): Member? {
     try {
         val cached = this.getMemberById(uid)
@@ -49,15 +60,6 @@ fun Guild.fetchMessage(cid: String, mid: String): Message? {
     }
 }
 
-
-fun JDA.fetchCommands(): List<Command> {
-    return try {
-        this.retrieveCommands().complete()
-    } catch (e: Exception) {
-        logger.error(e.message)
-        return listOf()
-    }
-}
 
 fun JDA.fetchTextChannel(gid: String, cid: String): TextChannel? {
     try {

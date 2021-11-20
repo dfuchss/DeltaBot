@@ -112,7 +112,7 @@ class BotConfiguration {
         return debug
     }
 
-    fun getAdminsMembersOfGuild(guild: Guild?): List<User> {
+    fun getAdminMembersOfGuildWithGlobalAdmins(guild: Guild?): List<User> {
         if (guild == null)
             return emptyList()
         val adminsOfGuild = mutableListOf<User>()

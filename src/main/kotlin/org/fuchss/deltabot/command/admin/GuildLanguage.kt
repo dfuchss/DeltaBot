@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import org.fuchss.deltabot.Language
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
+import org.fuchss.deltabot.command.GuildCommand
 import org.fuchss.deltabot.utils.extensions.internalLanguage
 import org.fuchss.deltabot.utils.extensions.setLanguage
 import org.fuchss.deltabot.utils.extensions.translate
@@ -17,11 +18,10 @@ import org.fuchss.deltabot.utils.extensions.withFirst
 /**
  * A [BotCommand] that changes the [Language] of a [Guild].
  */
-class GuildLanguage : BotCommand {
+class GuildLanguage : GuildCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.GUILD_ADMIN
-    override val isGlobal: Boolean get() = false
-
-    override fun createCommand(): CommandData {
+   
+    override fun createCommand(guild: Guild): CommandData {
         val command = CommandData("guild-language", "set the bot language of your guild")
         command.addOptions(
             OptionData(OptionType.STRING, "lang", "your language").setRequired(true).addChoices(

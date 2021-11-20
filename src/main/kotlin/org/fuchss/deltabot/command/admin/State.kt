@@ -9,6 +9,7 @@ import org.fuchss.deltabot.BotConfiguration
 import org.fuchss.deltabot.Constants
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
+import org.fuchss.deltabot.command.GlobalCommand
 import org.fuchss.deltabot.db.dto.UserDTO
 import org.fuchss.deltabot.utils.Scheduler
 import org.fuchss.deltabot.utils.extensions.fetchUser
@@ -18,9 +19,8 @@ import org.fuchss.objectcasket.port.Session
 /**
  * A [BotCommand] that prints the current state of the bot to discord.
  */
-class State(private val config: BotConfiguration, private val scheduler: Scheduler, private val session: Session) : BotCommand {
+class State(private val config: BotConfiguration, private val scheduler: Scheduler, private val session: Session) : GlobalCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.ADMIN
-    override val isGlobal: Boolean get() = true
 
     override fun createCommand(): CommandData {
         return CommandData("state", "print the state of the bot")

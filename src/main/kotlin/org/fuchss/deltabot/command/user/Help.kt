@@ -3,20 +3,23 @@ package org.fuchss.deltabot.command.user
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.MessageEmbed
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
+import net.dv8tion.jda.api.interactions.commands.Command
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import org.fuchss.deltabot.BotConfiguration
 import org.fuchss.deltabot.Constants
 import org.fuchss.deltabot.cognitive.dialogmanagement.DialogRegistry
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
+import org.fuchss.deltabot.command.GlobalCommand
+import org.fuchss.deltabot.command.ICommandRegistry
+import org.fuchss.deltabot.utils.extensions.fetchCommands
 
 /**
  * A [BotCommand] that prints a temporary help message.
  */
-open class Help(private val configuration: BotConfiguration, protected val commands: List<BotCommand>) : BotCommand {
+open class Help(private val configuration: BotConfiguration, protected val registry: ICommandRegistry) : GlobalCommand {
 
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
-    override val isGlobal: Boolean get() = true
 
     override fun createCommand(): CommandData {
         return CommandData("help", "Prints a help message")
@@ -27,17 +30,20 @@ open class Help(private val configuration: BotConfiguration, protected val comma
         if (configuration.isAdmin(event.user)) {
             visibilities.add(CommandPermissions.ALL)
             visibilities.add(CommandPermissions.GUILD_ADMIN)
-        } else if (event.user in configuration.getAdminsMembersOfGuild(event.guild)) {
+        } else if (event.user in configuration.getAdminMembersOfGuildWithGlobalAdmins(event.guild)) {
             visibilities.add(CommandPermissions.GUILD_ADMIN)
         }
 
-        val commands = commands.sorted().filter { c -> c.permissions in visibilities }
+        var commands = if (event.isFromGuild) event.guild!!.fetchCommands() + event.jda.fetchCommands() else event.jda.fetchCommands()
+        commands = commands.filter { c -> registry.permissions(c) in visibilities }
+
         val botName = event.guild?.selfMember?.effectiveName ?: event.jda.selfUser.name
         event.replyEmbeds(generateText(botName, commands)).setEphemeral(true).queue()
     }
 
     companion object {
-        fun generateText(botName: String, commands: List<BotCommand>): MessageEmbed {
+        fun generateText(botName: String, rawCommands: List<Command>): MessageEmbed {
+            val commands = rawCommands.sortedBy { c -> c.name.lowercase() }
             var message = ""
             for (cmd in commands) {
                 message += "**/${cmd.name}**: ${cmd.description}\n"

@@ -8,14 +8,14 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import org.fuchss.deltabot.Language
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
+import org.fuchss.deltabot.command.GlobalCommand
 import org.fuchss.deltabot.utils.extensions.*
 
 /**
  * A [BotCommand] that sets the [Language] for certain users.
  */
-class Language : BotCommand {
+class Language : GlobalCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.GUILD_ADMIN
-    override val isGlobal: Boolean get() = true
 
     override fun createCommand(): CommandData {
         val languages = Language.values().map { l -> Command.Choice(l.toString(), l.locale) }.withFirst(Command.Choice("None", "None"))

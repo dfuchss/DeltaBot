@@ -10,6 +10,7 @@ import org.fuchss.deltabot.BotConfiguration
 import org.fuchss.deltabot.cognitive.DucklingService
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
+import org.fuchss.deltabot.command.GlobalCommand
 import org.fuchss.deltabot.utils.Scheduler
 import org.fuchss.deltabot.utils.extensions.*
 import org.fuchss.deltabot.utils.timestamp
@@ -22,10 +23,9 @@ import javax.persistence.Table
 /**
  * A [BotCommand] that creates & manages reminder messages.
  */
-class Reminder(configuration: BotConfiguration, private val scheduler: Scheduler, private val session: Session) : BotCommand {
+class Reminder(configuration: BotConfiguration, private val scheduler: Scheduler, private val session: Session) : GlobalCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
-    override val isGlobal: Boolean get() = true
-
+    
     private val reminders: MutableSet<ReminderData> = mutableSetOf()
     private val ducklingService: DucklingService = DucklingService(configuration.ducklingUrl)
 

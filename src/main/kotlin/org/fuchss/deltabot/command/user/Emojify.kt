@@ -4,18 +4,17 @@ import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
-import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
+import org.fuchss.deltabot.command.GlobalCommand
 import org.fuchss.deltabot.utils.extensions.translate
 
-class Emojify : BotCommand {
+class Emojify : GlobalCommand {
     companion object {
         private val ValidSpecialChars = listOf(' ', '!', '?')
     }
 
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
-    override val isGlobal: Boolean get() = true
-
+ 
     override fun createCommand(): CommandData {
         val command = CommandData("emojify", "\'emojify' a text")
         command.addOptions(OptionData(OptionType.STRING, "text", "the text you want to \'emojify\'").setRequired(true))

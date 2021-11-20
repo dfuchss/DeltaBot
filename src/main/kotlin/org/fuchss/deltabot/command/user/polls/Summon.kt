@@ -38,12 +38,10 @@ class Summon(pollAdmin: IPollAdmin, configuration: BotConfiguration, scheduler: 
     }
 
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
-    override val isGlobal: Boolean get() = false
 
     private val ducklingService: DucklingService = DucklingService(configuration.ducklingUrl)
 
-
-    override fun createCommand(): CommandData {
+    override fun createCommand(guild: Guild): CommandData {
         val command = CommandData("summon", "summon players and make a poll to play a game")
         command.addOptions(//
             OptionData(OptionType.ROLE, "game", "the game as a role you want to play").setRequired(true),

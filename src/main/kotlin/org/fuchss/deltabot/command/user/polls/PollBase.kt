@@ -15,6 +15,7 @@ import net.dv8tion.jda.api.interactions.components.Button
 import net.dv8tion.jda.api.interactions.components.ButtonStyle
 import net.dv8tion.jda.api.interactions.components.Component
 import org.fuchss.deltabot.command.BotCommand
+import org.fuchss.deltabot.command.GuildCommand
 import org.fuchss.deltabot.utils.Scheduler
 import org.fuchss.deltabot.utils.extensions.*
 import org.fuchss.objectcasket.port.Session
@@ -24,7 +25,7 @@ import org.fuchss.objectcasket.port.Session
  * @param[pollType] the type of the poll (simply a universal id of the class)
  * @param[scheduler] the scheduler instance for the poll
  */
-abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType: String, protected val scheduler: Scheduler, protected val session: Session) : BotCommand, EventListener, IPollBase {
+abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType: String, protected val scheduler: Scheduler, protected val session: Session) : GuildCommand, EventListener, IPollBase {
 
     companion object {
         private val admin = ":crown:".toEmoji()

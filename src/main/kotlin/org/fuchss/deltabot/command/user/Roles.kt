@@ -13,6 +13,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 import net.dv8tion.jda.api.interactions.components.Button
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
+import org.fuchss.deltabot.command.GuildCommand
 import org.fuchss.deltabot.utils.extensions.*
 import org.fuchss.objectcasket.port.Session
 import javax.persistence.*
@@ -20,9 +21,8 @@ import javax.persistence.*
 /**
  * A [BotCommand] that provides tools to create messages that manages the [Roles][Role] of a [Member].
  */
-class Roles(private val session: Session) : BotCommand, EventListener {
+class Roles(private val session: Session) : GuildCommand, EventListener {
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
-    override val isGlobal: Boolean get() = false
 
     private val guildRoles: MutableSet<GuildRoleState> = mutableSetOf()
 
@@ -31,7 +31,7 @@ class Roles(private val session: Session) : BotCommand, EventListener {
         private const val noRoles = "*At the moment, no roles can be chosen .. please wait for your guild leader :)*"
     }
 
-    override fun createCommand(): CommandData {
+    override fun createCommand(guild: Guild): CommandData {
         val command = CommandData("roles", "manage the role changer message of this guild")
         command.addSubcommands(
             SubcommandData("init", "creates the role changer message in this channel"),

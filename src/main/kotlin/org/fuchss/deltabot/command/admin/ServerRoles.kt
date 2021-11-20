@@ -1,6 +1,7 @@
 package org.fuchss.deltabot.command.admin
 
 import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.exceptions.PermissionException
 import net.dv8tion.jda.api.interactions.commands.OptionType
@@ -9,17 +10,17 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
+import org.fuchss.deltabot.command.GuildCommand
 import org.fuchss.deltabot.utils.extensions.logger
 import org.fuchss.deltabot.utils.extensions.translate
 
 /**
  * A [BotCommand] that manages (add or remove) the roles of a server with linked channels.
  */
-class ServerRoles : BotCommand {
+class ServerRoles : GuildCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.GUILD_ADMIN
-    override val isGlobal: Boolean get() = false
-
-    override fun createCommand(): CommandData {
+    
+    override fun createCommand(guild: Guild): CommandData {
         val command = CommandData("server-roles", "manage server roles & channels")
         command.addSubcommands(
             SubcommandData("add", "add a new role with text and voice channel").addOptions(

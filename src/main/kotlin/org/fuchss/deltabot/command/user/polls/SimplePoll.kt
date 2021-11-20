@@ -1,5 +1,6 @@
 package org.fuchss.deltabot.command.user.polls
 
+import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
@@ -17,9 +18,8 @@ import org.fuchss.objectcasket.port.Session
 class SimplePoll(pollAdmin: IPollAdmin, scheduler: Scheduler, session: Session) : PollBase(pollAdmin, "SimplePoll", scheduler, session) {
 
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
-    override val isGlobal: Boolean get() = false
-
-    override fun createCommand(): CommandData {
+    
+    override fun createCommand(guild: Guild): CommandData {
         val command = CommandData("poll", "simple polls")
         command.addSubcommands(
             SubcommandData("new", "creates a new poll").addOptions(

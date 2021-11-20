@@ -6,16 +6,16 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
+import org.fuchss.deltabot.command.GlobalCommand
 import org.fuchss.deltabot.utils.extensions.translate
 import kotlin.random.Random
 
 /**
  * A [BotCommand] that rolls a die.
  */
-class Roll : BotCommand {
+class Roll : GlobalCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
-    override val isGlobal: Boolean get() = true
-
+    
     override fun createCommand(): CommandData {
         val command = CommandData("roll", "roll a dice")
         command.addOptions(OptionData(OptionType.INTEGER, "sides", "the amount of sides of the dice (default: 6)").setRequired(false))

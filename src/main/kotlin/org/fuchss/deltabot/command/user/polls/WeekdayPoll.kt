@@ -1,6 +1,7 @@
 package org.fuchss.deltabot.command.user.polls
 
 import net.dv8tion.jda.api.MessageBuilder
+import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.interaction.SelectionMenuEvent
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
@@ -22,9 +23,8 @@ import org.fuchss.objectcasket.port.Session
 class WeekdayPoll(pollAdmin: IPollAdmin, scheduler: Scheduler, session: Session) : PollBase(pollAdmin, "weekday", scheduler, session) {
 
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
-    override val isGlobal: Boolean get() = false
-
-    override fun createCommand(): CommandData {
+   
+    override fun createCommand(guild: Guild): CommandData {
         val command = CommandData("poll-weekday", "create a poll that has the weekdays as options").addOptions()
         command.addOptions(
             OptionData(OptionType.STRING, "question", "your question for the poll").setRequired(true)
