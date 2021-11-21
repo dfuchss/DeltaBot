@@ -70,6 +70,7 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
 
         data.timestamp = data.timestamp!! + (60 * minutes)
         savePollToDB(data)
+        scheduler.reschedule(mid, data.timestamp!!)
 
         val message = jda.getGuildById(data.gid)?.fetchMessage(data.cid, data.mid) ?: return
         var rawMessage = message.contentRaw
@@ -80,7 +81,6 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
         rawMessage = rawMessage.replaceFirst(time, newTime)
 
         message.editMessage(rawMessage).queue()
-        scheduler.reschedule(mid, newTimeValue)
     }
 
     override fun isOwner(event: ButtonClickEvent, mid: String): Boolean {
