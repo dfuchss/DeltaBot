@@ -49,9 +49,10 @@ fun Message.isHidden(): Boolean {
 }
 
 fun Message.hide(directHide: Boolean = true): Message {
-    val rawMessage = this.channel.retrieveMessageById(this.id).complete()
+    val rawMessage = this.refresh()
     if (rawMessage.buttons.isNotEmpty()) {
-        error("There shall be no buttons!")
+        logger.error("There shall be no buttons .. skipping hide operation for $this")
+        return this
     }
 
     if (!hiddenMessages.isInitialized())
