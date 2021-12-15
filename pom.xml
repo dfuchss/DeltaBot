@@ -16,7 +16,7 @@
         <kotlin.code.style>official</kotlin.code.style>
         <kotlin.compiler.jvmTarget>17</kotlin.compiler.jvmTarget>
 
-        <kotlin.version>1.6.0</kotlin.version>
+        <kotlin.version>1.6.10</kotlin.version>
         <jackson.version>2.13.0</jackson.version>
         <jda.version>4.4.0_351</jda.version>
         <main.class>org.fuchss.deltabot.MainKt</main.class>
