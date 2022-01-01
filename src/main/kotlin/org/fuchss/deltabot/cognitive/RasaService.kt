@@ -50,7 +50,7 @@ class RasaService(configuration: BotConfiguration) {
 
     private fun init() {
         try {
-            val version = get("$endpoint/nlu/")
+            val version = get("$endpoint/nlu/", 200)
             val status = "Hello from MultiNLU "
             if (version.startsWith(status)) {
                 this.version = version.substring(status.length)

@@ -10,11 +10,16 @@ import java.nio.charset.StandardCharsets
 /**
  * Perform a get request for a certain URL.
  * @param[url] the url
+ * @param[timeoutInMS] the timeout in milliseconds (if set)
  * @return the response as a string
  */
-fun get(url: String): String {
+fun get(url: String, timeoutInMS: Int? = null): String {
     val endpoint = URL(url)
     val urlConnection: HttpURLConnection = endpoint.openConnection() as HttpURLConnection
+    if (timeoutInMS != null) {
+        urlConnection.connectTimeout = timeoutInMS
+        urlConnection.readTimeout = timeoutInMS
+    }
     urlConnection.requestMethod = "GET"
     urlConnection.useCaches = false
     urlConnection.setRequestProperty("charset", "utf-8")
