@@ -19,6 +19,7 @@
         <kotlin.version>1.6.10</kotlin.version>
         <jackson.version>2.13.1</jackson.version>
         <jda.version>4.4.0_352</jda.version>
+        <slf4j.version>1.7.33</slf4j.version>
         <main.class>org.fuchss.deltabot.MainKt</main.class>
     </properties>
 
@@ -145,12 +146,12 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.32</version>
+            <version>${slf4j.version}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
-            <version>1.7.32</version>
+            <version>${slf4j.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
