@@ -49,7 +49,7 @@ class Teams : GuildCommand {
         while (members.isNotEmpty()) {
             val u = members.removeAt(Random.nextInt(members.size))
             teams[idx].add(u)
-            idx %= teams.size
+            idx = (idx + 1) % teams.size
         }
 
         var msg = "Teams:\n\n"
