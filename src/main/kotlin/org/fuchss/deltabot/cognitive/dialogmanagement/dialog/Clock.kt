@@ -26,5 +26,4 @@ class Clock : Dialog(ID) {
         context.message.reply(timeResponse).queue()
         return DialogResult.NEXT
     }
-
 }

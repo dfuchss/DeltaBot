@@ -67,7 +67,7 @@ class PollAdmin : EventListener, IPollAdmin {
         message += "This is the Admin Area of the Poll. Feel free to do what you want :)".translate(reply.interaction.user.internalLanguage())
 
         val globalActions = mutableListOf( //
-            Button.of(ButtonStyle.SECONDARY, finish.name + "", "Finish", finish),  //
+            Button.of(ButtonStyle.SECONDARY, finish.name + "", "Finish", finish), //
             Button.of(ButtonStyle.SECONDARY, delete.name, "Delete", delete), //
             Button.of(ButtonStyle.SECONDARY, refresh.name, "Refresh", refresh)
         )

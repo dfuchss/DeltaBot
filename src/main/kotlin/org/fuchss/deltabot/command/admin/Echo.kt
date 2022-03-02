@@ -14,14 +14,13 @@ import org.fuchss.deltabot.command.GuildCommand
  */
 class Echo : GuildCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.GUILD_ADMIN
-   
+
     override fun createCommand(guild: Guild): CommandData {
         val cmd = CommandData("echo", "Simply echo the text you are writing now ..")
         val od: OptionData = OptionData(OptionType.STRING, "text", "the text you want to echo").setRequired(true)
         cmd.addOptions(od)
         return cmd
     }
-
 
     override fun handle(event: SlashCommandEvent) {
         val text = event.getOption("text")?.asString ?: ""

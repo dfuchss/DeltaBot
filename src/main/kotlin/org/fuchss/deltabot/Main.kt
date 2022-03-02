@@ -15,7 +15,6 @@ import org.fuchss.deltabot.utils.extensions.logger
 import org.fuchss.deltabot.utils.extensions.setLogLevel
 import org.slf4j.spi.LocationAwareLogger
 
-
 fun main() {
     val dbPath = System.getenv("DB_PATH") ?: "./bot.sqlite"
     val database = getDatabase(dbPath)
@@ -50,4 +49,3 @@ fun main() {
     initHiddenMessages(jda, scheduler, database)
     jda.awaitReady()
 }
-

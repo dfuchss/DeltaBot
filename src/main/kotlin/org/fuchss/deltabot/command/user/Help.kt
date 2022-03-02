@@ -64,6 +64,4 @@ open class Help(private val configuration: BotConfiguration, protected val regis
             return EmbedBuilder().setTitle("$botName Help").setDescription(message.trim()).setColor(Constants.BLUE).build()
         }
     }
-
-
 }

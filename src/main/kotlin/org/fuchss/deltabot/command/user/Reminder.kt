@@ -25,7 +25,7 @@ import javax.persistence.Table
  */
 class Reminder(configuration: BotConfiguration, private val scheduler: Scheduler, private val session: Session) : GlobalCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
-    
+
     private val reminders: MutableSet<ReminderData> = mutableSetOf()
     private val ducklingService: DucklingService = DucklingService(configuration.ducklingUrl)
 
@@ -53,7 +53,6 @@ class Reminder(configuration: BotConfiguration, private val scheduler: Scheduler
         for (reminder in reminders)
             scheduler.queue(null, { remind(reminder, jda) }, reminder.timestamp)
     }
-
 
     override fun handle(event: SlashCommandEvent) {
         // Use Language of the user for reminders ..
@@ -85,7 +84,6 @@ class Reminder(configuration: BotConfiguration, private val scheduler: Scheduler
         scheduler.queue(null, { remind(reminder, event.jda) }, ts)
         event.reply("I'll remind you <t:#:R>: '#'".translate(language, ts, message)).setEphemeral(true).queue()
     }
-
 
     private fun remind(reminder: ReminderData, jda: JDA) {
         removeReminder(reminder)
@@ -119,5 +117,3 @@ class Reminder(configuration: BotConfiguration, private val scheduler: Scheduler
         var message: String = ""
     )
 }
-
-

@@ -23,7 +23,6 @@ class GuildDTO {
         }
     }
 
-
     constructor()
     constructor(guild: Guild) {
         discordId = guild.id

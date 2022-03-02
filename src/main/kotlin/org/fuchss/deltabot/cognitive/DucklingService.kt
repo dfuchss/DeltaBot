@@ -43,7 +43,6 @@ class DucklingService(private val endpoint: String) {
         }
     }
 
-
     private fun extractTime(t: DucklingResponseValue): String {
         return if (t.value == null) {
             // From & To are set ..
@@ -77,6 +76,4 @@ class DucklingService(private val endpoint: String) {
         var from: DucklingResponseValue? = null,
         var to: DucklingResponseValue? = null
     )
-
 }
-

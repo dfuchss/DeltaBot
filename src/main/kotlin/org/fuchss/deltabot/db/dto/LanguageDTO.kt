@@ -19,13 +19,11 @@ class LanguageDTO {
         this.languageName = language.name
     }
 
-
     constructor(userDTO: UserDTO, language: Language) {
         this.userDTO = userDTO
         this.guildDTO = null
         this.languageName = language.name
     }
-
 
     constructor(guildDTO: GuildDTO, language: Language) {
         this.userDTO = null

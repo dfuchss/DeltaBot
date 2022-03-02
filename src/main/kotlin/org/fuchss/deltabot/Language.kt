@@ -27,7 +27,6 @@ class LanguageSettings(private val session: Session) {
         languages.addAll(dbLanguages)
     }
 
-
     fun defaultLanguage() = Language.ENGLISH
 
     fun userToLanguage(userId: String): Language? {
@@ -35,13 +34,11 @@ class LanguageSettings(private val session: Session) {
         return userDTOToLanguage()[user]?.language()
     }
 
-
     fun userAndGuildToLanguage(userId: String, guildId: String): Language? {
         val userDTO = UserDTO.findDBUser(session, userId) ?: return null
         val guildDTO = GuildDTO.findDBGuild(session, guildId) ?: return null
         return userAndGuildDTOToLanguage()[userDTO to guildDTO]?.language()
     }
-
 
     fun setUserToLanguage(user: User, language: Language) {
         removeUserToLanguage(user.id)

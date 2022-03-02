@@ -19,7 +19,7 @@ import org.fuchss.deltabot.utils.extensions.translate
  */
 class ServerRoles : GuildCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.GUILD_ADMIN
-    
+
     override fun createCommand(guild: Guild): CommandData {
         val command = CommandData("server-roles", "manage server roles & channels")
         command.addSubcommands(
@@ -99,7 +99,6 @@ class ServerRoles : GuildCommand {
                 cat.delete().queue()
             }
             role.delete().queue()
-
         } catch (e: PermissionException) {
             logger.error(e.message, e)
             hook.editOriginal("I'm not allowed to do that!".translate(event)).queue()

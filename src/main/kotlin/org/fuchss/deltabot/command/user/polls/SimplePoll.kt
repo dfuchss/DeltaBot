@@ -18,7 +18,7 @@ import org.fuchss.objectcasket.port.Session
 class SimplePoll(pollAdmin: IPollAdmin, scheduler: Scheduler, session: Session) : PollBase(pollAdmin, "SimplePoll", scheduler, session) {
 
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
-    
+
     override fun createCommand(guild: Guild): CommandData {
         val command = CommandData("poll", "simple polls")
         command.addSubcommands(
@@ -61,7 +61,6 @@ class SimplePoll(pollAdmin: IPollAdmin, scheduler: Scheduler, session: Session) 
             else -> event.reply("You must use a subcommand".translate(event)).setEphemeral(true).queue()
         }
     }
-
 
     private fun handleNew(event: SlashCommandEvent) {
         val name = event.getOption("name")?.asString ?: ""
@@ -164,7 +163,6 @@ class SimplePoll(pollAdmin: IPollAdmin, scheduler: Scheduler, session: Session) 
         createPoll(hook, null, user, question, options, onlyOneAnswer)
     }
 
-
     private fun needPollData(event: SlashCommandEvent, name: String, uid: String, shallBePresent: Boolean): InternalPoll? {
         val poll = internalPollState.getPollData(name, uid)
         if ((poll != null) == shallBePresent)
@@ -177,7 +175,6 @@ class SimplePoll(pollAdmin: IPollAdmin, scheduler: Scheduler, session: Session) 
         }
         return null
     }
-
 
     private data class InternalPollState(
         var polls: MutableList<InternalPoll> = mutableListOf()
@@ -203,5 +200,4 @@ class SimplePoll(pollAdmin: IPollAdmin, scheduler: Scheduler, session: Session) 
         var onlyOneAnswer: Boolean,
         var options: MutableList<String> = mutableListOf()
     )
-
 }

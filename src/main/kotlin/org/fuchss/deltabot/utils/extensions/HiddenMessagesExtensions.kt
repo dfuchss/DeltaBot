@@ -20,9 +20,7 @@ import javax.persistence.Entity
 import javax.persistence.GeneratedValue
 import javax.persistence.Id
 
-
 private val hiddenMessages = HiddenMessageManager()
-
 
 fun initHiddenMessages(jda: JDA, scheduler: Scheduler, session: Session) {
     if (hiddenMessages.isInitialized())
@@ -70,7 +68,6 @@ fun Message.hide(directHide: Boolean = true): Message {
     return rawMessage
 }
 
-
 fun Message.unhide(): Message {
     if (!hiddenMessages.isInitialized())
         error("Hidden Messages are not initialized")
@@ -106,7 +103,6 @@ private fun hideMessage(message: Message, hiddenMessage: HiddenMessage): Message
     hiddenMessages.persist(hiddenMessage)
     return edited
 }
-
 
 private fun unhideMessage(scheduler: Scheduler?, message: Message, hiddenMessage: HiddenMessage) {
     if (!hiddenMessage.hidden)

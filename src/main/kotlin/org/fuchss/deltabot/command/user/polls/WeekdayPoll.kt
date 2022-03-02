@@ -23,7 +23,7 @@ import org.fuchss.objectcasket.port.Session
 class WeekdayPoll(pollAdmin: IPollAdmin, scheduler: Scheduler, session: Session) : PollBase(pollAdmin, "weekday", scheduler, session) {
 
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
-   
+
     override fun createCommand(guild: Guild): CommandData {
         val command = CommandData("poll-weekday", "create a poll that has the weekdays as options").addOptions()
         command.addOptions(
@@ -48,7 +48,6 @@ class WeekdayPoll(pollAdmin: IPollAdmin, scheduler: Scheduler, session: Session)
         createPoll(hook, null, event.user, question, options, false)
     }
 
-
     override fun handle(event: SlashCommandEvent) {
         val question = event.getOption("question")?.asString ?: ""
 
@@ -66,5 +65,4 @@ class WeekdayPoll(pollAdmin: IPollAdmin, scheduler: Scheduler, session: Session)
         val msg = MessageBuilder().setContent(message).setActionRows(ActionRow.of(weekdays)).build()
         event.reply(msg).queue()
     }
-
 }

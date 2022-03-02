@@ -43,7 +43,7 @@ class Summon(pollAdmin: IPollAdmin, configuration: BotConfiguration, scheduler: 
 
     override fun createCommand(guild: Guild): CommandData {
         val command = CommandData("summon", "summon players and make a poll to play a game")
-        command.addOptions(//
+        command.addOptions( //
             OptionData(OptionType.ROLE, "game", "the game as a role you want to play").setRequired(true),
             OptionData(OptionType.STRING, "time", "an optional time for the gameplay").setRequired(false)
         )
@@ -61,7 +61,6 @@ class Summon(pollAdmin: IPollAdmin, configuration: BotConfiguration, scheduler: 
 
         createSummon(event, event.guild!!, event.user, game, time)
     }
-
 
     private fun createSummon(event: SlashCommandEvent, guild: Guild, user: User, game: Role, time: String) {
         // TODO maybe specify default time to another time ..
@@ -83,7 +82,6 @@ class Summon(pollAdmin: IPollAdmin, configuration: BotConfiguration, scheduler: 
         createPoll(reply, extractedTime.plusMinutes(GraceTimeInMinutes).timestamp(), user, response, options, true)
     }
 
-
     override fun terminate(data: Poll, jda: JDA, eventMessage: Message?, uid: String) {
         removePollFromDB(data)
         val msg = eventMessage?.refresh() ?: jda.getGuildById(data.gid)?.fetchMessage(data.cid, data.mid) ?: return
@@ -94,7 +92,6 @@ class Summon(pollAdmin: IPollAdmin, configuration: BotConfiguration, scheduler: 
         if (msg.isPinned)
             msg.unpin().complete()
     }
-
 
     private fun getButtons(guild: Guild): List<Button> {
         val emojis = getEmojis(guild)
@@ -122,8 +119,5 @@ class Summon(pollAdmin: IPollAdmin, configuration: BotConfiguration, scheduler: 
         } catch (e: Exception) {
             return emojis
         }
-
     }
-
-
 }

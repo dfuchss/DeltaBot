@@ -10,12 +10,10 @@ import java.io.File
 import java.sql.Driver
 import javax.persistence.Entity
 
-
 val DRIVER: Class<out Driver?> = JDBC::class.java
 const val DRIVER_NAME = "jdbc:sqlite:"
 
 private val ocPort = ObjectCasketFactory.FACTORY.ObjectCasketPort()
-
 
 fun getDatabase(location: String): Session {
     val dbFile = File(location)

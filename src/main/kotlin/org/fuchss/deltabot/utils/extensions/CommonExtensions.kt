@@ -12,7 +12,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.lang.reflect.Field
 
-
 /**
  * The one and only logger instance of the bot.
  */
@@ -41,9 +40,9 @@ fun createObjectMapper(): ObjectMapper {
     objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
     objectMapper.setVisibility(
         objectMapper.serializationConfig.defaultVisibilityChecker //
-            .withFieldVisibility(JsonAutoDetect.Visibility.ANY)//
-            .withGetterVisibility(JsonAutoDetect.Visibility.NONE)//
-            .withSetterVisibility(JsonAutoDetect.Visibility.NONE)//
+            .withFieldVisibility(JsonAutoDetect.Visibility.ANY) //
+            .withGetterVisibility(JsonAutoDetect.Visibility.NONE) //
+            .withSetterVisibility(JsonAutoDetect.Visibility.NONE) //
             .withIsGetterVisibility(JsonAutoDetect.Visibility.NONE)
     )
 

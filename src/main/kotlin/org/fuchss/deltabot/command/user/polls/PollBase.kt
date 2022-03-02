@@ -92,7 +92,6 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
         return isOwner(event, data)
     }
 
-
     final override fun registerJDA(jda: JDA) {
         jda.addEventListener(this)
         initPolls()
@@ -126,7 +125,6 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
             removePollFromDB(update)
         }
     }
-
 
     private fun handleButtonEvent(event: ButtonClickEvent, data: Poll) {
         val buttonId = event.button?.id ?: ""
@@ -182,7 +180,6 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
         return false
     }
 
-
     private fun recreateMessage(message: Message, data: Poll) {
         val jda = message.jda
         val intro = message.contentRaw.split("\n")[0]
@@ -234,7 +231,6 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
         return Emoji.fromUnicode(random)
     }
 
-
     protected open fun terminate(data: Poll, jda: JDA, eventMessage: Message?, uid: String) {
         removePollFromDB(data)
         val msg = eventMessage?.refresh() ?: jda.getGuildById(data.gid)?.fetchMessage(data.cid, data.mid) ?: return
@@ -265,7 +261,6 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
         polls.remove(poll)
         session.delete(poll)
     }
-
 
     private fun refreshPoll(pollMessage: Message, poll: Poll) {
         val newMessage = pollMessage.channel.sendMessage(pollMessage.contentRaw.split("\n")[0]).setActionRows(pollMessage.actionRows).complete()
@@ -302,7 +297,3 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
         }
     }
 }
-
-
-
-

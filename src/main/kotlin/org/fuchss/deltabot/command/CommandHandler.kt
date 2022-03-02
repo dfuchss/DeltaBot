@@ -25,7 +25,6 @@ class CommandHandler(private val configuration: BotConfiguration, private val co
         handleSlashCommand(event)
     }
 
-
     private fun handleSlashCommand(event: SlashCommandEvent) {
         logger.debug(event.toString())
         val command = nameToCommand[event.name] ?: UnknownCommand()
@@ -56,4 +55,3 @@ class CommandHandler(private val configuration: BotConfiguration, private val co
         }
     }
 }
-

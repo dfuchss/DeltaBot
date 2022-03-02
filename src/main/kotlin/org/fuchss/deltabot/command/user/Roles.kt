@@ -67,7 +67,6 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
         handleRolesClick(event)
     }
 
-
     override fun handle(event: SlashCommandEvent) {
         when (event.subcommandName) {
             "init" -> handleInit(event)
@@ -91,7 +90,6 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
         event.reply("Role message created ..".translate(event)).setEphemeral(true).queue()
     }
 
-
     private fun handlePurge(event: SlashCommandEvent) {
         val guild = event.guild!!
         if (!hasRoleMessage(guild)) {
@@ -107,7 +105,6 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
 
         event.reply("Role message deleted ..".translate(event)).setEphemeral(true).queue()
     }
-
 
     private fun handleAdd(event: SlashCommandEvent) {
         val guild = event.guild!!
@@ -147,7 +144,6 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
         event.reply("Updated role message".translate(event)).setEphemeral(true).queue()
     }
 
-
     private fun handleDel(event: SlashCommandEvent) {
         val guild = event.guild!!
         if (!hasRoleMessage(guild)) {
@@ -155,7 +151,6 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
             return
         }
         val emoji = event.getOption("emoji")?.asString
-
 
         if (emoji == null) {
             event.reply("You must provide an emoji ..".translate(event)).setEphemeral(true).queue()
@@ -217,9 +212,10 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
         val emoji2Role = guildState.emojiToRole.entries.sortedBy { (_, mention) -> guild.getRoleById(mention.drop("<@&".length).dropLast(">".length))?.name ?: "" }
         if (emoji2Role.isNotEmpty()) {
             message = "${switcherText.translate(guild.internalLanguage())}\n\n${
-                emoji2Role.joinToString(
-                    separator = "\n",
-                    transform = { (emoji, roleMention) -> "$emoji → $roleMention" })
+            emoji2Role.joinToString(
+                separator = "\n",
+                transform = { (emoji, roleMention) -> "$emoji → $roleMention" }
+            )
             }"
             message += "\n\n" + "Please choose buttons to select your roles ..".translate(guild.internalLanguage())
             buttons = emoji2Role.map { (e, _) -> loadEmojiButton(guild, e) }
@@ -227,7 +223,6 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
 
         val msg = guild.fetchMessage(guildState.channelId, guildState.messageId)!!
         msg.editMessage(message).setActionRows(buttons.toActionRows()).queue()
-
     }
 
     private fun loadEmojiButton(guild: Guild, emoji: String): Button {
@@ -278,7 +273,6 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
             this.channelId = channelId
             this.messageId = messageId
         }
-
 
         fun setEmojiToRole(emoji: String, roleAsMention: String) {
             emojiToRole[emoji] = roleAsMention

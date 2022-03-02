@@ -96,5 +96,4 @@ class News : Dialog(ID) {
             listOf()
         }
     }
-
 }

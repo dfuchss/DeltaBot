@@ -12,7 +12,7 @@ import org.fuchss.deltabot.command.GlobalCommand
  */
 class Debug(private val configuration: BotConfiguration) : GlobalCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.ADMIN
-   
+
     override fun createCommand(): CommandData {
         return CommandData("debug", "toggle the debug flag")
     }

@@ -10,8 +10,6 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 import org.fuchss.deltabot.BotConfiguration
-import org.fuchss.deltabot.command.admin.*
-import org.fuchss.deltabot.command.user.*
 import org.fuchss.deltabot.command.user.polls.*
 import org.fuchss.deltabot.utils.Scheduler
 import org.fuchss.deltabot.utils.extensions.fetchCommands
@@ -170,7 +168,6 @@ class CommandRegistry(private val configuration: BotConfiguration, dbLocation: S
         return newCommands
     }
 
-
     private fun findCommand(activeCommands: List<Command>, cmdData: CommandData): Command? {
         for (cmd in activeCommands) {
             if (cmd.name != cmdData.name)
@@ -193,7 +190,6 @@ class CommandRegistry(private val configuration: BotConfiguration, dbLocation: S
 
     override fun nameToCommand(): Map<String, BotCommand> = nameToCommand.toMap()
 }
-
 
 private fun MutableList<Command.Subcommand>.subcommandEqualsData(subcommands: List<SubcommandData>) =
     this.size == subcommands.size && this.zip(subcommands).all { (c1, c2) -> c1.name == c2.name && c1.options.optionEqualsData(c2.options) }

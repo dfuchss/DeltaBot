@@ -14,7 +14,7 @@ class Emojify : GlobalCommand {
     }
 
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
- 
+
     override fun createCommand(): CommandData {
         val command = CommandData("emojify", "\'emojify' a text")
         command.addOptions(OptionData(OptionType.STRING, "text", "the text you want to \'emojify\'").setRequired(true))

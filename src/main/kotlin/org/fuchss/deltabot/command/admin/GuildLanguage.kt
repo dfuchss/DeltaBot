@@ -20,7 +20,7 @@ import org.fuchss.deltabot.utils.extensions.withFirst
  */
 class GuildLanguage : GuildCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.GUILD_ADMIN
-   
+
     override fun createCommand(guild: Guild): CommandData {
         val command = CommandData("guild-language", "set the bot language of your guild")
         command.addOptions(
@@ -44,5 +44,3 @@ class GuildLanguage : GuildCommand {
         event.reply("Your new guild language is #".translate(guild.internalLanguage(), language ?: "--")).setEphemeral(true).queue()
     }
 }
-
-

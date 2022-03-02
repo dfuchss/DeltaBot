@@ -54,10 +54,7 @@ abstract class Dialog(val dialogId: String) {
         next = 0
         this.loadInitialSteps()
     }
-
-
 }
-
 
 /**
  * All possible dialog results.

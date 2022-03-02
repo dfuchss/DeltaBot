@@ -24,7 +24,6 @@ class UserDTO {
         }
     }
 
-
     constructor()
     constructor(user: User) {
         discordId = user.id

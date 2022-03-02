@@ -55,12 +55,10 @@ class RasaService(configuration: BotConfiguration) {
             if (version.startsWith(status)) {
                 this.version = version.substring(status.length)
             }
-
         } catch (e: Exception) {
             logger.error(e.message)
         }
     }
-
 
     private data class RecognitionResult(
         @JsonProperty("intent_ranking")

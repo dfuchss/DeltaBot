@@ -15,7 +15,7 @@ import kotlin.random.Random
  */
 class Roll : GlobalCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
-    
+
     override fun createCommand(): CommandData {
         val command = CommandData("roll", "roll a dice")
         command.addOptions(OptionData(OptionType.INTEGER, "sides", "the amount of sides of the dice (default: 6)").setRequired(false))

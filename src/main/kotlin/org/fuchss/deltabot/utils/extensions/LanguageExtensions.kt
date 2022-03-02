@@ -15,7 +15,6 @@ fun initLanguage(session: Session) {
     internalLanguageSettings = LanguageSettings(session)
 }
 
-
 /**
  * Calculate the [Language] based on the current [Guild] and current [User].
  */

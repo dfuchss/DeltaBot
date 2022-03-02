@@ -15,7 +15,7 @@ import java.util.function.BiConsumer
  */
 class InitialAdminCommand(private val configuration: BotConfiguration, private val adminAddedCallback: BiConsumer<JDA, User>) : GlobalCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
-    
+
     override fun createCommand(): CommandData = CommandData("initial-admin", "create an initial admin user")
 
     override fun handle(event: SlashCommandEvent) {

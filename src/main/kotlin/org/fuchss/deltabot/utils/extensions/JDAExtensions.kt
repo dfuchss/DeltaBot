@@ -60,7 +60,6 @@ fun Guild.fetchMessage(cid: String, mid: String): Message? {
     }
 }
 
-
 fun JDA.fetchTextChannel(gid: String, cid: String): TextChannel? {
     try {
         val cached = this.getTextChannelById(cid)

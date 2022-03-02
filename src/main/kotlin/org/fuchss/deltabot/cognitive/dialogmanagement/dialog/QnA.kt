@@ -36,7 +36,6 @@ class QnA : Dialog(ID) {
             return DialogResult.NEXT
         }
 
-
         context.message.reply(answer.enhance(context)).complete()
         return DialogResult.NEXT
     }

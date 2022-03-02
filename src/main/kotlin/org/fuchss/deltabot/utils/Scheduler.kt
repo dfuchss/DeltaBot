@@ -46,7 +46,6 @@ class Scheduler(private val sleepInterval: Int = 5) : EventListener {
         }
     }
 
-
     private fun execute() {
         val currentTime = Instant.now().epochSecond
         while (priorityQueue.isNotEmpty()) {

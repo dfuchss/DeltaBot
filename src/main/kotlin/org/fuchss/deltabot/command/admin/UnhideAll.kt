@@ -8,7 +8,7 @@ import org.fuchss.deltabot.utils.extensions.unhideAll
 
 class UnhideAll : GlobalCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.ADMIN
-   
+
     override fun createCommand(): CommandData {
         return CommandData("unhide-all", "unhide all hidden messages")
     }
@@ -18,6 +18,5 @@ class UnhideAll : GlobalCommand {
         val thread = Thread { unhideAll(event.jda) }
         thread.isDaemon = true
         thread.start()
-
     }
 }
