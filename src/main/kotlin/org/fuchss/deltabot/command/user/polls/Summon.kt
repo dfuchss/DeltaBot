@@ -1,7 +1,13 @@
 package org.fuchss.deltabot.command.user.polls
 
 import net.dv8tion.jda.api.JDA
-import net.dv8tion.jda.api.entities.*
+import net.dv8tion.jda.api.entities.Emoji
+import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.Icon
+import net.dv8tion.jda.api.entities.Member
+import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.Role
+import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
@@ -12,7 +18,13 @@ import org.fuchss.deltabot.BotConfiguration
 import org.fuchss.deltabot.cognitive.DucklingService
 import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.utils.Scheduler
-import org.fuchss.deltabot.utils.extensions.*
+import org.fuchss.deltabot.utils.extensions.fetchMessage
+import org.fuchss.deltabot.utils.extensions.fetchUser
+import org.fuchss.deltabot.utils.extensions.hide
+import org.fuchss.deltabot.utils.extensions.language
+import org.fuchss.deltabot.utils.extensions.refresh
+import org.fuchss.deltabot.utils.extensions.toEmoji
+import org.fuchss.deltabot.utils.extensions.translate
 import org.fuchss.deltabot.utils.findGenericTimespan
 import org.fuchss.deltabot.utils.timestamp
 import org.fuchss.objectcasket.port.Session

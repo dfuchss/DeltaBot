@@ -2,7 +2,11 @@ package org.fuchss.deltabot.db.dto
 
 import net.dv8tion.jda.api.entities.Guild
 import org.fuchss.objectcasket.port.Session
-import javax.persistence.*
+import javax.persistence.Column
+import javax.persistence.Entity
+import javax.persistence.GeneratedValue
+import javax.persistence.Id
+import javax.persistence.Table
 
 @Entity
 @Table(name = "Guild")

@@ -4,7 +4,11 @@ import net.dv8tion.jda.api.entities.Emoji
 import net.dv8tion.jda.api.entities.Guild
 import org.fuchss.deltabot.utils.extensions.withFirst
 import org.fuchss.deltabot.utils.extensions.without
-import javax.persistence.*
+import javax.persistence.Column
+import javax.persistence.Entity
+import javax.persistence.GeneratedValue
+import javax.persistence.Id
+import javax.persistence.Table
 
 @Entity
 @Table(name = "Poll")

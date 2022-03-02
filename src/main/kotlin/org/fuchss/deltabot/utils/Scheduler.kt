@@ -6,7 +6,7 @@ import net.dv8tion.jda.api.events.ShutdownEvent
 import net.dv8tion.jda.api.hooks.EventListener
 import org.fuchss.deltabot.utils.extensions.logger
 import java.time.Instant
-import java.util.*
+import java.util.PriorityQueue
 import java.util.concurrent.locks.ReentrantLock
 
 class Scheduler(private val sleepInterval: Int = 5) : EventListener {

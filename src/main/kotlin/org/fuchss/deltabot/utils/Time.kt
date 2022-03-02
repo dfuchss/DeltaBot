@@ -8,7 +8,8 @@ import org.fuchss.deltabot.utils.extensions.logger
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.util.*
+import java.util.Calendar
+import java.util.Date
 
 enum class Weekday {
     Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday

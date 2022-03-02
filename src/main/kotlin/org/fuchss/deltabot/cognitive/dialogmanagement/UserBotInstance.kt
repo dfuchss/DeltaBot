@@ -12,7 +12,7 @@ import org.fuchss.deltabot.cognitive.dialogmanagement.dialog.QnA
 import org.fuchss.deltabot.command.user.Help
 import org.fuchss.deltabot.utils.extensions.fetchCommands
 import org.fuchss.deltabot.utils.extensions.logger
-import java.util.*
+import java.util.Stack
 
 /**
  * This class manages a set of [Dialogs][Dialog] for a [User] and starts specific dialogs depending on the messages of the user.

@@ -9,7 +9,11 @@ import org.fuchss.deltabot.Language
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.command.GlobalCommand
-import org.fuchss.deltabot.utils.extensions.*
+import org.fuchss.deltabot.utils.extensions.internalLanguage
+import org.fuchss.deltabot.utils.extensions.language
+import org.fuchss.deltabot.utils.extensions.setLanguage
+import org.fuchss.deltabot.utils.extensions.translate
+import org.fuchss.deltabot.utils.extensions.withFirst
 
 /**
  * A [BotCommand] that sets the [Language] for certain users.

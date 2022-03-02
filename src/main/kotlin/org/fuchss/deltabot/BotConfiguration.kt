@@ -10,7 +10,12 @@ import org.fuchss.deltabot.utils.extensions.logger
 import org.fuchss.deltabot.utils.extensions.setLogLevel
 import org.fuchss.objectcasket.port.Session
 import org.slf4j.spi.LocationAwareLogger
-import javax.persistence.*
+import javax.persistence.Entity
+import javax.persistence.GeneratedValue
+import javax.persistence.Id
+import javax.persistence.OneToMany
+import javax.persistence.Table
+import javax.persistence.Transient
 
 @Entity
 @Table(name = "Configuration")

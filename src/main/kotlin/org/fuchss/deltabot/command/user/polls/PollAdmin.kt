@@ -6,7 +6,11 @@ import net.dv8tion.jda.api.hooks.EventListener
 import net.dv8tion.jda.api.interactions.InteractionHook
 import net.dv8tion.jda.api.interactions.components.Button
 import net.dv8tion.jda.api.interactions.components.ButtonStyle
-import org.fuchss.deltabot.utils.extensions.*
+import org.fuchss.deltabot.utils.extensions.internalLanguage
+import org.fuchss.deltabot.utils.extensions.logger
+import org.fuchss.deltabot.utils.extensions.toActionRows
+import org.fuchss.deltabot.utils.extensions.toEmoji
+import org.fuchss.deltabot.utils.extensions.translate
 
 class PollAdmin : EventListener, IPollAdmin {
     companion object {

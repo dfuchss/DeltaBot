@@ -12,7 +12,11 @@ import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.command.GlobalCommand
 import org.fuchss.deltabot.utils.Scheduler
-import org.fuchss.deltabot.utils.extensions.*
+import org.fuchss.deltabot.utils.extensions.fetchTextChannel
+import org.fuchss.deltabot.utils.extensions.fetchUser
+import org.fuchss.deltabot.utils.extensions.language
+import org.fuchss.deltabot.utils.extensions.logger
+import org.fuchss.deltabot.utils.extensions.translate
 import org.fuchss.deltabot.utils.timestamp
 import org.fuchss.objectcasket.port.Session
 import javax.persistence.Entity

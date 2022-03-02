@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.util.*
+import java.util.StringJoiner
 
 /**
  * The implementation of an interface to a Duckling service at a certain [endpoint url][endpoint].

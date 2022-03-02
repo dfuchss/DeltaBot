@@ -6,7 +6,11 @@ import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import org.fuchss.deltabot.BotConfiguration
-import org.fuchss.deltabot.command.*
+import org.fuchss.deltabot.command.BotCommand
+import org.fuchss.deltabot.command.CommandPermissions
+import org.fuchss.deltabot.command.GuildCommand
+import org.fuchss.deltabot.command.ICommandRegistry
+import org.fuchss.deltabot.command.fixCommandPermissions
 
 /**
  * A [BotCommand] that toggles the admin state for a user.
