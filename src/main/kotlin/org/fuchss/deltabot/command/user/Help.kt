@@ -2,9 +2,10 @@ package org.fuchss.deltabot.command.user
 
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.MessageEmbed
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.Command
-import net.dv8tion.jda.api.interactions.commands.build.CommandData
+import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction
+import net.dv8tion.jda.api.interactions.commands.build.Commands
+import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
 import org.fuchss.deltabot.BotConfiguration
 import org.fuchss.deltabot.Constants
 import org.fuchss.deltabot.cognitive.dialogmanagement.DialogRegistry
@@ -21,11 +22,11 @@ open class Help(private val configuration: BotConfiguration, protected val regis
 
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
 
-    override fun createCommand(): CommandData {
-        return CommandData("help", "Prints a help message")
+    override fun createCommand(): SlashCommandData {
+        return Commands.slash("help", "Prints a help message")
     }
 
-    override fun handle(event: SlashCommandEvent) {
+    override fun handle(event: SlashCommandInteraction) {
         val visibilities = mutableListOf(CommandPermissions.ALL)
         if (configuration.isAdmin(event.user)) {
             visibilities.add(CommandPermissions.ALL)

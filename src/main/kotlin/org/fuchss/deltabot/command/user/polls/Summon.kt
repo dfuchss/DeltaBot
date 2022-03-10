@@ -8,12 +8,13 @@ import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.entities.User
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
-import net.dv8tion.jda.api.interactions.commands.build.CommandData
+import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction
+import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
-import net.dv8tion.jda.api.interactions.components.Button
-import net.dv8tion.jda.api.interactions.components.ButtonStyle
+import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
+import net.dv8tion.jda.api.interactions.components.buttons.Button
+import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
 import org.fuchss.deltabot.BotConfiguration
 import org.fuchss.deltabot.cognitive.DucklingService
 import org.fuchss.deltabot.command.CommandPermissions
@@ -53,8 +54,8 @@ class Summon(pollAdmin: IPollAdmin, configuration: BotConfiguration, scheduler: 
 
     private val ducklingService: DucklingService = DucklingService(configuration.ducklingUrl)
 
-    override fun createCommand(guild: Guild): CommandData {
-        val command = CommandData("summon", "summon players and make a poll to play a game")
+    override fun createCommand(guild: Guild): SlashCommandData {
+        val command = Commands.slash("summon", "summon players and make a poll to play a game")
         command.addOptions( //
             OptionData(OptionType.ROLE, "game", "the game as a role you want to play").setRequired(true),
             OptionData(OptionType.STRING, "time", "an optional time for the gameplay").setRequired(false)
@@ -62,7 +63,7 @@ class Summon(pollAdmin: IPollAdmin, configuration: BotConfiguration, scheduler: 
         return command
     }
 
-    override fun handle(event: SlashCommandEvent) {
+    override fun handle(event: SlashCommandInteraction) {
         if (event.guild == null) {
             event.reply("No Server found .. this should not happen ..").setEphemeral(true).queue()
             return
@@ -74,7 +75,7 @@ class Summon(pollAdmin: IPollAdmin, configuration: BotConfiguration, scheduler: 
         createSummon(event, event.guild!!, event.user, game, time)
     }
 
-    private fun createSummon(event: SlashCommandEvent, guild: Guild, user: User, game: Role, time: String) {
+    private fun createSummon(event: SlashCommandInteraction, guild: Guild, user: User, game: Role, time: String) {
         // TODO maybe specify default time to another time ..
         val extractedTime = findGenericTimespan(time, event.language(), ducklingService) ?: LocalDateTime.of(LocalDate.now(), LocalTime.of(20, 0))
 

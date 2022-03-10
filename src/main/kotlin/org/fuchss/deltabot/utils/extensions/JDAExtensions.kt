@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.interactions.commands.Command
 import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.interactions.components.Component
+import net.dv8tion.jda.api.interactions.components.ItemComponent
 import kotlin.math.max
 import kotlin.math.min
 
@@ -125,7 +126,7 @@ fun Message.pinAndDelete() {
  * @param[maxInRow] the maximum number of elements in a row
  * @param[tryModZero] indicator whether the system shall try to create rows with equal amounts of elements
  */
-fun <E : Component> List<E>.toActionRows(maxInRow: Int = 5, tryModZero: Boolean = true): List<ActionRow> {
+fun <E : ItemComponent> List<E>.toActionRows(maxInRow: Int = 5, tryModZero: Boolean = true): List<ActionRow> {
     var maxItems = max(min(maxInRow, 5), 1)
     if (tryModZero && maxItems > 3) {
         for (i in maxItems downTo 3) {

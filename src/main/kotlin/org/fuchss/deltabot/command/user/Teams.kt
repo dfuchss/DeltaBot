@@ -3,10 +3,11 @@ package org.fuchss.deltabot.command.user
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.VoiceChannel
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
-import net.dv8tion.jda.api.interactions.commands.build.CommandData
+import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction
+import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
+import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.command.GuildCommand
@@ -19,13 +20,13 @@ import kotlin.random.Random
 class Teams : GuildCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
 
-    override fun createCommand(guild: Guild): CommandData {
-        val command = CommandData("teams", "create a team based on the people in your voice channel")
+    override fun createCommand(guild: Guild): SlashCommandData {
+        val command = Commands.slash("teams", "create a team based on the people in your voice channel")
         command.addOptions(OptionData(OptionType.INTEGER, "amount", "the amount of teams (default: 2)").setRequired(false))
         return command
     }
 
-    override fun handle(event: SlashCommandEvent) {
+    override fun handle(event: SlashCommandInteraction) {
         val voiceChannel = event.member?.voiceState?.channel
         if (voiceChannel == null) {
             event.reply("You are not in a voice channel".translate(event)).setEphemeral(true).queue()

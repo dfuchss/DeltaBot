@@ -1,11 +1,11 @@
 package org.fuchss.deltabot.command.user.polls
 
 import net.dv8tion.jda.api.events.GenericEvent
-import net.dv8tion.jda.api.events.interaction.ButtonClickEvent
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.hooks.EventListener
 import net.dv8tion.jda.api.interactions.InteractionHook
-import net.dv8tion.jda.api.interactions.components.Button
-import net.dv8tion.jda.api.interactions.components.ButtonStyle
+import net.dv8tion.jda.api.interactions.components.buttons.Button
+import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
 import org.fuchss.deltabot.utils.extensions.internalLanguage
 import org.fuchss.deltabot.utils.extensions.logger
 import org.fuchss.deltabot.utils.extensions.toActionRows
@@ -27,12 +27,12 @@ class PollAdmin : EventListener, IPollAdmin {
 
     private val pollXmanager: MutableMap<String, IPollBase> = mutableMapOf()
 
-    private fun handleAction(event: ButtonClickEvent) {
+    private fun handleAction(event: ButtonInteractionEvent) {
         if (event.message.author != event.jda.selfUser) {
             return
         }
 
-        val buttonId = event.button?.id ?: ""
+        val buttonId = event.button.id ?: ""
         if (buttonId !in listOf(finish, delete, refresh, postpone_15, postpone_60).map { e -> e.name })
             return
 
@@ -89,7 +89,7 @@ class PollAdmin : EventListener, IPollAdmin {
     }
 
     override fun onEvent(event: GenericEvent) {
-        if (event !is ButtonClickEvent)
+        if (event !is ButtonInteractionEvent)
             return
         handleAction(event)
     }

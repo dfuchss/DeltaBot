@@ -16,22 +16,12 @@
 
         <kotlin.version>1.6.10</kotlin.version>
         <jackson.version>2.13.1</jackson.version>
-        <jda.version>4.4.0_352</jda.version>
+        <jda.version>5.0.0-alpha.9</jda.version>
         <slf4j.version>1.7.36</slf4j.version>
         <main.class>org.fuchss.deltabot.MainKt</main.class>
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
-        </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-kotlin</artifactId>

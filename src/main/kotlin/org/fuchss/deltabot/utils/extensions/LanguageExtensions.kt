@@ -3,8 +3,9 @@ package org.fuchss.deltabot.utils.extensions
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
-import net.dv8tion.jda.api.events.interaction.GenericInteractionCreateEvent
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
+import net.dv8tion.jda.api.interactions.commands.CommandInteraction
 import org.fuchss.deltabot.Language
 import org.fuchss.deltabot.LanguageSettings
 import org.fuchss.objectcasket.port.Session
@@ -82,9 +83,14 @@ fun Guild.setLanguage(language: Language?) {
 }
 
 /**
- * Calculate the language based on a [GenericInteractionCreateEvent].
+ * Calculate the language based on a [CommandInteraction].
  */
-fun GenericInteractionCreateEvent.language(): Language = language(guild, user)
+fun CommandInteraction.language(): Language = language(guild, user)
+
+/**
+ * Calculate the language based on a [ButtonInteractionEvent].
+ */
+fun ButtonInteractionEvent.language(): Language = language(guild, user)
 
 /**
  * Calculate the language based on a [MessageReceivedEvent].

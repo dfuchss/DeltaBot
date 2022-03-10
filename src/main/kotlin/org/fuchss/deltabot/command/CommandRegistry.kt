@@ -6,8 +6,8 @@ import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.ReadyEvent
 import net.dv8tion.jda.api.hooks.EventListener
 import net.dv8tion.jda.api.interactions.commands.Command
-import net.dv8tion.jda.api.interactions.commands.build.CommandData
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
+import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 import org.fuchss.deltabot.BotConfiguration
 import org.fuchss.deltabot.command.admin.Admin
@@ -169,8 +169,8 @@ class CommandRegistry(private val configuration: BotConfiguration, dbLocation: S
         return needFix
     }
 
-    private fun findNewCommandsAndDeleteOldOnes(activeCommands: List<Command>, commands: List<Pair<BotCommand, CommandData>>): List<Pair<BotCommand, CommandData>> {
-        val newCommands: MutableList<Pair<BotCommand, CommandData>> = ArrayList()
+    private fun findNewCommandsAndDeleteOldOnes(activeCommands: List<Command>, commands: List<Pair<BotCommand, SlashCommandData>>): List<Pair<BotCommand, SlashCommandData>> {
+        val newCommands: MutableList<Pair<BotCommand, SlashCommandData>> = ArrayList()
         val oldCommands: MutableList<Command> = ArrayList()
 
         for ((command, cmdData) in commands) {
@@ -191,7 +191,7 @@ class CommandRegistry(private val configuration: BotConfiguration, dbLocation: S
         return newCommands
     }
 
-    private fun findCommand(activeCommands: List<Command>, cmdData: CommandData): Command? {
+    private fun findCommand(activeCommands: List<Command>, cmdData: SlashCommandData): Command? {
         for (cmd in activeCommands) {
             if (cmd.name != cmdData.name)
                 continue

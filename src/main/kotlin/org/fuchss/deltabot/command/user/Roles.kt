@@ -7,14 +7,15 @@ import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.events.GenericEvent
-import net.dv8tion.jda.api.events.interaction.ButtonClickEvent
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.hooks.EventListener
 import net.dv8tion.jda.api.interactions.commands.OptionType
-import net.dv8tion.jda.api.interactions.commands.build.CommandData
+import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction
+import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
+import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
-import net.dv8tion.jda.api.interactions.components.Button
+import net.dv8tion.jda.api.interactions.components.buttons.Button
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.command.GuildCommand
@@ -45,8 +46,8 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
         private const val noRoles = "*At the moment, no roles can be chosen .. please wait for your guild leader :)*"
     }
 
-    override fun createCommand(guild: Guild): CommandData {
-        val command = CommandData("roles", "manage the role changer message of this guild")
+    override fun createCommand(guild: Guild): SlashCommandData {
+        val command = Commands.slash("roles", "manage the role changer message of this guild")
         command.addSubcommands(
             SubcommandData("init", "creates the role changer message in this channel"),
             SubcommandData("add", "adds an emoji for a specific role").addOptions(
@@ -73,7 +74,7 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
     }
 
     override fun onEvent(event: GenericEvent) {
-        if (event !is ButtonClickEvent)
+        if (event !is ButtonInteractionEvent)
             return
         if (!isGuildMessage(event.guild?.id ?: "", event.channel.id, event.messageId))
             return
@@ -81,7 +82,7 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
         handleRolesClick(event)
     }
 
-    override fun handle(event: SlashCommandEvent) {
+    override fun handle(event: SlashCommandInteraction) {
         when (event.subcommandName) {
             "init" -> handleInit(event)
             "add" -> handleAdd(event)
@@ -91,7 +92,7 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
         }
     }
 
-    private fun handleInit(event: SlashCommandEvent) {
+    private fun handleInit(event: SlashCommandInteraction) {
         val guild = event.guild!!
         if (hasRoleMessage(guild)) {
             event.reply("Role message already found".translate(event)).setEphemeral(true).queue()
@@ -104,7 +105,7 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
         event.reply("Role message created ..".translate(event)).setEphemeral(true).queue()
     }
 
-    private fun handlePurge(event: SlashCommandEvent) {
+    private fun handlePurge(event: SlashCommandInteraction) {
         val guild = event.guild!!
         if (!hasRoleMessage(guild)) {
             event.reply("No role message found".translate(event)).setEphemeral(true).queue()
@@ -120,7 +121,7 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
         event.reply("Role message deleted ..".translate(event)).setEphemeral(true).queue()
     }
 
-    private fun handleAdd(event: SlashCommandEvent) {
+    private fun handleAdd(event: SlashCommandInteraction) {
         val guild = event.guild!!
         if (!hasRoleMessage(guild)) {
             event.reply("No role message found".translate(event)).setEphemeral(true).queue()
@@ -158,7 +159,7 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
         event.reply("Updated role message".translate(event)).setEphemeral(true).queue()
     }
 
-    private fun handleDel(event: SlashCommandEvent) {
+    private fun handleDel(event: SlashCommandInteraction) {
         val guild = event.guild!!
         if (!hasRoleMessage(guild)) {
             event.reply("No role message found".translate(event)).setEphemeral(true).queue()
@@ -190,10 +191,10 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
         event.reply("Updated role message".translate(event)).setEphemeral(true).queue()
     }
 
-    private fun handleRolesClick(event: ButtonClickEvent) {
+    private fun handleRolesClick(event: ButtonInteractionEvent) {
         val guild = event.guild!!
         val state = getGuildState(guild)!!
-        val clickedId = event.button?.id ?: ""
+        val clickedId = event.button.id ?: ""
 
         val roleMention = state.emojiToRole[clickedId]
         if (roleMention == null) {

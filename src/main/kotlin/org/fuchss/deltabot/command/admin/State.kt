@@ -3,8 +3,9 @@ package org.fuchss.deltabot.command.admin
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Guild
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
-import net.dv8tion.jda.api.interactions.commands.build.CommandData
+import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction
+import net.dv8tion.jda.api.interactions.commands.build.Commands
+import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
 import org.fuchss.deltabot.BotConfiguration
 import org.fuchss.deltabot.Constants
 import org.fuchss.deltabot.command.BotCommand
@@ -22,11 +23,11 @@ import org.fuchss.objectcasket.port.Session
 class State(private val config: BotConfiguration, private val scheduler: Scheduler, private val session: Session) : GlobalCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.ADMIN
 
-    override fun createCommand(): CommandData {
-        return CommandData("state", "print the state of the bot")
+    override fun createCommand(): SlashCommandData {
+        return Commands.slash("state", "print the state of the bot")
     }
 
-    override fun handle(event: SlashCommandEvent) {
+    override fun handle(event: SlashCommandInteraction) {
         var msg = ""
         msg += "NLU: ${config.nluUrl}, Threshold: ${config.nluThreshold}, State: ${if (config.disableNlu) "disabled" else "enabled"}\n"
         msg += "Admins: ${config.getAdmins(event.jda).joinToString { u -> u.asMention }}\n"

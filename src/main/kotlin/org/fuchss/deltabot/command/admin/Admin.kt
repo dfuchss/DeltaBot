@@ -1,10 +1,11 @@
 package org.fuchss.deltabot.command.admin
 
 import net.dv8tion.jda.api.entities.Guild
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
-import net.dv8tion.jda.api.interactions.commands.build.CommandData
+import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction
+import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
+import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
 import org.fuchss.deltabot.BotConfiguration
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
@@ -19,13 +20,13 @@ class Admin(private val configuration: BotConfiguration, private val commandRegi
 
     override val permissions: CommandPermissions get() = CommandPermissions.ADMIN
 
-    override fun createCommand(guild: Guild): CommandData {
-        val command = CommandData("admin", "Op or de-op an user")
+    override fun createCommand(guild: Guild): SlashCommandData {
+        val command = Commands.slash("admin", "Op or de-op an user")
         command.addOptions(OptionData(OptionType.USER, "user", "the user that shall be changed").setRequired(true))
         return command
     }
 
-    override fun handle(event: SlashCommandEvent) {
+    override fun handle(event: SlashCommandInteraction) {
         val user = event.getOption("user")?.asUser
 
         if (user == null || user.isBot) {

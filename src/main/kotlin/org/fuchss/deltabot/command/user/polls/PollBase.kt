@@ -7,13 +7,13 @@ import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.events.GenericEvent
-import net.dv8tion.jda.api.events.interaction.ButtonClickEvent
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.hooks.EventListener
 import net.dv8tion.jda.api.interactions.InteractionHook
 import net.dv8tion.jda.api.interactions.components.ActionRow
-import net.dv8tion.jda.api.interactions.components.Button
-import net.dv8tion.jda.api.interactions.components.ButtonStyle
-import net.dv8tion.jda.api.interactions.components.Component
+import net.dv8tion.jda.api.interactions.components.ItemComponent
+import net.dv8tion.jda.api.interactions.components.buttons.Button
+import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.GuildCommand
 import org.fuchss.deltabot.utils.Scheduler
@@ -92,7 +92,7 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
         message.editMessage(rawMessage).queue()
     }
 
-    override fun isOwner(event: ButtonClickEvent, mid: String): Boolean {
+    override fun isOwner(event: ButtonInteractionEvent, mid: String): Boolean {
         val data = polls.find { p -> p.mid == mid }
         if (data == null) {
             event.reply("Poll was not found!".translate(event)).setEphemeral(true).queue()
@@ -114,7 +114,7 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
     }
 
     override fun onEvent(event: GenericEvent) {
-        if (event !is ButtonClickEvent)
+        if (event !is ButtonInteractionEvent)
             return
         val data = polls.find { p -> p.mid == event.messageId } ?: return
         handleButtonEvent(event, data)
@@ -135,8 +135,8 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
         }
     }
 
-    private fun handleButtonEvent(event: ButtonClickEvent, data: Poll) {
-        val buttonId = event.button?.id ?: ""
+    private fun handleButtonEvent(event: ButtonInteractionEvent, data: Poll) {
+        val buttonId = event.button.id ?: ""
 
         if (admin.name == buttonId) {
             if (!isOwner(event, data))
@@ -182,7 +182,7 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
         data.cleanup()
     }
 
-    private fun isOwner(event: ButtonClickEvent, data: Poll): Boolean {
+    private fun isOwner(event: ButtonInteractionEvent, data: Poll): Boolean {
         if (data.uid == event.user.id)
             return true
         event.reply("Since you are not the owner of the poll, you can't do this action".translate(event)).setEphemeral(true).queue()
@@ -207,7 +207,7 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
     }
 
     protected fun createPoll(hook: InteractionHook, terminationTimestamp: Long?, author: User, response: String, options: Map<Emoji, Button>, onlyOneOption: Boolean) {
-        val components = options.values.toList<Component>().toActionRows().toMutableList()
+        val components = options.values.toList<ItemComponent>().toActionRows().toMutableList()
         val globalActions = listOf(Button.of(ButtonStyle.PRIMARY, admin.name + "", "Admin Area", admin))
         components.add(ActionRow.of(globalActions))
 

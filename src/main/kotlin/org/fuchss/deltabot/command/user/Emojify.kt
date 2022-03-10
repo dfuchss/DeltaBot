@@ -1,9 +1,10 @@
 package org.fuchss.deltabot.command.user
 
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
-import net.dv8tion.jda.api.interactions.commands.build.CommandData
+import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction
+import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
+import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
 import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.command.GlobalCommand
 import org.fuchss.deltabot.utils.extensions.translate
@@ -15,13 +16,13 @@ class Emojify : GlobalCommand {
 
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
 
-    override fun createCommand(): CommandData {
-        val command = CommandData("emojify", "\'emojify' a text")
+    override fun createCommand(): SlashCommandData {
+        val command = Commands.slash("emojify", "\'emojify' a text")
         command.addOptions(OptionData(OptionType.STRING, "text", "the text you want to \'emojify\'").setRequired(true))
         return command
     }
 
-    override fun handle(event: SlashCommandEvent) {
+    override fun handle(event: SlashCommandInteraction) {
         val rawText = (event.getOption("text")?.asString ?: "").lowercase()
         val text = rawText.mapNotNull { c -> c.takeIf { (it in 'a'..'z') || (it in '0'..'9') || it in ValidSpecialChars } }.joinToString("")
 

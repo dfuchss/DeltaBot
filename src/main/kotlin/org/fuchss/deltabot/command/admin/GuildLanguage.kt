@@ -1,11 +1,12 @@
 package org.fuchss.deltabot.command.admin
 
 import net.dv8tion.jda.api.entities.Guild
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.Command
 import net.dv8tion.jda.api.interactions.commands.OptionType
-import net.dv8tion.jda.api.interactions.commands.build.CommandData
+import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction
+import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
+import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
 import org.fuchss.deltabot.Language
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
@@ -21,8 +22,8 @@ import org.fuchss.deltabot.utils.extensions.withFirst
 class GuildLanguage : GuildCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.GUILD_ADMIN
 
-    override fun createCommand(guild: Guild): CommandData {
-        val command = CommandData("guild-language", "set the bot language of your guild")
+    override fun createCommand(guild: Guild): SlashCommandData {
+        val command = Commands.slash("guild-language", "set the bot language of your guild")
         command.addOptions(
             OptionData(OptionType.STRING, "lang", "your language").setRequired(true).addChoices(
                 Language.values().map { l -> Command.Choice(l.toString(), l.locale) }.withFirst(Command.Choice("None", "None"))
@@ -31,7 +32,7 @@ class GuildLanguage : GuildCommand {
         return command
     }
 
-    override fun handle(event: SlashCommandEvent) {
+    override fun handle(event: SlashCommandInteraction) {
         val guild = event.guild
         if (guild == null) {
             event.reply("You have to execute the command in a guild".translate(event)).setEphemeral(true).queue()

@@ -2,10 +2,11 @@ package org.fuchss.deltabot.command.user
 
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.ChannelType
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
-import net.dv8tion.jda.api.interactions.commands.build.CommandData
+import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction
+import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
+import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
 import org.fuchss.deltabot.BotConfiguration
 import org.fuchss.deltabot.cognitive.DucklingService
 import org.fuchss.deltabot.command.BotCommand
@@ -33,8 +34,8 @@ class Reminder(configuration: BotConfiguration, private val scheduler: Scheduler
     private val reminders: MutableSet<ReminderData> = mutableSetOf()
     private val ducklingService: DucklingService = DucklingService(configuration.ducklingUrl)
 
-    override fun createCommand(): CommandData {
-        val command = CommandData("reminder", "create reminders for certain times")
+    override fun createCommand(): SlashCommandData {
+        val command = Commands.slash("reminder", "create reminders for certain times")
         command.addOptions(
             OptionData(OptionType.STRING, "time", "a description of a time to interpret").setRequired(true),
             OptionData(OptionType.STRING, "message", "a message I'll send to you").setRequired(true)
@@ -58,7 +59,7 @@ class Reminder(configuration: BotConfiguration, private val scheduler: Scheduler
             scheduler.queue(null, { remind(reminder, jda) }, reminder.timestamp)
     }
 
-    override fun handle(event: SlashCommandEvent) {
+    override fun handle(event: SlashCommandInteraction) {
         // Use Language of the user for reminders ..
         val language = event.language()
 

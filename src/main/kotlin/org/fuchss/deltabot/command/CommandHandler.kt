@@ -1,9 +1,9 @@
 package org.fuchss.deltabot.command
 
 import net.dv8tion.jda.api.events.GenericEvent
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.hooks.EventListener
-import net.dv8tion.jda.api.interactions.commands.build.CommandData
+import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction
+import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
 import org.fuchss.deltabot.BotConfiguration
 import org.fuchss.deltabot.utils.extensions.logger
 
@@ -20,12 +20,12 @@ class CommandHandler(private val configuration: BotConfiguration, private val co
     }
 
     override fun onEvent(event: GenericEvent) {
-        if (event !is SlashCommandEvent)
+        if (event !is SlashCommandInteraction)
             return
         handleSlashCommand(event)
     }
 
-    private fun handleSlashCommand(event: SlashCommandEvent) {
+    private fun handleSlashCommand(event: SlashCommandInteraction) {
         logger.debug(event.toString())
         val command = nameToCommand[event.name] ?: UnknownCommand()
 
@@ -42,15 +42,15 @@ class CommandHandler(private val configuration: BotConfiguration, private val co
         command.handle(event)
     }
 
-    private fun isAdmin(event: SlashCommandEvent): Boolean {
+    private fun isAdmin(event: SlashCommandInteraction): Boolean {
         return event.guild?.owner?.user == event.user || configuration.isAdmin(event.user)
     }
 
     private class UnknownCommand : GlobalCommand {
         override val permissions: CommandPermissions get() = CommandPermissions.ALL
-        override fun createCommand(): CommandData = error("Command shall only be used internally")
+        override fun createCommand(): SlashCommandData = error("Command shall only be used internally")
 
-        override fun handle(event: SlashCommandEvent) {
+        override fun handle(event: SlashCommandInteraction) {
             event.reply("Unknown command .. please contact the admin of the bot!").setEphemeral(true).complete()
         }
     }

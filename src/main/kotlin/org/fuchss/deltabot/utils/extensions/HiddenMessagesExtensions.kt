@@ -5,12 +5,12 @@ import net.dv8tion.jda.api.entities.ChannelType
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.PrivateChannel
 import net.dv8tion.jda.api.events.GenericEvent
-import net.dv8tion.jda.api.events.interaction.ButtonClickEvent
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.events.message.MessageDeleteEvent
 import net.dv8tion.jda.api.hooks.EventListener
 import net.dv8tion.jda.api.interactions.components.ActionRow
-import net.dv8tion.jda.api.interactions.components.Button
-import net.dv8tion.jda.api.interactions.components.ButtonStyle
+import net.dv8tion.jda.api.interactions.components.buttons.Button
+import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
 import org.fuchss.deltabot.utils.Scheduler
 import org.fuchss.deltabot.utils.timestamp
 import org.fuchss.objectcasket.port.Session
@@ -81,7 +81,7 @@ fun Message.unhide(): Message {
 
 private fun createHiddenMessage(message: Message) {
     val hiddenMessage = if (message.channelType == ChannelType.PRIVATE) {
-        HiddenMessage("", (message.channel as PrivateChannel).user.id, "", message.id, true, message.contentRaw, false)
+        HiddenMessage("", (message.channel as PrivateChannel).user!!.id, "", message.id, true, message.contentRaw, false)
     } else {
         HiddenMessage(message.guild.id, "", message.channel.id, message.id, false, message.contentRaw, false)
     }
@@ -135,7 +135,7 @@ private class HiddenMessageManager : EventListener {
         val private = message.channelType == ChannelType.PRIVATE
 
         return if (private)
-            hiddenMessagesData.find { hm -> hm.isPrivateChannel && hm.mid == message.id && hm.uid == (message.channel as PrivateChannel).user.id }
+            hiddenMessagesData.find { hm -> hm.isPrivateChannel && hm.mid == message.id && hm.uid == (message.channel as PrivateChannel).user!!.id }
         else
             hiddenMessagesData.find { hm -> !hm.isPrivateChannel && hm.mid == message.id && hm.cid == message.channel.id && hm.gid == message.guild.id }
     }
@@ -144,7 +144,7 @@ private class HiddenMessageManager : EventListener {
         val private = messageDeleteEvent.channelType == ChannelType.PRIVATE
 
         return if (private)
-            hiddenMessagesData.find { hm -> hm.isPrivateChannel && hm.mid == messageDeleteEvent.messageId && hm.uid == (messageDeleteEvent.channel as PrivateChannel).user.id }
+            hiddenMessagesData.find { hm -> hm.isPrivateChannel && hm.mid == messageDeleteEvent.messageId && hm.uid == (messageDeleteEvent.channel as PrivateChannel).user!!.id }
         else
             hiddenMessagesData.find { hm -> !hm.isPrivateChannel && hm.mid == messageDeleteEvent.messageId && hm.cid == messageDeleteEvent.channel.id && hm.gid == messageDeleteEvent.guild.id }
     }
@@ -157,14 +157,14 @@ private class HiddenMessageManager : EventListener {
             return
         }
 
-        if (event !is ButtonClickEvent || event.button?.id != hideId)
+        if (event !is ButtonInteractionEvent || event.button.id != hideId)
             return
 
         val hiddenMessage = findMessage(event.message) ?: return
         handleHiddenMessageClick(event, hiddenMessage)
     }
 
-    private fun handleHiddenMessageClick(event: ButtonClickEvent, hiddenMessage: HiddenMessage) {
+    private fun handleHiddenMessageClick(event: ButtonInteractionEvent, hiddenMessage: HiddenMessage) {
         event.deferEdit().complete()
         if (hiddenMessage.hidden)
             unhideMessage(scheduler, event.message, hiddenMessage)

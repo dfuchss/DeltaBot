@@ -1,15 +1,21 @@
 package org.fuchss.deltabot.utils.extensions
 
-import net.dv8tion.jda.api.events.interaction.GenericInteractionCreateEvent
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
+import net.dv8tion.jda.api.interactions.commands.CommandInteraction
 import org.fuchss.deltabot.Language
 
 private val translations = mutableMapOf<Language, MutableMap<String, String>>()
 
 /**
- * Translate a string based the language retrieved for the [GenericInteractionCreateEvent].
+ * Translate a string based the language retrieved for the [CommandInteraction].
  */
-fun String.translate(event: GenericInteractionCreateEvent, vararg attributes: Any) = this.translate(event.language(), *attributes)
+fun String.translate(event: CommandInteraction, vararg attributes: Any) = this.translate(event.language(), *attributes)
+
+/**
+ * Translate a string based the language retrieved for the [ButtonInteractionEvent].
+ */
+fun String.translate(event: ButtonInteractionEvent, vararg attributes: Any) = this.translate(event.language(), *attributes)
 
 /**
  * Translate a string based the language retrieved for the [MessageReceivedEvent].

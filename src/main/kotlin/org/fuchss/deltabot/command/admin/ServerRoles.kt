@@ -2,11 +2,12 @@ package org.fuchss.deltabot.command.admin
 
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.exceptions.PermissionException
 import net.dv8tion.jda.api.interactions.commands.OptionType
-import net.dv8tion.jda.api.interactions.commands.build.CommandData
+import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction
+import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
+import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
@@ -20,8 +21,8 @@ import org.fuchss.deltabot.utils.extensions.translate
 class ServerRoles : GuildCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.GUILD_ADMIN
 
-    override fun createCommand(guild: Guild): CommandData {
-        val command = CommandData("server-roles", "manage server roles & channels")
+    override fun createCommand(guild: Guild): SlashCommandData {
+        val command = Commands.slash("server-roles", "manage server roles & channels")
         command.addSubcommands(
             SubcommandData("add", "add a new role with text and voice channel").addOptions(
                 OptionData(OptionType.STRING, "name", "the name of the role").setRequired(true),
@@ -36,7 +37,7 @@ class ServerRoles : GuildCommand {
         return command
     }
 
-    override fun handle(event: SlashCommandEvent) {
+    override fun handle(event: SlashCommandInteraction) {
         when (event.subcommandName) {
             "add" -> handleAdd(event)
             "del" -> handleDelete(event)
@@ -44,7 +45,7 @@ class ServerRoles : GuildCommand {
         }
     }
 
-    private fun handleAdd(event: SlashCommandEvent) {
+    private fun handleAdd(event: SlashCommandInteraction) {
         val name = event.getOption("name")?.asString?.trim() ?: ""
         val text = event.getOption("text")?.asBoolean ?: true
         val voice = event.getOption("voice")?.asBoolean ?: true
@@ -79,7 +80,7 @@ class ServerRoles : GuildCommand {
         hook.editOriginal("Welcome # on the server!".translate(event, role.asMention)).queue()
     }
 
-    private fun handleDelete(event: SlashCommandEvent) {
+    private fun handleDelete(event: SlashCommandInteraction) {
         val role = event.getOption("role")?.asRole
 
         if (role == null) {

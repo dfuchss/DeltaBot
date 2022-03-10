@@ -1,10 +1,11 @@
 package org.fuchss.deltabot.command.user.polls
 
 import net.dv8tion.jda.api.entities.Guild
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
-import net.dv8tion.jda.api.interactions.commands.build.CommandData
+import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction
+import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
+import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
 import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.utils.Scheduler
@@ -19,8 +20,8 @@ class SimplePoll(pollAdmin: IPollAdmin, scheduler: Scheduler, session: Session) 
 
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
 
-    override fun createCommand(guild: Guild): CommandData {
-        val command = CommandData("poll", "simple polls")
+    override fun createCommand(guild: Guild): SlashCommandData {
+        val command = Commands.slash("poll", "simple polls")
         command.addSubcommands(
             SubcommandData("new", "creates a new poll").addOptions(
                 OptionData(OptionType.STRING, "name", "a unique name of the poll").setRequired(true),
@@ -50,7 +51,7 @@ class SimplePoll(pollAdmin: IPollAdmin, scheduler: Scheduler, session: Session) 
 
     private val internalPollState = InternalPollState()
 
-    override fun handle(event: SlashCommandEvent) {
+    override fun handle(event: SlashCommandInteraction) {
         when (event.subcommandName) {
             "new" -> handleNew(event)
             "del" -> handleDelete(event)
@@ -62,7 +63,7 @@ class SimplePoll(pollAdmin: IPollAdmin, scheduler: Scheduler, session: Session) 
         }
     }
 
-    private fun handleNew(event: SlashCommandEvent) {
+    private fun handleNew(event: SlashCommandInteraction) {
         val name = event.getOption("name")?.asString ?: ""
         val question = event.getOption("question")?.asString ?: ""
         val onlyOneAnswer = event.getOption("only-one-answer")?.asBoolean ?: true
@@ -78,14 +79,14 @@ class SimplePoll(pollAdmin: IPollAdmin, scheduler: Scheduler, session: Session) 
         event.reply("Poll *#* created!".translate(event, name)).setEphemeral(true).queue()
     }
 
-    private fun handleDelete(event: SlashCommandEvent) {
+    private fun handleDelete(event: SlashCommandInteraction) {
         val name = event.getOption("name")?.asString ?: ""
         val poll = needPollData(event, name, event.user.id, true) ?: return
         internalPollState.remove(poll)
         event.reply("Poll *#* deleted!".translate(event, name)).setEphemeral(true).queue()
     }
 
-    private fun handleAddOption(event: SlashCommandEvent) {
+    private fun handleAddOption(event: SlashCommandInteraction) {
         val name = event.getOption("name")?.asString ?: ""
         val poll = needPollData(event, name, event.user.id, true) ?: return
 
@@ -100,7 +101,7 @@ class SimplePoll(pollAdmin: IPollAdmin, scheduler: Scheduler, session: Session) 
         event.reply("Option '#' added to **#**".translate(event, option, name)).setEphemeral(true).queue()
     }
 
-    private fun handleDelOption(event: SlashCommandEvent) {
+    private fun handleDelOption(event: SlashCommandInteraction) {
         val name = event.getOption("name")?.asString ?: ""
         val poll = needPollData(event, name, event.user.id, true) ?: return
         val option = event.getOption("option")?.asString ?: ""
@@ -114,7 +115,7 @@ class SimplePoll(pollAdmin: IPollAdmin, scheduler: Scheduler, session: Session) 
         event.reply("Option '#' removed from **#**".translate(event, option, name)).setEphemeral(true).queue()
     }
 
-    private fun handleState(event: SlashCommandEvent) {
+    private fun handleState(event: SlashCommandInteraction) {
         val name = event.getOption("name")?.asString ?: ""
 
         val polls =
@@ -144,7 +145,7 @@ class SimplePoll(pollAdmin: IPollAdmin, scheduler: Scheduler, session: Session) 
         }
     }
 
-    private fun handleShow(event: SlashCommandEvent) {
+    private fun handleShow(event: SlashCommandInteraction) {
         val name = event.getOption("name")?.asString ?: ""
         val poll = needPollData(event, name, event.user.id, true) ?: return
 
@@ -163,7 +164,7 @@ class SimplePoll(pollAdmin: IPollAdmin, scheduler: Scheduler, session: Session) 
         createPoll(hook, null, user, question, options, onlyOneAnswer)
     }
 
-    private fun needPollData(event: SlashCommandEvent, name: String, uid: String, shallBePresent: Boolean): InternalPoll? {
+    private fun needPollData(event: SlashCommandInteraction, name: String, uid: String, shallBePresent: Boolean): InternalPoll? {
         val poll = internalPollState.getPollData(name, uid)
         if ((poll != null) == shallBePresent)
             return poll ?: InternalPoll("", "", "", false)
