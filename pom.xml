@@ -15,8 +15,8 @@
         <kotlin.compiler.jvmTarget>17</kotlin.compiler.jvmTarget>
 
         <kotlin.version>1.6.20</kotlin.version>
-        <jackson.version>2.13.2</jackson.version>
-        <jda.version>5.0.0-alpha.9</jda.version>
+        <jackson.version>2.13.3</jackson.version>
+        <jda.version>5.0.0-alpha.12</jda.version>
         <slf4j.version>1.7.36</slf4j.version>
         <main.class>org.fuchss.deltabot.MainKt</main.class>
     </properties>
@@ -105,7 +105,7 @@
             <plugin>
                 <groupId>com.diffplug.spotless</groupId>
                 <artifactId>spotless-maven-plugin</artifactId>
-                <version>2.22.0</version>
+                <version>2.22.8</version>
                 <configuration>
                     <pom>
                         <sortPom>
@@ -122,52 +122,23 @@
                 </configuration>
                 <executions>
                     <execution>
-                        <id>spotless:check</id>
-                        <phase>verify</phase>
+                        <id>spotless:apply</id>
+                        <goals>
+                            <goal>apply</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>3.0.0</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>com.pinterest</groupId>
-                        <artifactId>ktlint</artifactId>
-                        <version>0.45.1</version>
-                    </dependency>
-                </dependencies>
+                <groupId>com.github.gantsign.maven</groupId>
+                <artifactId>ktlint-maven-plugin</artifactId>
+                <version>1.13.1</version>
                 <executions>
                     <execution>
-                        <id>ktlint</id>
+                        <id>format</id>
                         <goals>
-                            <goal>run</goal>
+                            <goal>format</goal>
                         </goals>
-                        <phase>verify</phase>
-                        <configuration>
-                            <target name="ktlint">
-                                <java classname="com.pinterest.ktlint.Main" classpathref="maven.plugin.classpath" dir="${basedir}" failonerror="true" fork="true" taskname="ktlint">
-                                    <arg value="src/**/*.kt"/>
-                                </java>
-                            </target>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>ktlint-format</id>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <configuration>
-                            <target name="ktlint">
-                                <java classname="com.pinterest.ktlint.Main" classpathref="maven.plugin.classpath" dir="${basedir}" failonerror="true" fork="true" taskname="ktlint">
-                                    <arg value="-F"/>
-                                    <arg value="src/**/*.kt"/>
-                                    <jvmarg value="--add-opens"/>
-                                    <jvmarg value="java.base/java.lang=ALL-UNNAMED"/>
-                                </java>
-                            </target>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>

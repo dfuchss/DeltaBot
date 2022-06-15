@@ -28,7 +28,7 @@ class DialogListener(private val configuration: BotConfiguration) : EventListene
 
         var respond = false
         respond = respond || event.channelType == ChannelType.PRIVATE
-        respond = respond || event.jda.selfUser in event.message.mentionedUsers
+        respond = respond || event.jda.selfUser in event.message.mentions.users
         respond = respond || event.message.referencedMessage?.author == event.jda.selfUser
 
         if (!respond) {
