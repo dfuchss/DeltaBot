@@ -36,8 +36,9 @@ class State(private val config: BotConfiguration, private val scheduler: Schedul
         msg += "Scheduler Queue: ${scheduler.size()}\n"
 
         msg += "Language (Default): ${languageSettings().defaultLanguage()}\n"
-        if (event.guild != null)
+        if (event.guild != null) {
             msg += "Language (Guild): ${languageSettings().guildToLanguage(event.guild!!.id)}\n"
+        }
 
         msg += "Registered Users: ${findUsers(event.jda, session, event.guild)}"
         event.replyEmbeds(EmbedBuilder().setTitle("Current State").setDescription(msg).setColor(Constants.BLUE).build()).setEphemeral(true).queue()

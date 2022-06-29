@@ -46,8 +46,9 @@ class QnA : Dialog(ID) {
             var answers = mutableListOf<String>()
             answers = orm.readValue(stream, answers.javaClass)
 
-            if (answers.isEmpty())
+            if (answers.isEmpty()) {
                 return null
+            }
             return answers[Random.nextInt(answers.size)]
         } catch (e: Exception) {
             logger.error(e.message)

@@ -91,10 +91,11 @@ class BotConfiguration {
     }
 
     fun toggleAdmin(user: User): Boolean {
-        if (admins.any { u -> u.discordId == user.id })
+        if (admins.any { u -> u.discordId == user.id }) {
             admins.removeIf { u -> u.discordId == user.id }
-        else
+        } else {
             admins.add(UserDTO(user))
+        }
 
         session!!.persist(this)
         return admins.any { u -> u.discordId == user.id }
@@ -118,8 +119,9 @@ class BotConfiguration {
     }
 
     fun getAdminMembersOfGuildWithGlobalAdmins(guild: Guild?): List<User> {
-        if (guild == null)
+        if (guild == null) {
             return emptyList()
+        }
         val adminsOfGuild = mutableListOf<User>()
         adminsOfGuild.add(guild.fetchMember(guild.ownerId)!!.user)
 

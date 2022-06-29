@@ -68,8 +68,9 @@ private fun nextWeekend(): Int {
 }
 
 fun findGenericTimespan(message: String, language: Language, ducklingService: DucklingService? = null): LocalDateTime? {
-    if (message.isBlank())
+    if (message.isBlank()) {
         return null
+    }
 
     if (ducklingService != null) {
         val times = ducklingService.interpretTime(message, language)
@@ -82,8 +83,9 @@ fun findGenericTimespan(message: String, language: Language, ducklingService: Du
         val rgx = Regex(regex(timespan), RegexOption.IGNORE_CASE)
         val match = rgx.findAll(message).toList()
 
-        if (match.size != 1)
+        if (match.size != 1) {
             continue
+        }
 
         val multiply = extractor(timespan)(match[0].value)
         val time = LocalDateTime.now() + unit(timespan).multipliedBy(multiply.toLong())

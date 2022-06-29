@@ -54,8 +54,9 @@ class Language : GlobalCommand {
             }
         }
 
-        if (response.isBlank())
+        if (response.isBlank()) {
             response = "You need to specify at least what language to you want to set".translate(event.language())
+        }
 
         event.reply(response.trim()).setEphemeral(true).queue()
     }

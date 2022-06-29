@@ -23,14 +23,16 @@ import javax.persistence.Id
 private val hiddenMessages = HiddenMessageManager()
 
 fun initHiddenMessages(jda: JDA, scheduler: Scheduler, session: Session) {
-    if (hiddenMessages.isInitialized())
+    if (hiddenMessages.isInitialized()) {
         error("HM Manager already initialized")
+    }
     hiddenMessages.init(jda, session, scheduler)
 }
 
 fun unhideAll(jda: JDA) {
-    if (!hiddenMessages.isInitialized())
+    if (!hiddenMessages.isInitialized()) {
         error("Hidden Messages are not initialized")
+    }
     hiddenMessages.unhideAll(jda)
 }
 
@@ -40,8 +42,9 @@ private val hideEmote = ":arrow_down_small:".toEmoji()
 private const val maxContent = 24
 
 fun Message.isHidden(): Boolean {
-    if (!hiddenMessages.isInitialized())
+    if (!hiddenMessages.isInitialized()) {
         error("Hidden Messages are not initialized")
+    }
 
     return hiddenMessages.findMessage(this) != null
 }
@@ -53,8 +56,9 @@ fun Message.hide(directHide: Boolean = true): Message {
         return this
     }
 
-    if (!hiddenMessages.isInitialized())
+    if (!hiddenMessages.isInitialized()) {
         error("Hidden Messages are not initialized")
+    }
 
     val hiddenMessage = hiddenMessages.findMessage(rawMessage)
     if (hiddenMessage == null) {
@@ -69,8 +73,9 @@ fun Message.hide(directHide: Boolean = true): Message {
 }
 
 fun Message.unhide(): Message {
-    if (!hiddenMessages.isInitialized())
+    if (!hiddenMessages.isInitialized()) {
         error("Hidden Messages are not initialized")
+    }
 
     val hiddenMessage = hiddenMessages.findMessage(this) ?: return this
     unhideMessage(null, this, hiddenMessage)
@@ -93,8 +98,9 @@ private fun createHiddenMessage(message: Message) {
 }
 
 private fun hideMessage(message: Message, hiddenMessage: HiddenMessage): Message {
-    if (hiddenMessage.hidden)
+    if (hiddenMessage.hidden) {
         return message
+    }
 
     val firstLine = message.contentDisplay.split("\n")[0]
     val newContent = (if (firstLine.length > maxContent) firstLine.substring(0, maxContent) else firstLine) + "..."
@@ -105,8 +111,9 @@ private fun hideMessage(message: Message, hiddenMessage: HiddenMessage): Message
 }
 
 private fun unhideMessage(scheduler: Scheduler?, message: Message, hiddenMessage: HiddenMessage) {
-    if (!hiddenMessage.hidden)
+    if (!hiddenMessage.hidden) {
         return
+    }
 
     message.editMessage(hiddenMessage.content).complete()
     hiddenMessage.hidden = false
@@ -130,23 +137,26 @@ private class HiddenMessageManager : EventListener {
     fun isInitialized(): Boolean = scheduler != null && session != null
 
     fun findMessage(message: Message?): HiddenMessage? {
-        if (message == null)
+        if (message == null) {
             return null
+        }
         val private = message.channelType == ChannelType.PRIVATE
 
-        return if (private)
+        return if (private) {
             hiddenMessagesData.find { hm -> hm.isPrivateChannel && hm.mid == message.id && hm.uid == (message.channel as PrivateChannel).user!!.id }
-        else
+        } else {
             hiddenMessagesData.find { hm -> !hm.isPrivateChannel && hm.mid == message.id && hm.cid == message.channel.id && hm.gid == message.guild.id }
+        }
     }
 
     fun findMessage(messageDeleteEvent: MessageDeleteEvent): HiddenMessage? {
         val private = messageDeleteEvent.channelType == ChannelType.PRIVATE
 
-        return if (private)
+        return if (private) {
             hiddenMessagesData.find { hm -> hm.isPrivateChannel && hm.mid == messageDeleteEvent.messageId && hm.uid == (messageDeleteEvent.channel as PrivateChannel).user!!.id }
-        else
+        } else {
             hiddenMessagesData.find { hm -> !hm.isPrivateChannel && hm.mid == messageDeleteEvent.messageId && hm.cid == messageDeleteEvent.channel.id && hm.gid == messageDeleteEvent.guild.id }
+        }
     }
 
     override fun onEvent(event: GenericEvent) {
@@ -157,8 +167,9 @@ private class HiddenMessageManager : EventListener {
             return
         }
 
-        if (event !is ButtonInteractionEvent || event.button.id != hideId)
+        if (event !is ButtonInteractionEvent || event.button.id != hideId) {
             return
+        }
 
         val hiddenMessage = findMessage(event.message) ?: return
         handleHiddenMessageClick(event, hiddenMessage)
@@ -166,29 +177,33 @@ private class HiddenMessageManager : EventListener {
 
     private fun handleHiddenMessageClick(event: ButtonInteractionEvent, hiddenMessage: HiddenMessage) {
         event.deferEdit().complete()
-        if (hiddenMessage.hidden)
+        if (hiddenMessage.hidden) {
             unhideMessage(scheduler, event.message, hiddenMessage)
-        else
+        } else {
             hideMessage(event.message, hiddenMessage)
+        }
     }
 
     fun addHM(hiddenMessage: HiddenMessage) {
-        if (!isInitialized())
+        if (!isInitialized()) {
             error("Hidden Messages are not initialized")
+        }
         session!!.persist(hiddenMessage)
         hiddenMessagesData.add(hiddenMessage)
     }
 
     fun removeHM(hiddenMessage: HiddenMessage) {
-        if (!isInitialized())
+        if (!isInitialized()) {
             error("Hidden Messages are not initialized")
+        }
         session!!.delete(hiddenMessage)
         hiddenMessagesData.remove(hiddenMessage)
     }
 
     fun persist(hiddenMessage: HiddenMessage) {
-        if (!isInitialized())
+        if (!isInitialized()) {
             error("Hidden Messages are not initialized")
+        }
         session!!.persist(hiddenMessage)
     }
 

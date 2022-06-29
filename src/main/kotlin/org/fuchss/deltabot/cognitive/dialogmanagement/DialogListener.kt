@@ -20,11 +20,13 @@ class DialogListener(private val configuration: BotConfiguration) : EventListene
      * @param[event] a discord event to handle
      */
     override fun onEvent(event: GenericEvent) {
-        if (event !is MessageReceivedEvent)
+        if (event !is MessageReceivedEvent) {
             return
+        }
 
-        if (event.message.author.isBot)
+        if (event.message.author.isBot) {
             return
+        }
 
         var respond = false
         respond = respond || event.channelType == ChannelType.PRIVATE

@@ -62,7 +62,8 @@ class UserBotInstance(private val configuration: BotConfiguration) {
 
         val instance = dialogs.find { d -> d.dialogId == dialog } ?: InternalErrorDialog()
         val result = instance.proceed(message, intents, entities, language)
-        if (result == DialogResult.WAIT_FOR_INPUT)
+        if (result == DialogResult.WAIT_FOR_INPUT) {
             activeDialogs.push(instance.dialogId)
+        }
     }
 }

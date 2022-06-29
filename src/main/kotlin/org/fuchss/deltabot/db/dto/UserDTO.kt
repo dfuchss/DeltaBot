@@ -20,8 +20,9 @@ class UserDTO {
         }
 
         fun findDBUser(session: Session?, userId: String): UserDTO? {
-            if (session == null)
+            if (session == null) {
                 return null
+            }
 
             val users = session.getAllObjects(UserDTO::class.java)
             return users.find { u -> u.discordId == userId }

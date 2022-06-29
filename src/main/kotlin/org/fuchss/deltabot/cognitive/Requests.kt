@@ -63,8 +63,9 @@ private fun readInputStream(inputStream: InputStream): String {
     val sb = StringBuilder()
     while (true) {
         val read = inputStream.read(buffer)
-        if (read < 0)
+        if (read < 0) {
             break
+        }
 
         if (read < buffer.size) {
             val s = String(buffer.copyOfRange(0, read), Charset.forName("utf-8"))

@@ -114,16 +114,18 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
     }
 
     override fun onEvent(event: GenericEvent) {
-        if (event !is ButtonInteractionEvent)
+        if (event !is ButtonInteractionEvent) {
             return
+        }
         val data = polls.find { p -> p.mid == event.messageId } ?: return
         handleButtonEvent(event, data)
     }
 
     private fun initScheduler(jda: JDA) {
         for (update in polls)
-            if (update.timestamp != null)
+            if (update.timestamp != null) {
                 scheduler.queue(update.mid, { createTermination(jda, update) }, update.timestamp!!)
+            }
     }
 
     private fun createTermination(jda: JDA, update: Poll) {
@@ -139,8 +141,9 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
         val buttonId = event.button.id ?: ""
 
         if (admin.name == buttonId) {
-            if (!isOwner(event, data))
+            if (!isOwner(event, data)) {
                 return
+            }
 
             val reply = event.deferReply(true).complete()
             pollAdmin.createAdminArea(reply, data)
@@ -183,8 +186,9 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
     }
 
     private fun isOwner(event: ButtonInteractionEvent, data: Poll): Boolean {
-        if (data.uid == event.user.id)
+        if (data.uid == event.user.id) {
             return true
+        }
         event.reply("Since you are not the owner of the poll, you can't do this action".translate(event)).setEphemeral(true).queue()
         return false
     }
@@ -200,8 +204,9 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
         val reactionText = reactions.filter { (_, l) -> l.isNotEmpty() }.joinToString("\n") { (emoji, list) -> "${emoji.asMention}: ${list.joinToString(" ")}" }
 
         var finalMessage = intro
-        if (reactionText.isNotBlank())
+        if (reactionText.isNotBlank()) {
             finalMessage += "\n\n${reactionText.trim()}"
+        }
 
         message.editMessage(finalMessage).queue()
     }
@@ -216,8 +221,9 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
 
         val data = Poll(pollType, terminationTimestamp, msg.guild.id, msg.channel.id, msg.id, author.id, options.keys.map { e -> EmojiDTO.create(e) }, onlyOneOption)
         savePollToDB(data)
-        if (terminationTimestamp != null)
+        if (terminationTimestamp != null) {
             scheduler.queue(msg.id, { terminate(data, hook.jda, null, author.id) }, terminationTimestamp)
+        }
     }
 
     protected fun getOptions(options: List<String>): Map<Emoji, Button> {
@@ -255,8 +261,9 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
         finalMsg += "\n${pollFinished.translate(language(msg.guild, user))}"
 
         msg.editMessage(finalMsg).setActionRows(listOf()).complete().hide(directHide = false)
-        if (msg.isPinned)
+        if (msg.isPinned) {
             msg.unpin().complete()
+        }
     }
 
     private fun savePollToDB(poll: Poll) {
@@ -265,8 +272,9 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
     }
 
     protected fun removePollFromDB(poll: Poll?) {
-        if (poll == null)
+        if (poll == null) {
             return
+        }
         polls.remove(poll)
         session.delete(poll)
     }
@@ -291,8 +299,9 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
         }
 
         fun getEmoji(guild: Guild): Emoji {
-            if (id == "0")
+            if (id == "0") {
                 return Emoji.fromUnicode(name)
+            }
             val emote = guild.retrieveEmoteById(id).complete()
             return Emoji.fromEmote(emote)
         }

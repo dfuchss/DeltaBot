@@ -20,8 +20,9 @@ class ReactionHandler : EventListener {
     }
 
     private fun handleReactionAdd(event: MessageReactionAddEvent) {
-        if (!event.isFromGuild || !event.reactionEmote.isEmoji || event.user == null)
+        if (!event.isFromGuild || !event.reactionEmote.isEmoji || event.user == null) {
             return
+        }
         handle(event, ":pushpin:", this::handlePin)
         handle(event, ":arrow_down_small:") { m, _, _ -> handleHide(m) }
     }
@@ -43,15 +44,17 @@ class ReactionHandler : EventListener {
     }
 
     private fun handleHide(message: Message) {
-        if (message.author.id != message.jda.selfUser.id)
+        if (message.author.id != message.jda.selfUser.id) {
             return
+        }
 
         val hidden = message.isHidden()
 
-        if (hidden)
+        if (hidden) {
             message.unhide()
-        else
+        } else {
             message.hide()
+        }
 
         message.clearReactions().queue()
     }

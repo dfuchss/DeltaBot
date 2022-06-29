@@ -39,8 +39,9 @@ abstract class Dialog(val dialogId: String) {
             val result = steps[next](context)
             next++
 
-            if (result == DialogResult.WAIT_FOR_INPUT)
+            if (result == DialogResult.WAIT_FOR_INPUT) {
                 return DialogResult.WAIT_FOR_INPUT
+            }
         }
         this.reset()
         return DialogResult.NEXT
@@ -92,6 +93,7 @@ data class Context(
      */
     val language: Language
 )
+
 /**
  * Defines a step in dialogs.
  */

@@ -193,20 +193,24 @@ class CommandRegistry(private val configuration: BotConfiguration, dbLocation: S
 
     private fun findCommand(activeCommands: List<Command>, cmdData: SlashCommandData): Command? {
         for (cmd in activeCommands) {
-            if (cmd.name != cmdData.name)
+            if (cmd.name != cmdData.name) {
                 continue
-            if (!cmd.options.optionEqualsData(cmdData.options))
+            }
+            if (!cmd.options.optionEqualsData(cmdData.options)) {
                 continue
-            if (!cmd.subcommands.subcommandEqualsData(cmdData.subcommands))
+            }
+            if (!cmd.subcommands.subcommandEqualsData(cmdData.subcommands)) {
                 continue
+            }
             return cmd
         }
         return null
     }
 
     override fun permissions(command: Command): CommandPermissions {
-        if (!nameToCommand.containsKey(command.name))
+        if (!nameToCommand.containsKey(command.name)) {
             error("Command ${command.name} not suitable registered! Permissions not found!")
+        }
 
         return nameToCommand[command.name]!!.permissions
     }

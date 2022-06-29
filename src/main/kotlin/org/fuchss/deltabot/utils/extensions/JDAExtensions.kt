@@ -46,8 +46,9 @@ fun Message.fetchCommands(): List<Command> = if (this.isFromGuild) this.guild.fe
 fun Guild.fetchMember(uid: String): Member? {
     try {
         val cached = this.getMemberById(uid)
-        if (cached != null)
+        if (cached != null) {
             return cached
+        }
 
         return this.retrieveMemberById(uid).complete()
     } catch (e: Exception) {
@@ -69,8 +70,9 @@ fun Guild.fetchMessage(cid: String, mid: String): Message? {
 fun JDA.fetchTextChannel(gid: String, cid: String): TextChannel? {
     try {
         val cached = this.getTextChannelById(cid)
-        if (cached != null)
+        if (cached != null) {
             return cached
+        }
 
         val guild = this.getGuildById(gid)!!
         return guild.getTextChannelById(gid)!!
@@ -83,8 +85,9 @@ fun JDA.fetchTextChannel(gid: String, cid: String): TextChannel? {
 fun JDA.fetchUser(uid: String): User? {
     try {
         val cached = this.getUserById(uid)
-        if (cached != null)
+        if (cached != null) {
             return cached
+        }
 
         return this.retrieveUserById(uid).complete()
     } catch (e: Exception) {
@@ -104,16 +107,20 @@ fun Message.pinAndDelete() {
     try {
         pin().complete()
         val history = channel.history.retrievePast(1).complete()
-        if (history.isEmpty())
+        if (history.isEmpty()) {
             return
+        }
 
         val pinned = history[0] ?: return
-        if (!pinned.author.isBot)
+        if (!pinned.author.isBot) {
             return
-        if (pinned.id == this.id)
+        }
+        if (pinned.id == this.id) {
             return
-        if (pinned.messageReference?.messageId != this.id)
+        }
+        if (pinned.messageReference?.messageId != this.id) {
             return
+        }
 
         pinned.delete().complete()
     } catch (e: Exception) {
@@ -147,8 +154,9 @@ fun <E : ItemComponent> List<E>.toActionRows(maxInRow: Int = 5, tryModZero: Bool
         row.add(c)
     }
 
-    if (row.isNotEmpty())
+    if (row.isNotEmpty()) {
         rows.add(ActionRow.of(row))
+    }
 
     return rows
 }

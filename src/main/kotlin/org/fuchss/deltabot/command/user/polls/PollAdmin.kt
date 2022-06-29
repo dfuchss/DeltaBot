@@ -33,12 +33,14 @@ class PollAdmin : EventListener, IPollAdmin {
         }
 
         val buttonId = event.button.id ?: ""
-        if (buttonId !in listOf(finish, delete, refresh, postpone_15, postpone_60).map { e -> e.name })
+        if (buttonId !in listOf(finish, delete, refresh, postpone_15, postpone_60).map { e -> e.name }) {
             return
+        }
 
         val rawMessage = event.message.contentRaw.lines()
-        if (rawMessage.size < 2)
+        if (rawMessage.size < 2) {
             return
+        }
 
         val type = if (rawMessage[0].startsWith(pollTypeLine)) rawMessage[0].substring(pollTypeLine.length).trim() else ""
         val mid = if (rawMessage[1].startsWith(pollIdLine)) rawMessage[1].substring(pollIdLine.length).trim() else ""
@@ -89,8 +91,9 @@ class PollAdmin : EventListener, IPollAdmin {
     }
 
     override fun onEvent(event: GenericEvent) {
-        if (event !is ButtonInteractionEvent)
+        if (event !is ButtonInteractionEvent) {
             return
+        }
         handleAction(event)
     }
 }

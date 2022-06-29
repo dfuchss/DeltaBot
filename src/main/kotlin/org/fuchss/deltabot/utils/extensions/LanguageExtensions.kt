@@ -22,17 +22,20 @@ fun initLanguage(session: Session) {
 fun language(guild: Guild?, user: User?): Language {
     if (guild != null) {
         val usersGuildLanguage = user?.internalLanguage(guild)
-        if (usersGuildLanguage != null)
+        if (usersGuildLanguage != null) {
             return usersGuildLanguage
+        }
 
         val guildLanguage = guild.internalLanguage()
-        if (guildLanguage != null)
+        if (guildLanguage != null) {
             return guildLanguage
+        }
     }
 
     val userLanguage = user?.internalLanguage()
-    if (userLanguage != null)
+    if (userLanguage != null) {
         return userLanguage
+    }
 
     return languageSettings().defaultLanguage()
 }
@@ -51,20 +54,22 @@ fun User.internalLanguage(guild: Guild) = languageSettings().userAndGuildToLangu
  * Set the global [Language] for a [User].
  */
 fun User.setLanguage(language: Language?) {
-    if (language == null)
+    if (language == null) {
         languageSettings().removeUserToLanguage(this.id)
-    else
+    } else {
         languageSettings().setUserToLanguage(this, language)
+    }
 }
 
 /**
  * Set the [Language] in a specific [Guild] for a [User].
  */
 fun User.setLanguage(language: Language?, guild: Guild) {
-    if (language == null)
+    if (language == null) {
         languageSettings().removeUserAndGuildToLanguage(this.id, guild.id)
-    else
+    } else {
         languageSettings().setUserAndGuildToLanguage(this, guild, language)
+    }
 }
 
 /**
@@ -76,10 +81,11 @@ fun Guild.internalLanguage() = languageSettings().guildToLanguage(this.id)
  * Set the global [Guild] language.
  */
 fun Guild.setLanguage(language: Language?) {
-    if (language == null)
+    if (language == null) {
         languageSettings().removeGuildToLanguage(this.id)
-    else
+    } else {
         languageSettings().setGuildToLanguage(this, language)
+    }
 }
 
 /**

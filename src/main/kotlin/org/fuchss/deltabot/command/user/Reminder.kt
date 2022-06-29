@@ -80,10 +80,11 @@ class Reminder(configuration: BotConfiguration, private val scheduler: Scheduler
         val time = times[0]
         val ts = time.timestamp()
         val reminder =
-            if (event.channelType == ChannelType.PRIVATE)
+            if (event.channelType == ChannelType.PRIVATE) {
                 ReminderData(null, ts, "", "", true, event.user.id, message)
-            else
+            } else {
                 ReminderData(null, ts, event.guild!!.id, event.channel.id, false, event.user.id, message)
+            }
 
         persistReminder(reminder)
         scheduler.queue(null, { remind(reminder, event.jda) }, ts)

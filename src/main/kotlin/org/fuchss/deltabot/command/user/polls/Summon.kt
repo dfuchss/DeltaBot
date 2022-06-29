@@ -102,8 +102,9 @@ class Summon(pollAdmin: IPollAdmin, configuration: BotConfiguration, scheduler: 
         val user = jda.fetchUser(uid)
         val newContent = msg.contentRaw + "\n\n${pollFinished.translate(language(msg.guild, user))}"
         msg.editMessage(newContent).setActionRows(listOf()).complete().hide(directHide = false)
-        if (msg.isPinned)
+        if (msg.isPinned) {
             msg.unpin().complete()
+        }
     }
 
     private fun getButtons(guild: Guild): List<Button> {
@@ -122,8 +123,9 @@ class Summon(pollAdmin: IPollAdmin, configuration: BotConfiguration, scheduler: 
                 guild.createEmote(asset, Icon.from(this.javaClass.getResourceAsStream("/assets/$asset.png")!!)).complete()
             }
 
-            if (newAssets.isNotEmpty())
+            if (newAssets.isNotEmpty()) {
                 emotes = guild.retrieveEmotes().complete()
+            }
             emotes = assets.mapNotNull { a -> emotes.find { e -> e.name == a } }
 
             emojis[1] = Emoji.fromEmote(emotes[0].name, emotes[0].idLong, emotes[0].isAnimated)

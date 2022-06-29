@@ -95,11 +95,13 @@ class ServerRoles : GuildCommand {
             .addRolePermissionOverride(everyone.idLong, null, listOf(Permission.VIEW_CHANNEL))
             .complete()
 
-        if (text)
+        if (text) {
             group.createTextChannel(name).queue()
+        }
 
-        if (voice)
+        if (voice) {
             group.createVoiceChannel(name).queue()
+        }
 
         hook.editOriginal("Welcome # on the server!".translate(event, role.asMention)).queue()
     }
@@ -116,7 +118,6 @@ class ServerRoles : GuildCommand {
         val hook = event.reply("Purging # role on the server!".translate(event, role.name)).complete()
 
         try {
-
             val categories = guild.getCategoriesByName(role.name, false)
             for (cat in categories) {
                 cat.textChannels.forEach { c -> c.delete().queue() }

@@ -26,14 +26,16 @@ class RasaService(configuration: BotConfiguration) {
 
         if (version.isEmpty()) {
             this.init()
-            if (version.isEmpty())
+            if (version.isEmpty()) {
                 return empty
+            }
         }
 
         val cleanContent = content.replace(Regex("[^a-zA-Z0-9ÄÖÜäöüß -]"), "")
 
-        if (cleanContent.isBlank())
+        if (cleanContent.isBlank()) {
             return empty
+        }
 
         return try {
             val payload = "{ \"locale\": \"$lang\", \"text\": \"$cleanContent\" }"

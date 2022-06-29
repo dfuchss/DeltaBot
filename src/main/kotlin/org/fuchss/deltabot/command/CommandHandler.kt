@@ -20,8 +20,9 @@ class CommandHandler(private val configuration: BotConfiguration, private val co
     }
 
     override fun onEvent(event: GenericEvent) {
-        if (event !is SlashCommandInteraction)
+        if (event !is SlashCommandInteraction) {
             return
+        }
         handleSlashCommand(event)
     }
 

@@ -166,8 +166,9 @@ class SimplePoll(pollAdmin: IPollAdmin, scheduler: Scheduler, session: Session) 
 
     private fun needPollData(event: SlashCommandInteraction, name: String, uid: String, shallBePresent: Boolean): InternalPoll? {
         val poll = internalPollState.getPollData(name, uid)
-        if ((poll != null) == shallBePresent)
+        if ((poll != null) == shallBePresent) {
             return poll ?: InternalPoll("", "", "", false)
+        }
 
         if (shallBePresent) {
             event.reply("Poll not found!".translate(event)).setEphemeral(true).queue()

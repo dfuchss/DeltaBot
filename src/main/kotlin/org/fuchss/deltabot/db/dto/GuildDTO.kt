@@ -20,8 +20,9 @@ class GuildDTO {
         }
 
         fun findDBGuild(session: Session?, guildId: String): GuildDTO? {
-            if (session == null)
+            if (session == null) {
                 return null
+            }
             val guilds = session.getAllObjects(GuildDTO::class.java)
             return guilds.find { u -> u.discordId == guildId }
         }

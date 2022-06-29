@@ -74,10 +74,12 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
     }
 
     override fun onEvent(event: GenericEvent) {
-        if (event !is ButtonInteractionEvent)
+        if (event !is ButtonInteractionEvent) {
             return
-        if (!isGuildMessage(event.guild?.id ?: "", event.channel.id, event.messageId))
+        }
+        if (!isGuildMessage(event.guild?.id ?: "", event.channel.id, event.messageId)) {
             return
+        }
 
         handleRolesClick(event)
     }
@@ -241,8 +243,9 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
     }
 
     private fun loadEmojiButton(guild: Guild, emoji: String): Button {
-        if (!discordEmojiRegex.matches(emoji))
+        if (!discordEmojiRegex.matches(emoji)) {
             return Button.secondary(emoji, Emoji.fromUnicode(emoji))
+        }
 
         val emojiId = emoji.split(":")[2].dropLast(1)
         val guildEmoji = guild.retrieveEmoteById(emojiId).complete()

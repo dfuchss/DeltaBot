@@ -47,8 +47,9 @@ class DucklingService(private val endpoint: String) {
         return if (t.value == null) {
             // From & To are set ..
             t.from!!.value!!
-        } else
+        } else {
             t.value!!
+        }
     }
 
     private fun getDataString(params: Map<String, Any>): String {

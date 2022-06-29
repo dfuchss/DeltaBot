@@ -29,9 +29,9 @@ fun getDatabase(location: String): Session {
 fun <T> Session.load(type: Class<T>, initializer: (T, Session) -> Unit, defaultValue: () -> T): T {
     val elements = this.getAllObjects(type)
     val element =
-        if (elements.isNotEmpty())
+        if (elements.isNotEmpty()) {
             elements.first()
-        else {
+        } else {
             val newElement = defaultValue()
             this.persist(newElement)
             newElement

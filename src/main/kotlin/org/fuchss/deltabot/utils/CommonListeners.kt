@@ -18,8 +18,9 @@ class LoggerListener(private val configuration: BotConfiguration) : EventListene
             logger.debug(event.toString())
         }
 
-        if (event !is MessageReceivedEvent)
+        if (event !is MessageReceivedEvent) {
             return
+        }
 
         logger.info("${event.message}")
     }
@@ -30,8 +31,9 @@ class LoggerListener(private val configuration: BotConfiguration) : EventListene
  */
 class ActivityChanger : EventListener {
     override fun onEvent(event: GenericEvent) {
-        if (event !is ReadyEvent)
+        if (event !is ReadyEvent) {
             return
+        }
 
         event.jda.presence.setPresence(OnlineStatus.ONLINE, Activity.watching("/help"))
     }

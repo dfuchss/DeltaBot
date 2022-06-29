@@ -42,8 +42,9 @@ class Erase : GuildCommand {
             var messages = history.fetchHistory(retrieveMax)
             while (messages.isNotEmpty()) {
                 for (m in messages) {
-                    if (user == null || m.author.id == user.id)
+                    if (user == null || m.author.id == user.id) {
                         m.delete().queue()
+                    }
                 }
                 messages = history.fetchHistory(retrieveMax)
             }

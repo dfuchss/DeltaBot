@@ -17,11 +17,13 @@ class Scheduler(private val sleepInterval: Int = 5) : EventListener {
     private var thread: Thread? = null
 
     override fun onEvent(event: GenericEvent) {
-        if (event is ReadyEvent)
+        if (event is ReadyEvent) {
             this.start()
+        }
 
-        if (event is ShutdownEvent)
+        if (event is ShutdownEvent) {
             this.stop()
+        }
     }
 
     private fun start() {
