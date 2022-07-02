@@ -3,6 +3,7 @@ package org.fuchss.deltabot.command.react
 import com.vdurmont.emoji.EmojiManager
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
+import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent
 import net.dv8tion.jda.api.hooks.EventListener
@@ -20,7 +21,7 @@ class ReactionHandler : EventListener {
     }
 
     private fun handleReactionAdd(event: MessageReactionAddEvent) {
-        if (!event.isFromGuild || !event.reactionEmote.isEmoji || event.user == null) {
+        if (!event.isFromGuild || event.reaction.emoji.type != Emoji.Type.UNICODE || event.user == null) {
             return
         }
         handle(event, ":pushpin:", this::handlePin)
@@ -29,13 +30,13 @@ class ReactionHandler : EventListener {
 
     private fun handle(event: MessageReactionAddEvent, emojiName: String, handler: (Message, String, User) -> Unit) {
         val emoji = EmojiManager.getForAlias(emojiName).unicode
-        if (event.reactionEmote.emoji == emoji) {
+        if (event.reaction.emoji.name == emoji) {
             handler(event.retrieveMessage().complete(), emoji, event.user!!)
         }
     }
 
     private fun handlePin(message: Message, reaction: String, user: User) {
-        message.removeReaction(reaction, user).queue()
+        message.removeReaction(Emoji.fromUnicode(reaction), user).queue()
         if (message.isPinned) {
             message.unpin().queue()
         } else {

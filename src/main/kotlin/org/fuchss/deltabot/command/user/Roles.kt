@@ -1,11 +1,11 @@
 package org.fuchss.deltabot.command.user
 
 import net.dv8tion.jda.api.JDA
-import net.dv8tion.jda.api.entities.Emoji
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.Role
+import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.hooks.EventListener
@@ -229,10 +229,7 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
         val emoji2Role = guildState.emojiToRole.entries.sortedBy { (_, mention) -> guild.getRoleById(mention.drop("<@&".length).dropLast(">".length))?.name ?: "" }
         if (emoji2Role.isNotEmpty()) {
             message = "${switcherText.translate(guild.internalLanguage())}\n\n${
-            emoji2Role.joinToString(
-                separator = "\n",
-                transform = { (emoji, roleMention) -> "$emoji → $roleMention" }
-            )
+            emoji2Role.joinToString(separator = "\n", transform = { (emoji, roleMention) -> "$emoji → $roleMention" })
             }"
             message += "\n\n" + "Please choose buttons to select your roles ..".translate(guild.internalLanguage())
             buttons = emoji2Role.map { (e, _) -> loadEmojiButton(guild, e) }
@@ -248,8 +245,8 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
         }
 
         val emojiId = emoji.split(":")[2].dropLast(1)
-        val guildEmoji = guild.retrieveEmoteById(emojiId).complete()
-        return Button.secondary(guildEmoji.asMention, Emoji.fromEmote(guildEmoji))
+        val guildEmoji = guild.retrieveEmojiById(emojiId).complete()
+        return Button.secondary(guildEmoji.asMention, guildEmoji)
     }
 
     private fun isGuildMessage(guildId: String, channelId: String, messageId: String): Boolean =

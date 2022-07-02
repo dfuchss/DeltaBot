@@ -6,9 +6,7 @@ import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.ReadyEvent
 import net.dv8tion.jda.api.hooks.EventListener
 import net.dv8tion.jda.api.interactions.commands.Command
-import net.dv8tion.jda.api.interactions.commands.build.OptionData
-import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
-import net.dv8tion.jda.api.interactions.commands.build.SubcommandData
+import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions
 import org.fuchss.deltabot.BotConfiguration
 import org.fuchss.deltabot.command.admin.Admin
 import org.fuchss.deltabot.command.admin.Debug
@@ -98,8 +96,17 @@ class CommandRegistry(private val configuration: BotConfiguration, dbLocation: S
         updateHooks.forEach { r -> r.run() }
 
         jda.fetchCommands().find { c -> c.name == command.createCommand().name }?.delete()?.complete()
-        fixCommandPermissions(jda, configuration, this::permissions, u)
     }
+
+    override fun permissions(command: Command): CommandPermissions {
+        if (!nameToCommand.containsKey(command.name)) {
+            error("Command ${command.name} not suitable registered! Permissions not found!")
+        }
+
+        return nameToCommand[command.name]!!.permissions
+    }
+
+    override fun nameToCommand(): Map<String, BotCommand> = nameToCommand.toMap()
 
     /**
      * Register command update hooks that will be triggered on all changes of commands.
@@ -117,111 +124,16 @@ class CommandRegistry(private val configuration: BotConfiguration, dbLocation: S
     }
 
     private fun initCommands(jda: JDA) {
-        var needFix = false
-
-        needFix = needFix or initGlobalCommands(jda)
-        needFix = needFix or initGuildCommands(jda)
-
-        if (needFix) {
-            logger.info("Fixing command permissions ..")
-            fixCommandPermissions(jda, configuration, this::permissions)
+        globalCommands.forEach { nameToCommand[it.createCommand().name] = it }
+        if (jda.guilds.isNotEmpty()) {
+            guildCommands.forEach { nameToCommand[it.createCommand(jda.guilds[0]).name] = it }
         }
 
-        for (cmd in globalCommands + guildCommands)
-            cmd.registerJDA(jda)
+        val commands = jda.updateCommands()
+        commands.addCommands(globalCommands.map { it.createCommand().setDefaultPermissions(DefaultMemberPermissions.ENABLED) }).queue()
+        jda.guilds.forEach { it.updateCommands().addCommands(guildCommands.map { c -> c.createCommand(it).setDefaultPermissions(DefaultMemberPermissions.ENABLED) }).queue() }
+
+        globalCommands.forEach { it.registerJDA(jda) }
+        guildCommands.forEach { it.registerJDA(jda) }
     }
-
-    private fun initGuildCommands(jda: JDA): Boolean {
-        var needFix = false
-        for (guild in jda.guilds) {
-            val activeCommandsGuild = guild.fetchCommands()
-
-            val commands = guildCommands.map { c -> c to c.createCommand(guild) }
-            commands.forEach { (c, impl) -> nameToCommand[impl.name] = c }
-
-            val newCommandsGuild = findNewCommandsAndDeleteOldOnes(activeCommandsGuild, commands)
-            needFix = needFix || newCommandsGuild.isNotEmpty()
-
-            for ((cmd, cmdData) in newCommandsGuild) {
-                if (cmd.permissions == CommandPermissions.ALL) {
-                    guild.upsertCommand(cmdData).complete()
-                } else {
-                    guild.upsertCommand(cmdData.setDefaultEnabled(false)).complete()
-                }
-            }
-        }
-
-        return needFix
-    }
-
-    private fun initGlobalCommands(jda: JDA): Boolean {
-        var needFix = false
-        val activeCommands = jda.fetchCommands()
-
-        val commands = globalCommands.map { c -> c to c.createCommand() }
-        commands.forEach { (c, impl) -> nameToCommand[impl.name] = c }
-
-        val newCommands = findNewCommandsAndDeleteOldOnes(activeCommands, commands)
-        needFix = needFix || newCommands.isNotEmpty()
-
-        for ((_, cmdData) in newCommands)
-            jda.upsertCommand(cmdData).complete()
-        return needFix
-    }
-
-    private fun findNewCommandsAndDeleteOldOnes(activeCommands: List<Command>, commands: List<Pair<BotCommand, SlashCommandData>>): List<Pair<BotCommand, SlashCommandData>> {
-        val newCommands: MutableList<Pair<BotCommand, SlashCommandData>> = ArrayList()
-        val oldCommands: MutableList<Command> = ArrayList()
-
-        for ((command, cmdData) in commands) {
-            val foundCommand = findCommand(activeCommands, cmdData)
-
-            if (foundCommand != null) {
-                oldCommands.add(foundCommand)
-                continue
-            }
-            newCommands.add(command to cmdData)
-        }
-
-        // Delete old commands
-        val toDelete = activeCommands.filter { c -> !oldCommands.contains(c) }
-        for (cmd in toDelete) {
-            cmd.delete().complete()
-        }
-        return newCommands
-    }
-
-    private fun findCommand(activeCommands: List<Command>, cmdData: SlashCommandData): Command? {
-        for (cmd in activeCommands) {
-            if (cmd.name != cmdData.name) {
-                continue
-            }
-            if (!cmd.options.optionEqualsData(cmdData.options)) {
-                continue
-            }
-            if (!cmd.subcommands.subcommandEqualsData(cmdData.subcommands)) {
-                continue
-            }
-            return cmd
-        }
-        return null
-    }
-
-    override fun permissions(command: Command): CommandPermissions {
-        if (!nameToCommand.containsKey(command.name)) {
-            error("Command ${command.name} not suitable registered! Permissions not found!")
-        }
-
-        return nameToCommand[command.name]!!.permissions
-    }
-
-    override fun nameToCommand(): Map<String, BotCommand> = nameToCommand.toMap()
 }
-
-private fun MutableList<Command.Subcommand>.subcommandEqualsData(subcommands: List<SubcommandData>) =
-    this.size == subcommands.size && this.zip(subcommands).all { (c1, c2) -> c1.name == c2.name && c1.options.optionEqualsData(c2.options) }
-
-private fun MutableList<Command.Option>.optionEqualsData(options: List<OptionData>) = this.size == options.size && this.zip(options).all { (o1, o2) -> o1.optionEqualsData(o2) }
-
-private fun Command.Option.optionEqualsData(o2: OptionData) =
-    this.name == o2.name && this.isRequired == o2.isRequired && this.type == o2.type && this.description == o2.description && this.choices == o2.choices

@@ -1,13 +1,13 @@
 package org.fuchss.deltabot.command.user.polls
 
 import net.dv8tion.jda.api.JDA
-import net.dv8tion.jda.api.entities.Emoji
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Icon
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.entities.User
+import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction
 import net.dv8tion.jda.api.interactions.commands.build.Commands
@@ -117,19 +117,19 @@ class Summon(pollAdmin: IPollAdmin, configuration: BotConfiguration, scheduler: 
 
         try {
             val assets = listOf("ThumbsUp45", "ThumbsUp135")
-            var emotes = guild.retrieveEmotes().complete()
+            var emotes = guild.retrieveEmojis().complete()
             val newAssets = assets.filter { a -> !emotes.any { e -> e.name == a } }
             for (asset in newAssets) {
-                guild.createEmote(asset, Icon.from(this.javaClass.getResourceAsStream("/assets/$asset.png")!!)).complete()
+                guild.createEmoji(asset, Icon.from(this.javaClass.getResourceAsStream("/assets/$asset.png")!!)).complete()
             }
 
             if (newAssets.isNotEmpty()) {
-                emotes = guild.retrieveEmotes().complete()
+                emotes = guild.retrieveEmojis().complete()
             }
             emotes = assets.mapNotNull { a -> emotes.find { e -> e.name == a } }
 
-            emojis[1] = Emoji.fromEmote(emotes[0].name, emotes[0].idLong, emotes[0].isAnimated)
-            emojis[3] = Emoji.fromEmote(emotes[1].name, emotes[1].idLong, emotes[1].isAnimated)
+            emojis[1] = Emoji.fromCustom(emotes[0].name, emotes[0].idLong, emotes[0].isAnimated)
+            emojis[3] = Emoji.fromCustom(emotes[1].name, emotes[1].idLong, emotes[1].isAnimated)
             return emojis
         } catch (e: Exception) {
             return emojis

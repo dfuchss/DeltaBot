@@ -11,7 +11,6 @@ import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.command.GuildCommand
 import org.fuchss.deltabot.command.ICommandRegistry
-import org.fuchss.deltabot.command.fixCommandPermissions
 
 /**
  * A [BotCommand] that toggles the admin state for a user.
@@ -36,8 +35,5 @@ class Admin(private val configuration: BotConfiguration, private val commandRegi
 
         val nowAdmin = configuration.toggleAdmin(user)
         event.reply("User ${user.asMention} is now ${if (nowAdmin) "an" else "no"} admin").queue()
-
-        // Fix Guild Commands ..
-        fixCommandPermissions(event.jda, configuration, commandRegistry::permissions, user)
     }
 }

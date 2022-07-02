@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.vdurmont.emoji.EmojiManager
 import com.vdurmont.emoji.EmojiParser
-import net.dv8tion.jda.api.entities.Emoji
+import net.dv8tion.jda.api.entities.emoji.Emoji
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.lang.reflect.Field

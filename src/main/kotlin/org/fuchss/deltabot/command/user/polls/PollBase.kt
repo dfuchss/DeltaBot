@@ -2,10 +2,11 @@ package org.fuchss.deltabot.command.user.polls
 
 import com.vdurmont.emoji.EmojiManager
 import net.dv8tion.jda.api.JDA
-import net.dv8tion.jda.api.entities.Emoji
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.User
+import net.dv8tion.jda.api.entities.emoji.CustomEmoji
+import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.hooks.EventListener
@@ -52,8 +53,7 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
     protected val polls: MutableSet<Poll> = mutableSetOf()
 
     init {
-        @Suppress("LeakingThis")
-        pollAdmin.register(pollType, this)
+        @Suppress("LeakingThis") pollAdmin.register(pollType, this)
     }
 
     // IPollBase
@@ -122,10 +122,9 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
     }
 
     private fun initScheduler(jda: JDA) {
-        for (update in polls)
-            if (update.timestamp != null) {
-                scheduler.queue(update.mid, { createTermination(jda, update) }, update.timestamp!!)
-            }
+        for (update in polls) if (update.timestamp != null) {
+            scheduler.queue(update.mid, { createTermination(jda, update) }, update.timestamp!!)
+        }
     }
 
     private fun createTermination(jda: JDA, update: Poll) {
@@ -201,7 +200,7 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
         val reactions = emojis.map { e -> data.react2User.getOrDefault(e.name, mutableListOf()) }.zip(emojis).filter { (list, _) -> list.isNotEmpty() }
             .map { (list, emoji) -> emoji to list.mapNotNull { u -> jda.fetchUser(u)?.asMention } }
 
-        val reactionText = reactions.filter { (_, l) -> l.isNotEmpty() }.joinToString("\n") { (emoji, list) -> "${emoji.asMention}: ${list.joinToString(" ")}" }
+        val reactionText = reactions.filter { (_, l) -> l.isNotEmpty() }.joinToString("\n") { (emoji, list) -> "${emoji.formatted}: ${list.joinToString(" ")}" }
 
         var finalMessage = intro
         if (reactionText.isNotBlank()) {
@@ -240,8 +239,7 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
 
     private fun randomEmoji(usedEmoji: MutableList<String>): Emoji {
         var random = EmojiManager.getAll().random().unicode
-        while (random in usedEmoji)
-            random = EmojiManager.getAll().random().unicode
+        while (random in usedEmoji) random = EmojiManager.getAll().random().unicode
 
         return Emoji.fromUnicode(random)
     }
@@ -302,15 +300,19 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
             if (id == "0") {
                 return Emoji.fromUnicode(name)
             }
-            val emote = guild.retrieveEmoteById(id).complete()
-            return Emoji.fromEmote(emote)
+            return guild.retrieveEmojiById(id).complete()
         }
 
         companion object {
             fun create(emoji: Emoji): EmojiDTO {
-                val id = emoji.id
-                val name = emoji.name
-                return EmojiDTO(id, name)
+                return if (emoji is CustomEmoji) {
+                    val id = emoji.id
+                    val name = emoji.name
+                    EmojiDTO(id, name)
+                } else {
+                    val name = emoji.name
+                    EmojiDTO("0", name)
+                }
             }
         }
     }

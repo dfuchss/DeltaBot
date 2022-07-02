@@ -1,7 +1,7 @@
 package org.fuchss.deltabot.command.user.polls
 
-import net.dv8tion.jda.api.entities.Emoji
 import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.emoji.Emoji
 import org.fuchss.deltabot.utils.extensions.withFirst
 import org.fuchss.deltabot.utils.extensions.without
 import javax.persistence.Column
