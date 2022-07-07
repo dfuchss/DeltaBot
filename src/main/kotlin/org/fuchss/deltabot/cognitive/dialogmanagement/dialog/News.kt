@@ -17,8 +17,8 @@ class News : Dialog(ID) {
     companion object {
         const val ID = "News"
         private val providers = mapOf(
-            "General" to listOf("Tagesschau" to "https://www.tagesschau.de/xml/rss2"),
-            "Sport" to listOf("Sport1" to "https://www.sport1.de/news.rss"),
+            "General" to listOf("Tagesschau" to "https://www.tagesschau.de/xml/rss2/"),
+            "Sport" to listOf("Sportschau" to "https://www.sportschau.de/index~rss2.xml"),
             "IT" to listOf("heise online" to "https://www.heise.de/rss/heise-top-atom.xml"),
             "Netcup" to listOf("Netcup" to "https://www.netcup-sonderangebote.de/feed")
         )
