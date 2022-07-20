@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.interactions.commands.Command
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions
 import org.fuchss.deltabot.BotConfiguration
 import org.fuchss.deltabot.command.admin.Admin
+import org.fuchss.deltabot.command.admin.Channels
 import org.fuchss.deltabot.command.admin.Debug
 import org.fuchss.deltabot.command.admin.Echo
 import org.fuchss.deltabot.command.admin.Erase
@@ -16,7 +17,6 @@ import org.fuchss.deltabot.command.admin.GuildLanguage
 import org.fuchss.deltabot.command.admin.InitialAdminCommand
 import org.fuchss.deltabot.command.admin.PersistentHelp
 import org.fuchss.deltabot.command.admin.ResetStateAndCommands
-import org.fuchss.deltabot.command.admin.ServerRoles
 import org.fuchss.deltabot.command.admin.Shutdown
 import org.fuchss.deltabot.command.admin.State
 import org.fuchss.deltabot.command.admin.UnhideAll
@@ -66,7 +66,7 @@ class CommandRegistry(private val configuration: BotConfiguration, dbLocation: S
         commands.add(Erase())
         commands.add(Roles(session))
         commands.add(ResetStateAndCommands(configuration, dbLocation, session))
-        commands.add(ServerRoles())
+        commands.add(Channels())
         commands.add(UnhideAll())
 
         commands.add(Language())
