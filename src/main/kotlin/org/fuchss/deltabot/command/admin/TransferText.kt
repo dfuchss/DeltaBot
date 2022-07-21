@@ -22,7 +22,7 @@ import java.time.format.DateTimeFormatter
  */
 class TransferText : GuildCommand {
 
-    override val permissions: CommandPermissions get() = CommandPermissions.ADMIN
+    override val permissions: CommandPermissions get() = CommandPermissions.GUILD_ADMIN
 
     override fun createCommand(guild: Guild): SlashCommandData {
         val command = Commands.slash("transfer", "copy text from a channel to another")

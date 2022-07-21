@@ -1,11 +1,14 @@
 package org.fuchss.deltabot.db.dto
 
 import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.User
 import org.fuchss.objectcasket.port.Session
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
 import javax.persistence.Id
+import javax.persistence.JoinTable
+import javax.persistence.ManyToMany
 import javax.persistence.Table
 
 @Entity
@@ -44,9 +47,27 @@ class GuildDTO {
     @Column(name = "readable_name")
     var readableName: String = ""
 
+    @Column(name = "admins")
+    @ManyToMany
+    @JoinTable(name = "guild_x_admin")
+    var admins: MutableSet<UserDTO> = mutableSetOf()
+
     private fun update(session: Session?, guild: Guild) {
         readableName = guild.name
         session?.persist(this)
+    }
+
+    fun toggleGuildAdmin(session: Session, user: User): Boolean {
+        val userDTO = UserDTO.findDBUser(session, user) ?: UserDTO(user)
+        val nowAdmin = if (userDTO in admins) {
+            admins.remove(userDTO)
+            false
+        } else {
+            admins.add(userDTO)
+            true
+        }
+        session.persist(this)
+        return nowAdmin
     }
 
     override fun equals(other: Any?): Boolean {

@@ -13,6 +13,7 @@ import org.fuchss.deltabot.command.admin.Channels
 import org.fuchss.deltabot.command.admin.Debug
 import org.fuchss.deltabot.command.admin.Echo
 import org.fuchss.deltabot.command.admin.Erase
+import org.fuchss.deltabot.command.admin.GuildAdmin
 import org.fuchss.deltabot.command.admin.GuildLanguage
 import org.fuchss.deltabot.command.admin.InitialAdminCommand
 import org.fuchss.deltabot.command.admin.PersistentHelp
@@ -62,7 +63,8 @@ class CommandRegistry(private val configuration: BotConfiguration, dbLocation: S
         commands.add(Shutdown())
         commands.add(GuildLanguage())
         commands.add(Echo())
-        commands.add(Admin(configuration, this))
+        commands.add(Admin(configuration))
+        commands.add(GuildAdmin(session))
         commands.add(State(configuration, scheduler, session))
         commands.add(Erase())
         commands.add(Roles(session))
@@ -72,8 +74,8 @@ class CommandRegistry(private val configuration: BotConfiguration, dbLocation: S
         commands.add(UnhideAll())
 
         commands.add(Language())
-        commands.add(Help(configuration, this))
-        commands.add(PersistentHelp(configuration, this))
+        commands.add(Help(configuration, session, this))
+        commands.add(PersistentHelp(configuration, session, this))
         commands.add(News())
         commands.add(Roll())
         commands.add(Teams())

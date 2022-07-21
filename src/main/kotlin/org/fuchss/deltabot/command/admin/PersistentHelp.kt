@@ -9,11 +9,12 @@ import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.command.ICommandRegistry
 import org.fuchss.deltabot.command.user.Help
 import org.fuchss.deltabot.utils.extensions.fetchCommands
+import org.fuchss.objectcasket.port.Session
 
 /**
  * A [BotCommand] that prints a persistent help message.
  */
-class PersistentHelp(configuration: BotConfiguration, registry: ICommandRegistry) : Help(configuration, registry) {
+class PersistentHelp(configuration: BotConfiguration, session: Session, registry: ICommandRegistry) : Help(configuration, session, registry) {
     override val permissions: CommandPermissions get() = CommandPermissions.GUILD_ADMIN
 
     override fun createCommand(): SlashCommandData {

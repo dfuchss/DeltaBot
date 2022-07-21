@@ -11,6 +11,7 @@ import org.fuchss.deltabot.Constants
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.command.GlobalCommand
+import org.fuchss.deltabot.db.dto.GuildDTO
 import org.fuchss.deltabot.db.dto.UserDTO
 import org.fuchss.deltabot.utils.Scheduler
 import org.fuchss.deltabot.utils.extensions.fetchUser
@@ -31,6 +32,12 @@ class State(private val config: BotConfiguration, private val scheduler: Schedul
         var msg = ""
         msg += "NLU: ${config.nluUrl}, Threshold: ${config.nluThreshold}, State: ${if (config.disableNlu) "disabled" else "enabled"}\n"
         msg += "Admins: ${config.getAdmins(event.jda).joinToString { u -> u.asMention }}\n"
+        if (event.isFromGuild) {
+            val guild = GuildDTO.findDBGuild(session, event.guild!!)
+            val admins = mutableListOf(event.guild!!.owner!!.user.asMention)
+            if (guild != null) admins += guild.admins.mapNotNull { event.jda.fetchUser(it.discordId)?.asMention }
+            msg += "Guild Admins: ${admins.joinToString()}\n"
+        }
         msg += "Debug: ${config.debug}\n"
         msg += "Docker: ${config.runInDocker()}\n"
         msg += "Scheduler Queue: ${scheduler.size()}\n"

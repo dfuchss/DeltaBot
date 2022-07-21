@@ -13,12 +13,14 @@ import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.command.GlobalCommand
 import org.fuchss.deltabot.command.ICommandRegistry
+import org.fuchss.deltabot.command.isGuildAdmin
 import org.fuchss.deltabot.utils.extensions.fetchCommands
+import org.fuchss.objectcasket.port.Session
 
 /**
  * A [BotCommand] that prints a temporary help message.
  */
-open class Help(private val configuration: BotConfiguration, protected val registry: ICommandRegistry) : GlobalCommand {
+open class Help(private val configuration: BotConfiguration, private val session: Session, protected val registry: ICommandRegistry) : GlobalCommand {
 
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
 
@@ -31,7 +33,7 @@ open class Help(private val configuration: BotConfiguration, protected val regis
         if (configuration.isAdmin(event.user)) {
             visibilities.add(CommandPermissions.ALL)
             visibilities.add(CommandPermissions.GUILD_ADMIN)
-        } else if (event.user in configuration.getAdminMembersOfGuildWithGlobalAdmins(event.guild)) {
+        } else if (isGuildAdmin(event, configuration, session)) {
             visibilities.add(CommandPermissions.GUILD_ADMIN)
         }
 

@@ -26,21 +26,6 @@ fun getDatabase(location: String): Session {
     return session
 }
 
-fun <T> Session.load(type: Class<T>, initializer: (T, Session) -> Unit, defaultValue: () -> T): T {
-    val elements = this.getAllObjects(type)
-    val element =
-        if (elements.isNotEmpty()) {
-            elements.first()
-        } else {
-            val newElement = defaultValue()
-            this.persist(newElement)
-            newElement
-        }
-
-    initializer(element, this)
-    return element
-}
-
 private fun registerClasses(session: Session) {
     val reflections = Reflections("org.fuchss.deltabot")
     val entities = reflections.getTypesAnnotatedWith(Entity::class.java)

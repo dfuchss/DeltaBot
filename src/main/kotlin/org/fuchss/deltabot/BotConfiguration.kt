@@ -1,10 +1,8 @@
 package org.fuchss.deltabot
 
 import net.dv8tion.jda.api.JDA
-import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.User
 import org.fuchss.deltabot.db.dto.UserDTO
-import org.fuchss.deltabot.utils.extensions.fetchMember
 import org.fuchss.deltabot.utils.extensions.fetchUser
 import org.fuchss.deltabot.utils.extensions.logger
 import org.fuchss.deltabot.utils.extensions.setLogLevel
@@ -40,7 +38,7 @@ class BotConfiguration {
     }
 
     @Transient
-    private var session: Session? = null
+    private lateinit var session: Session
 
     @Id
     @GeneratedValue
@@ -97,7 +95,7 @@ class BotConfiguration {
             admins.add(UserDTO(user))
         }
 
-        session!!.persist(this)
+        session.persist(this)
         return admins.any { u -> u.discordId == user.id }
     }
 
@@ -114,25 +112,8 @@ class BotConfiguration {
             logger.setLogLevel(LocationAwareLogger.INFO_INT)
         }
 
-        session!!.persist(this)
+        session.persist(this)
         return debug
-    }
-
-    fun getAdminMembersOfGuildWithGlobalAdmins(guild: Guild?): List<User> {
-        if (guild == null) {
-            return emptyList()
-        }
-        val adminsOfGuild = mutableListOf<User>()
-        adminsOfGuild.add(guild.fetchMember(guild.ownerId)!!.user)
-
-        for (admin in admins) {
-            val member = guild.fetchMember(admin.discordId)
-            if (member != null && member.user !in adminsOfGuild) {
-                adminsOfGuild.add(member.user)
-            }
-        }
-
-        return adminsOfGuild
     }
 
     fun hasAdmins() = admins.isNotEmpty()

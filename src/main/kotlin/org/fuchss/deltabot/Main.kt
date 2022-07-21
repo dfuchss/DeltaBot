@@ -42,7 +42,7 @@ fun main() {
             ActivityChanger(),
             ReactionHandler(),
             commandRegistry,
-            CommandHandler(config, commandRegistry),
+            CommandHandler(config, database, commandRegistry),
             DialogListener(config)
         ).build()
 
