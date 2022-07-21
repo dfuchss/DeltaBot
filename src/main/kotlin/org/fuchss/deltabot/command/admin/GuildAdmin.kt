@@ -10,6 +10,7 @@ import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.command.GuildCommand
 import org.fuchss.deltabot.db.dto.GuildDTO
+import org.fuchss.deltabot.utils.extensions.fetchOwner
 import org.fuchss.objectcasket.port.Session
 
 /**
@@ -28,7 +29,7 @@ class GuildAdmin(private val session: Session) : GuildCommand {
     override fun handle(event: SlashCommandInteraction) {
         val user = event.getOption("user")?.asUser
 
-        if (user == null || user.isBot || event.guild?.owner?.user == user) {
+        if (user == null || user.isBot || event.guild?.fetchOwner() == user) {
             event.reply("No valid user was mentioned").setEphemeral(true).queue()
             return
         }

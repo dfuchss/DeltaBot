@@ -32,6 +32,8 @@ fun Guild.fetchCommands(): List<Command> {
     }
 }
 
+fun Guild.fetchOwner(): User = this.fetchMember(this.ownerId)!!.user
+
 fun JDA.fetchCommands(): List<Command> {
     return try {
         this.retrieveCommands().complete()

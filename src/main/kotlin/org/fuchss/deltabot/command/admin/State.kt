@@ -14,6 +14,8 @@ import org.fuchss.deltabot.command.GlobalCommand
 import org.fuchss.deltabot.db.dto.GuildDTO
 import org.fuchss.deltabot.db.dto.UserDTO
 import org.fuchss.deltabot.utils.Scheduler
+import org.fuchss.deltabot.utils.extensions.fetchMember
+import org.fuchss.deltabot.utils.extensions.fetchOwner
 import org.fuchss.deltabot.utils.extensions.fetchUser
 import org.fuchss.deltabot.utils.extensions.languageSettings
 import org.fuchss.objectcasket.port.Session
@@ -34,7 +36,7 @@ class State(private val config: BotConfiguration, private val scheduler: Schedul
         msg += "Admins: ${config.getAdmins(event.jda).joinToString { u -> u.asMention }}\n"
         if (event.isFromGuild) {
             val guild = GuildDTO.findDBGuild(session, event.guild!!)
-            val admins = mutableListOf(event.guild!!.owner!!.user.asMention)
+            val admins = mutableListOf(event.guild!!.fetchOwner().asMention)
             if (guild != null) admins += guild.admins.mapNotNull { event.jda.fetchUser(it.discordId)?.asMention }
             msg += "Guild Admins: ${admins.joinToString()}\n"
         }
@@ -56,7 +58,7 @@ class State(private val config: BotConfiguration, private val scheduler: Schedul
         var discordUsers = users.mapNotNull { dto -> jda.fetchUser(dto.discordId) }
 
         if (guild != null) {
-            discordUsers = discordUsers.filter { u -> guild.isMember(u) }
+            discordUsers = discordUsers.mapNotNull { u -> guild.fetchMember(u.id)?.user }
         }
 
         return discordUsers.map { u -> u.asMention }
