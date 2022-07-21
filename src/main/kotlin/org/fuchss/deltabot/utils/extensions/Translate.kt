@@ -4,6 +4,7 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.interactions.commands.CommandInteraction
 import org.fuchss.deltabot.Language
+import kotlin.math.max as maximum
 
 private val translations = mutableMapOf<Language, MutableMap<String, String>>()
 
@@ -44,8 +45,15 @@ fun String.translate(language: Language?, vararg attributes: Any): String {
         }
     }
 
-    for (attr in attributes) {
-        text = text.replaceFirst("#", attr.toString())
+    val parts = text.split(Regex("#"))
+    text = ""
+    for (ctr in 0 until maximum(parts.size, attributes.size)) {
+        if (ctr < parts.size) {
+            text += parts[ctr]
+        }
+        if (ctr < attributes.size) {
+            text += attributes[ctr]
+        }
     }
 
     return text

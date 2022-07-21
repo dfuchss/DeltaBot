@@ -57,7 +57,7 @@ class TransferText : GuildCommand {
 
     private fun toResponse(message: Message): String {
         val author = message.author.name
-        val date = message.timeCreated.toLocalDateTime().format(DateTimeFormatter.ofPattern("hh:mm dd.MM.YYYY"))
+        val date = message.timeCreated.toLocalDateTime().format(DateTimeFormatter.ofPattern("dd.MM.YYYY hh:mm"))
         val content = message.contentDisplay
         return "$author->[$date]: ```\n${content.lines().joinToString("\n") { it }}\n```"
     }
