@@ -7,6 +7,8 @@
 
 This repo contains my first [Discord](https://discordapp.com/) bot. It uses [RASA]("https://rasa.com") for NLP. The NLU is located [here](https://github.com/dfuchss/DeltaBot-NLU).
 
+Discord Permission Int: `026058370128`
+
 ## Commands (Admins + Users)
 
 For details take a look at [commands.md](./commands.md)

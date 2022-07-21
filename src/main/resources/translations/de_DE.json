@@ -51,6 +51,8 @@
   "Friday": "Freitag",
   "Saturday": "Samstag",
   "Sunday": "Sonntag",
+  "No messages found in #": "Keine Nachrichten in # gefunden",
+  "Transfer from # to # ...": "Transferiere Nachrichten von # nach #",
   "Neither name nor question can be blank!": "Weder Name noch Frage dürfen leer sein!",
   "Poll *#* created!": "Poll *#* angelegt!",
   "Poll *#* deleted!": "Poll *#* gelöscht!",

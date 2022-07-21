@@ -19,6 +19,7 @@ import org.fuchss.deltabot.command.admin.PersistentHelp
 import org.fuchss.deltabot.command.admin.ResetStateAndCommands
 import org.fuchss.deltabot.command.admin.Shutdown
 import org.fuchss.deltabot.command.admin.State
+import org.fuchss.deltabot.command.admin.TransferText
 import org.fuchss.deltabot.command.admin.UnhideAll
 import org.fuchss.deltabot.command.user.Emojify
 import org.fuchss.deltabot.command.user.Help
@@ -66,6 +67,7 @@ class CommandRegistry(private val configuration: BotConfiguration, dbLocation: S
         commands.add(Erase())
         commands.add(Roles(session))
         commands.add(ResetStateAndCommands(configuration, dbLocation, session))
+        commands.add(TransferText())
         commands.add(Channels())
         commands.add(UnhideAll())
 
