@@ -1,6 +1,7 @@
 package org.fuchss.deltabot
 
 import net.dv8tion.jda.api.JDABuilder
+import net.dv8tion.jda.api.requests.GatewayIntent
 import org.fuchss.deltabot.cognitive.dialogmanagement.DialogListener
 import org.fuchss.deltabot.command.CommandHandler
 import org.fuchss.deltabot.command.CommandRegistry
@@ -34,7 +35,7 @@ fun main() {
     val scheduler = Scheduler()
     val commandRegistry = CommandRegistry(config, dbPath, scheduler, database)
 
-    val builder = JDABuilder.createDefault(token)
+    val builder = JDABuilder.createDefault(token).enableIntents(GatewayIntent.MESSAGE_CONTENT)
     val jda =
         builder.addEventListeners(
             scheduler,

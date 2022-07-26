@@ -103,15 +103,16 @@ class Channels : GuildCommand {
 
     private fun createChannel(guild: Guild, role: Role, name: String, onlyText: Boolean): StandardGuildChannel {
         val everyone = guild.publicRole
+        val guildRoleOfBot = guild.getRoleByBot(guild.jda.selfUser)!!
 
         return if (onlyText) {
-            guild.createTextChannel(name).addMemberPermissionOverride(guild.selfMember.idLong, listOf(Permission.VIEW_CHANNEL), null) //
-                .addRolePermissionOverride(role.idLong, listOf(Permission.VIEW_CHANNEL), null) //
+            guild.createTextChannel(name).addRolePermissionOverride(role.idLong, listOf(Permission.VIEW_CHANNEL), null) //
+                .addRolePermissionOverride(guildRoleOfBot.idLong, listOf(Permission.VIEW_CHANNEL, Permission.MANAGE_CHANNEL, Permission.MESSAGE_MANAGE), null) //
                 .addRolePermissionOverride(everyone.idLong, null, listOf(Permission.VIEW_CHANNEL)) //
                 .complete()
         } else {
-            guild.createVoiceChannel(name).addMemberPermissionOverride(guild.selfMember.idLong, listOf(Permission.VIEW_CHANNEL), null) //
-                .addRolePermissionOverride(role.idLong, listOf(Permission.VIEW_CHANNEL), null) //
+            guild.createVoiceChannel(name).addRolePermissionOverride(role.idLong, listOf(Permission.VIEW_CHANNEL), null) //
+                .addRolePermissionOverride(guildRoleOfBot.idLong, listOf(Permission.VIEW_CHANNEL, Permission.MANAGE_CHANNEL, Permission.MESSAGE_MANAGE), null) //
                 .addRolePermissionOverride(everyone.idLong, null, listOf(Permission.VIEW_CHANNEL)) //
                 .complete()
         }

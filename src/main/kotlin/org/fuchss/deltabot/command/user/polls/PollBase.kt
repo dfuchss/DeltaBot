@@ -24,7 +24,6 @@ import org.fuchss.deltabot.utils.extensions.hide
 import org.fuchss.deltabot.utils.extensions.language
 import org.fuchss.deltabot.utils.extensions.logger
 import org.fuchss.deltabot.utils.extensions.pinAndDelete
-import org.fuchss.deltabot.utils.extensions.refresh
 import org.fuchss.deltabot.utils.extensions.toActionRows
 import org.fuchss.deltabot.utils.extensions.toEmoji
 import org.fuchss.deltabot.utils.extensions.translate
@@ -59,7 +58,7 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
     // IPollBase
     override fun terminate(jda: JDA, user: User, mid: String) {
         val data = polls.find { p -> p.mid == mid } ?: return
-        terminate(data, jda, null, user.id)
+        terminate(data, jda, user.id)
     }
 
     override fun removePoll(jda: JDA, user: User, mid: String) {
@@ -129,7 +128,7 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
 
     private fun createTermination(jda: JDA, update: Poll) {
         try {
-            terminate(update, jda, null, update.uid)
+            terminate(update, jda, update.uid)
         } catch (e: Exception) {
             logger.error(e.message, e)
             removePollFromDB(update)
@@ -221,7 +220,7 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
         val data = Poll(pollType, terminationTimestamp, msg.guild.id, msg.channel.id, msg.id, author.id, options.keys.map { e -> EmojiDTO.create(e) }, onlyOneOption)
         savePollToDB(data)
         if (terminationTimestamp != null) {
-            scheduler.queue(msg.id, { terminate(data, hook.jda, null, author.id) }, terminationTimestamp)
+            scheduler.queue(msg.id, { terminate(data, hook.jda, author.id) }, terminationTimestamp)
         }
     }
 
@@ -244,9 +243,9 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
         return Emoji.fromUnicode(random)
     }
 
-    protected open fun terminate(data: Poll, jda: JDA, eventMessage: Message?, uid: String) {
+    protected open fun terminate(data: Poll, jda: JDA, uid: String) {
         removePollFromDB(data)
-        val msg = eventMessage?.refresh() ?: jda.getGuildById(data.gid)?.fetchMessage(data.cid, data.mid) ?: return
+        val msg = jda.getGuildById(data.gid)?.fetchMessage(data.cid, data.mid) ?: return
 
         val user = jda.fetchUser(uid)
         val buttonMapping = msg.buttons.associate { b -> b.id!! to b.label }

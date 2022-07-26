@@ -4,7 +4,6 @@ import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Icon
 import net.dv8tion.jda.api.entities.Member
-import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.entities.emoji.Emoji
@@ -23,7 +22,6 @@ import org.fuchss.deltabot.utils.extensions.fetchMessage
 import org.fuchss.deltabot.utils.extensions.fetchUser
 import org.fuchss.deltabot.utils.extensions.hide
 import org.fuchss.deltabot.utils.extensions.language
-import org.fuchss.deltabot.utils.extensions.refresh
 import org.fuchss.deltabot.utils.extensions.toEmoji
 import org.fuchss.deltabot.utils.extensions.translate
 import org.fuchss.deltabot.utils.findGenericTimespan
@@ -41,8 +39,8 @@ class Summon(pollAdmin: IPollAdmin, configuration: BotConfiguration, scheduler: 
 
     companion object {
         private val summonMessages = listOf(
-            "###USER###: Who wants to play ###MENTION### ###TIME###?",
-            "###USER###: Who would be up for playing ###MENTION### ###TIME###?"
+            "%%%USER%%%: Who wants to play %%%MENTION%%% %%%TIME%%%?",
+            "%%%USER%%%: Who would be up for playing %%%MENTION%%% %%%TIME%%%?"
         )
 
         private val summonReactionsDefault = listOf(":+1:", ":thinking:", ":question:", ":pensive:", ":-1").map { e -> e.toEmoji() }
@@ -87,17 +85,17 @@ class Summon(pollAdmin: IPollAdmin, configuration: BotConfiguration, scheduler: 
         val reply = event.deferReply().complete()
 
         var response = summonMessages[Random.nextInt(summonMessages.size)].translate(event.language())
-        response = response.replace("###USER###", user.asMention)
-        response = response.replace("###MENTION###", game.asMention)
-        response = response.replace("###TIME###", "<t:${extractedTime.timestamp()}:R>")
+        response = response.replace("%%%USER%%%", user.asMention)
+        response = response.replace("%%%MENTION%%%", game.asMention)
+        response = response.replace("%%%TIME%%%", "<t:${extractedTime.timestamp()}:R>")
 
         val options = getEmojis(guild).zip(getButtons(guild)).toMap()
         createPoll(reply, extractedTime.plusMinutes(GraceTimeInMinutes).timestamp(), user, response, options, true)
     }
 
-    override fun terminate(data: Poll, jda: JDA, eventMessage: Message?, uid: String) {
+    override fun terminate(data: Poll, jda: JDA, uid: String) {
         removePollFromDB(data)
-        val msg = eventMessage?.refresh() ?: jda.getGuildById(data.gid)?.fetchMessage(data.cid, data.mid) ?: return
+        val msg = jda.getGuildById(data.gid)?.fetchMessage(data.cid, data.mid) ?: return
 
         val user = jda.fetchUser(uid)
         val newContent = msg.contentRaw + "\n\n${pollFinished.translate(language(msg.guild, user))}"

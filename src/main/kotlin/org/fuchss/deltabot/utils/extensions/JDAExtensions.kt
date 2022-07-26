@@ -2,10 +2,10 @@ package org.fuchss.deltabot.utils.extensions
 
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.GuildMessageChannel
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.MessageHistory
-import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.entities.User
 import net.dv8tion.jda.api.interactions.commands.Command
 import net.dv8tion.jda.api.interactions.components.ActionRow
@@ -61,7 +61,7 @@ fun Guild.fetchMember(uid: String): Member? {
 
 fun Guild.fetchMessage(cid: String, mid: String): Message? {
     try {
-        val channel = this.jda.fetchTextChannel(this.id, cid) ?: return null
+        val channel = this.jda.fetchChannel(this.id, cid) ?: return null
         return channel.retrieveMessageById(mid).complete()
     } catch (e: Exception) {
         logger.error(e.message)
@@ -69,15 +69,15 @@ fun Guild.fetchMessage(cid: String, mid: String): Message? {
     }
 }
 
-fun JDA.fetchTextChannel(gid: String, cid: String): TextChannel? {
+fun JDA.fetchChannel(gid: String, cid: String): GuildMessageChannel? {
     try {
-        val cached = this.getTextChannelById(cid)
+        val cached = this.getGuildChannelById(cid)
         if (cached != null) {
-            return cached
+            return cached as? GuildMessageChannel
         }
 
         val guild = this.getGuildById(gid)!!
-        return guild.getTextChannelById(gid)!!
+        return guild.getGuildChannelById(gid) as? GuildMessageChannel
     } catch (e: Exception) {
         logger.error(e.message)
         return null

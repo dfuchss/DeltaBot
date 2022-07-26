@@ -216,7 +216,7 @@ private class HiddenMessageManager : EventListener {
                         val channel = jda.openPrivateChannelById(hm.uid).complete()
                         channel!!.retrieveMessageById(hm.mid).complete()
                     } else {
-                        val channel = jda.fetchTextChannel(hm.gid, hm.cid)
+                        val channel = jda.fetchChannel(hm.gid, hm.cid)
                         channel!!.retrieveMessageById(hm.mid).complete()
                     }
                     msg!!.unhide()

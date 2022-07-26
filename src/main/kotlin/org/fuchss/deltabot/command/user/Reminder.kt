@@ -13,7 +13,7 @@ import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.command.GlobalCommand
 import org.fuchss.deltabot.utils.Scheduler
-import org.fuchss.deltabot.utils.extensions.fetchTextChannel
+import org.fuchss.deltabot.utils.extensions.fetchChannel
 import org.fuchss.deltabot.utils.extensions.fetchUser
 import org.fuchss.deltabot.utils.extensions.language
 import org.fuchss.deltabot.utils.extensions.logger
@@ -95,7 +95,7 @@ class Reminder(configuration: BotConfiguration, private val scheduler: Scheduler
         removeReminder(reminder)
 
         val user = jda.fetchUser(reminder.uid)!!
-        val channel = if (reminder.isDirectChannel) user.openPrivateChannel().complete() else jda.fetchTextChannel(reminder.gid, reminder.cid)!!
+        val channel = if (reminder.isDirectChannel) user.openPrivateChannel().complete() else jda.fetchChannel(reminder.gid, reminder.cid)!!
         channel.sendMessage("**Reminder ${user.asMention}**\n${reminder.message}").queue()
     }
 
