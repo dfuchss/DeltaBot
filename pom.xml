@@ -117,10 +117,11 @@
                 </configuration>
                 <executions>
                     <execution>
-                        <id>spotless:apply</id>
+                        <id>spotless:check</id>
                         <goals>
-                            <goal>apply</goal>
+                            <goal>check</goal>
                         </goals>
+                        <phase>verify</phase>
                     </execution>
                 </executions>
             </plugin>
@@ -130,10 +131,11 @@
                 <version>1.14.0</version>
                 <executions>
                     <execution>
-                        <id>format</id>
+                        <id>ktlint:check</id>
                         <goals>
-                            <goal>format</goal>
+                            <goal>check</goal>
                         </goals>
+                        <phase>verify</phase>
                     </execution>
                 </executions>
             </plugin>
