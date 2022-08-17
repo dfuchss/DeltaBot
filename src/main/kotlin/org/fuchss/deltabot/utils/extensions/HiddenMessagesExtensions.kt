@@ -13,7 +13,7 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle
 import org.fuchss.deltabot.utils.Scheduler
 import org.fuchss.deltabot.utils.timestamp
-import org.fuchss.objectcasket.port.Session
+import org.fuchss.objectcasket.objectpacker.port.Session
 import java.time.Duration
 import java.time.LocalDateTime
 import javax.persistence.Entity
@@ -122,8 +122,8 @@ private fun unhideMessage(scheduler: Scheduler?, message: Message, hiddenMessage
 }
 
 private class HiddenMessageManager : EventListener {
-    private var session: Session? = null
-    private var scheduler: Scheduler? = null
+    private lateinit var session: Session
+    private lateinit var scheduler: Scheduler
     private val hiddenMessagesData: MutableList<HiddenMessage> = mutableListOf()
 
     fun init(jda: JDA, session: Session, scheduler: Scheduler) {
@@ -134,7 +134,7 @@ private class HiddenMessageManager : EventListener {
         jda.addEventListener(this)
     }
 
-    fun isInitialized(): Boolean = scheduler != null && session != null
+    fun isInitialized(): Boolean = this::scheduler.isInitialized && this::session.isInitialized
 
     fun findMessage(message: Message?): HiddenMessage? {
         if (message == null) {
@@ -188,7 +188,7 @@ private class HiddenMessageManager : EventListener {
         if (!isInitialized()) {
             error("Hidden Messages are not initialized")
         }
-        session!!.persist(hiddenMessage)
+        session.persist(hiddenMessage)
         hiddenMessagesData.add(hiddenMessage)
     }
 
@@ -196,7 +196,7 @@ private class HiddenMessageManager : EventListener {
         if (!isInitialized()) {
             error("Hidden Messages are not initialized")
         }
-        session!!.delete(hiddenMessage)
+        session.delete(hiddenMessage)
         hiddenMessagesData.remove(hiddenMessage)
     }
 
@@ -204,7 +204,7 @@ private class HiddenMessageManager : EventListener {
         if (!isInitialized()) {
             error("Hidden Messages are not initialized")
         }
-        session!!.persist(hiddenMessage)
+        session.persist(hiddenMessage)
     }
 
     fun unhideAll(jda: JDA) {

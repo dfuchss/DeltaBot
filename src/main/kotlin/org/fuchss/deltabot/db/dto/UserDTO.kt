@@ -1,7 +1,7 @@
 package org.fuchss.deltabot.db.dto
 
 import net.dv8tion.jda.api.entities.User
-import org.fuchss.objectcasket.port.Session
+import org.fuchss.objectcasket.objectpacker.port.Session
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue

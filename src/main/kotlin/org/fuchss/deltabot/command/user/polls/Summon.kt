@@ -26,7 +26,7 @@ import org.fuchss.deltabot.utils.extensions.toEmoji
 import org.fuchss.deltabot.utils.extensions.translate
 import org.fuchss.deltabot.utils.findGenericTimespan
 import org.fuchss.deltabot.utils.timestamp
-import org.fuchss.objectcasket.port.Session
+import org.fuchss.objectcasket.objectpacker.port.Session
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime

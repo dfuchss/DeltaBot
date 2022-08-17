@@ -5,7 +5,7 @@ import net.dv8tion.jda.api.entities.User
 import org.fuchss.deltabot.db.dto.GuildDTO
 import org.fuchss.deltabot.db.dto.LanguageDTO
 import org.fuchss.deltabot.db.dto.UserDTO
-import org.fuchss.objectcasket.port.Session
+import org.fuchss.objectcasket.objectpacker.port.Session
 
 /**
  * Definition of all supported languages with their locales.
@@ -52,16 +52,14 @@ class LanguageSettings(private val session: Session) {
     fun removeUserToLanguage(userId: String) {
         val userDTO = UserDTO.findDBUser(session, userId) ?: return
         val lang = languages.find { l -> l.userDTO == userDTO && l.guildDTO == null } ?: return
-        session.delete(lang)
-        languages.remove(lang)
+        deleteLanguage(lang)
     }
 
     fun removeUserAndGuildToLanguage(userId: String, guildId: String) {
         val userDTO = UserDTO.findDBUser(session, userId) ?: return
         val guildDTO = GuildDTO.findDBGuild(session, guildId) ?: return
         val lang = languages.find { l -> l.userDTO == userDTO && l.guildDTO == guildDTO } ?: return
-        session.delete(lang)
-        languages.remove(lang)
+        deleteLanguage(lang)
     }
 
     fun setUserAndGuildToLanguage(user: User, guild: Guild, language: Language) {
@@ -82,8 +80,7 @@ class LanguageSettings(private val session: Session) {
     fun removeGuildToLanguage(guildId: String) {
         val guildDTO = GuildDTO.findDBGuild(session, guildId) ?: return
         val lang = languages.find { l -> l.userDTO == null && l.guildDTO == guildDTO } ?: return
-        session.delete(lang)
-        languages.remove(lang)
+        deleteLanguage(lang)
     }
 
     fun setGuildToLanguage(guild: Guild, language: Language) {
@@ -93,6 +90,11 @@ class LanguageSettings(private val session: Session) {
         val lang = LanguageDTO(guildDTO, language)
         session.persist(lang)
         languages += lang
+    }
+
+    private fun deleteLanguage(lang: LanguageDTO) {
+        lang.delete(session)
+        languages.remove(lang)
     }
 
     private fun userDTOToLanguage() = languages.filter { l -> l.userDTO != null && l.guildDTO == null }.associateBy { l -> l.userDTO!! }

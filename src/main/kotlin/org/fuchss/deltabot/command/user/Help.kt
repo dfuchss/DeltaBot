@@ -15,7 +15,7 @@ import org.fuchss.deltabot.command.GlobalCommand
 import org.fuchss.deltabot.command.ICommandRegistry
 import org.fuchss.deltabot.command.isGuildAdmin
 import org.fuchss.deltabot.utils.extensions.fetchCommands
-import org.fuchss.objectcasket.port.Session
+import org.fuchss.objectcasket.objectpacker.port.Session
 
 /**
  * A [BotCommand] that prints a temporary help message.

@@ -1,9 +1,10 @@
 package org.fuchss.deltabot.db
 
 import org.fuchss.deltabot.utils.extensions.logger
-import org.fuchss.objectcasket.ObjectCasketFactory
-import org.fuchss.objectcasket.port.Configuration
-import org.fuchss.objectcasket.port.Session
+import org.fuchss.objectcasket.objectpacker.PackerPort
+import org.fuchss.objectcasket.objectpacker.port.Configuration
+import org.fuchss.objectcasket.objectpacker.port.Session
+import org.fuchss.objectcasket.sqlconnector.port.DialectSqlite
 import org.reflections.Reflections
 import org.sqlite.JDBC
 import java.io.File
@@ -13,38 +14,46 @@ import javax.persistence.Entity
 val DRIVER: Class<out Driver?> = JDBC::class.java
 const val DRIVER_NAME = "jdbc:sqlite:"
 
-private val ocPort = ObjectCasketFactory.FACTORY.ObjectCasketPort()
 
 fun getDatabase(location: String): Session {
     val dbFile = File(location)
     logger.info("DB file is ${dbFile.absolutePath}")
     val config = createConfig(dbFile)
-    val session = ocPort.sessionManager().session(config)
-    registerClasses(session)
-    session.open()
+    val classesToRegister = registeredClasses()
+    val manager = PackerPort.PORT.sessionManager()
+
+    if (!dbFile.exists()) {
+        logger.info("Database does not exist. Creating Domain.")
+        val domain = manager.mkDomain(config)
+        manager.addEntity(domain, *classesToRegister.toTypedArray())
+        manager.finalizeDomain(domain)
+    }
+    val session = manager.session(config)
+    session.declareClass(*classesToRegister.toTypedArray())
+
     addShutdownHook(session)
     return session
 }
 
-private fun registerClasses(session: Session) {
+private fun registeredClasses(): MutableSet<Class<*>> {
     val reflections = Reflections("org.fuchss.deltabot")
     val entities = reflections.getTypesAnnotatedWith(Entity::class.java)
     logger.info("Registering ${entities.size} entities to the DB: ${entities.map { e -> e.simpleName }.sorted()}")
-    session.declareClass(*entities.toTypedArray())
+    return entities
 }
 
 private fun createConfig(dbFile: File): Configuration {
-    val config = ocPort.configurationBuilder().createConfiguration()
-    config.setDriver(DRIVER, DRIVER_NAME)
+    val config = PackerPort.PORT.sessionManager().createConfiguration()
+    config.setDriver(DRIVER, DRIVER_NAME, DialectSqlite())
     config.setUri(dbFile.toURI().path)
     config.setUser("")
-    config.setPasswd("")
-    config.setFlag(Configuration.Flag.CREATE, Configuration.Flag.MODIFY)
+    config.setPassword("")
+    config.setFlag(Configuration.Flag.CREATE, Configuration.Flag.WRITE, Configuration.Flag.ALTER)
     return config
 }
 
 private fun addShutdownHook(session: Session) {
     Runtime.getRuntime().addShutdownHook(object : Thread() {
-        override fun run() = ocPort.sessionManager().terminate(session)
+        override fun run() = PackerPort.PORT.sessionManager().terminate(session)
     })
 }

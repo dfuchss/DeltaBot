@@ -8,7 +8,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.interactions.commands.CommandInteraction
 import org.fuchss.deltabot.Language
 import org.fuchss.deltabot.LanguageSettings
-import org.fuchss.objectcasket.port.Session
+import org.fuchss.objectcasket.objectpacker.port.Session
 
 private var internalLanguageSettings: LanguageSettings? = null
 fun languageSettings(): LanguageSettings = internalLanguageSettings ?: error("Language is not initialized")

@@ -9,8 +9,8 @@ import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.command.GlobalCommand
 import org.fuchss.deltabot.utils.extensions.fetchCommands
 import org.fuchss.deltabot.utils.extensions.logger
-import org.fuchss.objectcasket.ObjectCasketFactory
-import org.fuchss.objectcasket.port.Session
+import org.fuchss.objectcasket.objectpacker.PackerPort
+import org.fuchss.objectcasket.objectpacker.port.Session
 import java.io.File
 
 /**
@@ -33,7 +33,7 @@ class ResetStateAndCommands(private val configuration: BotConfiguration, private
 
         // Remove database files
         try {
-            ObjectCasketFactory.FACTORY.ObjectCasketPort().sessionManager().terminate(session)
+            PackerPort.PORT.sessionManager().terminate(session)
             File(dbLocation).delete()
             logger.info("Remove database files done")
         } catch (e: Exception) {

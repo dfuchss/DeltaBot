@@ -11,7 +11,7 @@ import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.command.GuildCommand
 import org.fuchss.deltabot.db.dto.GuildDTO
 import org.fuchss.deltabot.utils.extensions.fetchOwner
-import org.fuchss.objectcasket.port.Session
+import org.fuchss.objectcasket.objectpacker.port.Session
 
 /**
  * A [BotCommand] that toggles the admin state for a user in a guild.

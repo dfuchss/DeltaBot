@@ -1,7 +1,9 @@
 package org.fuchss.deltabot.command.user.polls
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.emoji.Emoji
+import org.fuchss.deltabot.utils.extensions.createObjectMapper
 import org.fuchss.deltabot.utils.extensions.withFirst
 import org.fuchss.deltabot.utils.extensions.without
 import javax.persistence.Column
@@ -24,14 +26,26 @@ class Poll {
     var uid: String = ""
     var onlyOneOption: Boolean = false
 
-    @Column(columnDefinition = "JSON")
-    var options: MutableList<PollBase.EmojiDTO> = mutableListOf()
+    @Column(name = "options")
+    var optionsString: String = "[]"
 
-    @Column(columnDefinition = "JSON")
-    var react2User: MutableMap<String, MutableList<String>> = mutableMapOf()
+    @Transient
+    private var optionsData: MutableList<PollBase.EmojiDTO> = mutableListOf()
 
-    @Column(columnDefinition = "JSON")
-    var user2React: MutableMap<String, MutableList<String>> = mutableMapOf()
+    @Column(name = "react2User")
+    var react2UserString: String = "{}"
+
+    @Transient
+    var react2UserData: MutableMap<String, MutableList<String>> = mutableMapOf()
+
+    @Column(name = "user2React")
+    var user2ReactString: String = "{}"
+
+    @Transient
+    var user2ReactData: MutableMap<String, MutableList<String>> = mutableMapOf()
+
+    @Transient
+    private val oom = createObjectMapper()
 
     constructor()
 
@@ -42,42 +56,67 @@ class Poll {
         this.cid = cid
         this.mid = mid
         this.uid = uid
-        this.options = options.toMutableList()
         this.onlyOneOption = onlyOneOption
+        this.optionsData = options.toMutableList()
+        syncOptions()
+    }
+
+    fun afterCreation() {
+        this.optionsData = oom.readValue(this.optionsString)
+        this.react2UserData = oom.readValue(this.react2UserString)
+        this.user2ReactData = oom.readValue(this.user2ReactString)
     }
 
     fun getEmojis(guild: Guild): List<Emoji> {
-        return options.map { dto -> dto.getEmoji(guild) }
+        return optionsData.map { dto -> dto.getEmoji(guild) }
     }
 
     fun cleanup() {
-        val emptyFieldsU2R = user2React.filter { e -> e.value.isEmpty() }
-        val emptyFieldsR2U = react2User.filter { e -> e.value.isEmpty() }
-        emptyFieldsU2R.forEach { e -> user2React.remove(e.key) }
-        emptyFieldsR2U.forEach { e -> react2User.remove(e.key) }
+        val emptyFieldsU2R = user2ReactData.filter { e -> e.value.isEmpty() }
+        val emptyFieldsR2U = react2UserData.filter { e -> e.value.isEmpty() }
+        emptyFieldsU2R.forEach { e -> user2ReactData.remove(e.key) }
+        emptyFieldsR2U.forEach { e -> react2UserData.remove(e.key) }
+
+        syncUser2React2UserData()
     }
 
+
     fun addReact2User(react: String, uid: String) {
-        react2User[react] = (react2User[react] ?: mutableListOf()).withFirst(uid).toMutableList()
+        react2UserData[react] = (react2UserData[react] ?: mutableListOf()).withFirst(uid).toMutableList()
+        syncUser2React2UserData()
     }
 
     fun addUser2React(uid: String, react: String) {
-        user2React[uid] = (user2React[uid] ?: mutableListOf()).withFirst(react).toMutableList()
+        user2ReactData[uid] = (user2ReactData[uid] ?: mutableListOf()).withFirst(react).toMutableList()
+        syncUser2React2UserData()
     }
 
     fun removeReact2User(react: String, uid: String) {
-        react2User[react] = (react2User[react] ?: mutableListOf()).without(uid).toMutableList()
+        react2UserData[react] = (react2UserData[react] ?: mutableListOf()).without(uid).toMutableList()
+        syncUser2React2UserData()
     }
 
     fun removeUser2React(uid: String) {
-        user2React.remove(uid)
+        user2ReactData.remove(uid)
+        syncUser2React2UserData()
     }
 
     fun removeUser2React(uid: String, react: String) {
-        user2React[uid] = (user2React[uid] ?: mutableListOf()).without(react).toMutableList()
+        user2ReactData[uid] = (user2ReactData[uid] ?: mutableListOf()).without(react).toMutableList()
+        syncUser2React2UserData()
     }
 
     fun setUser2React(uid: String, newReactions: MutableList<String>) {
-        user2React[uid] = newReactions
+        user2ReactData[uid] = newReactions
+        syncUser2React2UserData()
+    }
+
+    private fun syncOptions() {
+        this.optionsString = oom.writeValueAsString(this.optionsData)
+    }
+
+    private fun syncUser2React2UserData() {
+        this.user2ReactString = oom.writeValueAsString(user2ReactData)
+        this.react2UserString = oom.writeValueAsString(react2UserData)
     }
 }

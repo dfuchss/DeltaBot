@@ -6,12 +6,13 @@ import org.fuchss.deltabot.db.dto.UserDTO
 import org.fuchss.deltabot.utils.extensions.fetchUser
 import org.fuchss.deltabot.utils.extensions.logger
 import org.fuchss.deltabot.utils.extensions.setLogLevel
-import org.fuchss.objectcasket.port.Session
+import org.fuchss.objectcasket.objectpacker.port.Session
 import org.slf4j.spi.LocationAwareLogger
+import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
 import javax.persistence.Id
-import javax.persistence.OneToMany
+import javax.persistence.ManyToMany
 import javax.persistence.Table
 import javax.persistence.Transient
 
@@ -62,7 +63,8 @@ class BotConfiguration {
     /**
      * A list of all global admins identified by [User.getId]
      */
-    @OneToMany
+    @Column(name = "admins")
+    @ManyToMany
     private var admins: MutableSet<UserDTO> = mutableSetOf()
 
     /**

@@ -19,7 +19,7 @@ import org.fuchss.deltabot.utils.extensions.language
 import org.fuchss.deltabot.utils.extensions.logger
 import org.fuchss.deltabot.utils.extensions.translate
 import org.fuchss.deltabot.utils.timestamp
-import org.fuchss.objectcasket.port.Session
+import org.fuchss.objectcasket.objectpacker.port.Session
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
 import javax.persistence.Id

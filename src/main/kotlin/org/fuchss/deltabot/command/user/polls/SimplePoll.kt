@@ -11,7 +11,7 @@ import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.utils.Scheduler
 import org.fuchss.deltabot.utils.extensions.fetchUser
 import org.fuchss.deltabot.utils.extensions.translate
-import org.fuchss.objectcasket.port.Session
+import org.fuchss.objectcasket.objectpacker.port.Session
 
 /**
  * A [Poll][PollBase] that provides generic polls.

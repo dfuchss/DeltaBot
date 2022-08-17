@@ -1,5 +1,3 @@
-@file:Suppress("RedundantLambdaArrow")
-
 package org.fuchss.deltabot.utils
 
 import org.fuchss.deltabot.Language

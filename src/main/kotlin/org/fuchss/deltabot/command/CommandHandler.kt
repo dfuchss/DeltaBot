@@ -6,7 +6,7 @@ import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
 import org.fuchss.deltabot.BotConfiguration
 import org.fuchss.deltabot.utils.extensions.logger
-import org.fuchss.objectcasket.port.Session
+import org.fuchss.objectcasket.objectpacker.port.Session
 
 /**
  * The command handler of the bot.

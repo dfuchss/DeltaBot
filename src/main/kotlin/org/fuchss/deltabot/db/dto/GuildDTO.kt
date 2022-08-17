@@ -2,12 +2,11 @@ package org.fuchss.deltabot.db.dto
 
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.User
-import org.fuchss.objectcasket.port.Session
+import org.fuchss.objectcasket.objectpacker.port.Session
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
 import javax.persistence.Id
-import javax.persistence.JoinTable
 import javax.persistence.ManyToMany
 import javax.persistence.Table
 
@@ -49,7 +48,6 @@ class GuildDTO {
 
     @Column(name = "admins")
     @ManyToMany
-    @JoinTable(name = "guild_x_admin")
     var admins: MutableSet<UserDTO> = mutableSetOf()
 
     private fun update(session: Session?, guild: Guild) {

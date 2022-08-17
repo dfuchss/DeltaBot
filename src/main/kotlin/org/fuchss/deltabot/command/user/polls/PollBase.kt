@@ -27,7 +27,7 @@ import org.fuchss.deltabot.utils.extensions.pinAndDelete
 import org.fuchss.deltabot.utils.extensions.toActionRows
 import org.fuchss.deltabot.utils.extensions.toEmoji
 import org.fuchss.deltabot.utils.extensions.translate
-import org.fuchss.objectcasket.port.Session
+import org.fuchss.objectcasket.objectpacker.port.Session
 
 /**
  * A base for [BotCommands][BotCommand] that create / handles polls.
@@ -109,6 +109,7 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
     private fun initPolls() {
         val dbPolls = session.getAllObjects(Poll::class.java).filter { p -> p.pollType == pollType }
         logger.info("Loaded ${dbPolls.size} polls from DB for ${this.javaClass.simpleName}")
+        dbPolls.forEach { it.afterCreation() }
         polls.addAll(dbPolls)
     }
 
@@ -157,7 +158,7 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
     }
 
     private fun updateUser(uid: String, buttonId: String, data: Poll) {
-        val reactions = data.user2React[uid] ?: listOf()
+        val reactions = data.user2ReactData[uid] ?: listOf()
 
         if (data.onlyOneOption) {
             // Only one option allowed
@@ -196,7 +197,7 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
         val intro = message.contentRaw.split("\n")[0]
 
         val emojis = data.getEmojis(message.guild)
-        val reactions = emojis.map { e -> data.react2User.getOrDefault(e.name, mutableListOf()) }.zip(emojis).filter { (list, _) -> list.isNotEmpty() }
+        val reactions = emojis.map { e -> data.react2UserData.getOrDefault(e.name, mutableListOf()) }.zip(emojis).filter { (list, _) -> list.isNotEmpty() }
             .map { (list, emoji) -> emoji to list.mapNotNull { u -> jda.fetchUser(u)?.asMention } }
 
         val reactionText = reactions.filter { (_, l) -> l.isNotEmpty() }.joinToString("\n") { (emoji, list) -> "${emoji.formatted}: ${list.joinToString(" ")}" }
@@ -249,7 +250,7 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
 
         val user = jda.fetchUser(uid)
         val buttonMapping = msg.buttons.associate { b -> b.id!! to b.label }
-        val reactionsToUser: Map<String, List<String>> = data.react2User.mapKeys { (k, _) -> buttonMapping[k]!! }
+        val reactionsToUser: Map<String, List<String>> = data.react2UserData.mapKeys { (k, _) -> buttonMapping[k]!! }
 
         var finalMsg = msg.contentRaw.split("\n")[0] + "\n\n"
         for ((option, users) in reactionsToUser.entries) {

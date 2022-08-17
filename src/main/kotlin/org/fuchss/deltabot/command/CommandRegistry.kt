@@ -38,7 +38,7 @@ import org.fuchss.deltabot.command.user.polls.WeekdayPoll
 import org.fuchss.deltabot.utils.Scheduler
 import org.fuchss.deltabot.utils.extensions.fetchCommands
 import org.fuchss.deltabot.utils.extensions.logger
-import org.fuchss.objectcasket.port.Session
+import org.fuchss.objectcasket.objectpacker.port.Session
 
 /**
  * The registry for commands.

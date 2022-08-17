@@ -18,7 +18,7 @@ import org.fuchss.deltabot.utils.extensions.fetchMember
 import org.fuchss.deltabot.utils.extensions.fetchOwner
 import org.fuchss.deltabot.utils.extensions.fetchUser
 import org.fuchss.deltabot.utils.extensions.languageSettings
-import org.fuchss.objectcasket.port.Session
+import org.fuchss.objectcasket.objectpacker.port.Session
 
 /**
  * A [BotCommand] that prints the current state of the bot to discord.

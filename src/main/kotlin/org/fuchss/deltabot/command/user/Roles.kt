@@ -1,5 +1,6 @@
 package org.fuchss.deltabot.command.user
 
+import com.fasterxml.jackson.module.kotlin.readValue
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
@@ -19,6 +20,7 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.command.GuildCommand
+import org.fuchss.deltabot.utils.extensions.createObjectMapper
 import org.fuchss.deltabot.utils.extensions.discordEmojiRegex
 import org.fuchss.deltabot.utils.extensions.fetchMessage
 import org.fuchss.deltabot.utils.extensions.findAllEmojis
@@ -26,7 +28,7 @@ import org.fuchss.deltabot.utils.extensions.internalLanguage
 import org.fuchss.deltabot.utils.extensions.logger
 import org.fuchss.deltabot.utils.extensions.toActionRows
 import org.fuchss.deltabot.utils.extensions.translate
-import org.fuchss.objectcasket.port.Session
+import org.fuchss.objectcasket.objectpacker.port.Session
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
@@ -49,15 +51,11 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
     override fun createCommand(guild: Guild): SlashCommandData {
         val command = Commands.slash("roles", "manage the role changer message of this guild")
         command.addSubcommands(
-            SubcommandData("init", "creates the role changer message in this channel"),
-            SubcommandData("add", "adds an emoji for a specific role").addOptions(
-                OptionData(OptionType.STRING, "emoji", "the emoji for the role").setRequired(true),
-                OptionData(OptionType.ROLE, "role", "the role that shall be added to the message").setRequired(true)
-            ),
-            SubcommandData("del", "remove an emoji from the role changer message").addOptions(
+            SubcommandData("init", "creates the role changer message in this channel"), SubcommandData("add", "adds an emoji for a specific role").addOptions(
+                OptionData(OptionType.STRING, "emoji", "the emoji for the role").setRequired(true), OptionData(OptionType.ROLE, "role", "the role that shall be added to the message").setRequired(true)
+            ), SubcommandData("del", "remove an emoji from the role changer message").addOptions(
                 OptionData(OptionType.STRING, "emoji", "the emoji to delete").setRequired(true)
-            ),
-            SubcommandData("purge", "remove the whole message from the guild")
+            ), SubcommandData("purge", "remove the whole message from the guild")
         )
         return command
     }
@@ -71,6 +69,7 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
         val dbRoles = session.getAllObjects(GuildRoleState::class.java)
         logger.info("Loaded ${dbRoles.size} guild role objects from the DB")
         guildRoles.addAll(dbRoles)
+        guildRoles.forEach { it.afterCreation() }
     }
 
     override fun onEvent(event: GenericEvent) {
@@ -138,7 +137,7 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
         }
         val guildState = getGuildState(guild)!!
 
-        if (role.asMention in guildState.emojiToRole.values) {
+        if (role.asMention in guildState.emojiToRole().values) {
             event.reply("Role already mapped ..".translate(event)).setEphemeral(true).queue()
             return
         }
@@ -149,7 +148,7 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
             return
         }
 
-        if (guildState.emojiToRole.containsKey(emojis[0])) {
+        if (guildState.emojiToRole().containsKey(emojis[0])) {
             event.reply("Emoji already used ..".translate(event)).setEphemeral(true).queue()
             return
         }
@@ -181,7 +180,7 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
         }
 
         val guildState = getGuildState(guild)!!
-        if (emojis[0] !in guildState.emojiToRole.keys) {
+        if (emojis[0] !in guildState.emojiToRole().keys) {
             event.reply("I've found no mapping to this emoji".translate(event)).setEphemeral(true).queue()
             return
         }
@@ -198,7 +197,7 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
         val state = getGuildState(guild)!!
         val clickedId = event.button.id ?: ""
 
-        val roleMention = state.emojiToRole[clickedId]
+        val roleMention = state.emojiToRole()[clickedId]
         if (roleMention == null) {
             event.reply("I can't find the role :( .. ask your bot admin".translate(event)).setEphemeral(true).queue()
             return
@@ -226,10 +225,10 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
         var message = "${switcherText.translate(guild.internalLanguage())}\n${noRoles.translate(guild.internalLanguage())}"
         var buttons = emptyList<Button>()
 
-        val emoji2Role = guildState.emojiToRole.entries.sortedBy { (_, mention) -> guild.getRoleById(mention.drop("<@&".length).dropLast(">".length))?.name ?: "" }
+        val emoji2Role = guildState.emojiToRole().entries.sortedBy { (_, mention) -> guild.getRoleById(mention.drop("<@&".length).dropLast(">".length))?.name ?: "" }
         if (emoji2Role.isNotEmpty()) {
             message = "${switcherText.translate(guild.internalLanguage())}\n\n${
-            emoji2Role.joinToString(separator = "\n", transform = { (emoji, roleMention) -> "$emoji → $roleMention" })
+                emoji2Role.joinToString(separator = "\n", transform = { (emoji, roleMention) -> "$emoji → $roleMention" })
             }"
             message += "\n\n" + "Please choose buttons to select your roles ..".translate(guild.internalLanguage())
             buttons = emoji2Role.map { (e, _) -> loadEmojiButton(guild, e) }
@@ -278,8 +277,14 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
         var channelId: String = ""
         var messageId: String = ""
 
-        @Column(columnDefinition = "JSON")
-        var emojiToRole: MutableMap<String, String> = mutableMapOf()
+        @Column(name = "emojiToRole")
+        var emojiToRoleString: String = "{}"
+
+        @Transient
+        private var emojiToRoleData: MutableMap<String, String> = mutableMapOf()
+
+        @Transient
+        private val oom = createObjectMapper()
 
         constructor()
 
@@ -290,11 +295,24 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
         }
 
         fun setEmojiToRole(emoji: String, roleAsMention: String) {
-            emojiToRole[emoji] = roleAsMention
+            emojiToRoleData[emoji] = roleAsMention
+            syncEmojiToRole()
         }
 
+
         fun removeEmoji(emoji: String) {
-            emojiToRole.remove(emoji)
+            emojiToRoleData.remove(emoji)
+            syncEmojiToRole()
+        }
+
+        fun emojiToRole() = emojiToRoleData.toMap()
+
+        private fun syncEmojiToRole() {
+            emojiToRoleString = oom.writeValueAsString(emojiToRoleData)
+        }
+
+        fun afterCreation() {
+            emojiToRoleData = oom.readValue(emojiToRoleString)
         }
     }
 }
