@@ -14,7 +14,6 @@ import javax.persistence.Entity
 val DRIVER: Class<out Driver?> = JDBC::class.java
 const val DRIVER_NAME = "jdbc:sqlite:"
 
-
 fun getDatabase(location: String): Session {
     val dbFile = File(location)
     logger.info("DB file is ${dbFile.absolutePath}")

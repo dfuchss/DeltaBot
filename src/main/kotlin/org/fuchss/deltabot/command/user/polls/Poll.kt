@@ -80,7 +80,6 @@ class Poll {
         syncUser2React2UserData()
     }
 
-
     fun addReact2User(react: String, uid: String) {
         react2UserData[react] = (react2UserData[react] ?: mutableListOf()).withFirst(uid).toMutableList()
         syncUser2React2UserData()
