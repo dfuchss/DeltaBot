@@ -3,8 +3,8 @@ package org.fuchss.deltabot.cognitive.dialogmanagement.dialog
 import com.apptastic.rssreader.Item
 import com.apptastic.rssreader.RssReader
 import net.dv8tion.jda.api.EmbedBuilder
-import net.dv8tion.jda.api.MessageBuilder
-import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
+import net.dv8tion.jda.api.utils.messages.MessageCreateData
 import org.fuchss.deltabot.Constants
 import org.fuchss.deltabot.cognitive.dialogmanagement.Context
 import org.fuchss.deltabot.cognitive.dialogmanagement.Dialog
@@ -28,8 +28,8 @@ class News : Dialog(ID) {
 
         private const val maxNews = 10
 
-        fun createNewsMessage(providers: List<String>): List<Message> {
-            val result = mutableListOf<Message>()
+        fun createNewsMessage(providers: List<String>): List<MessageCreateData> {
+            val result = mutableListOf<MessageCreateData>()
             for (categoryIdentifier in providers) {
                 for (provider in Companion.providers[categoryIdentifier] ?: continue) {
                     val responseBuilder = EmbedBuilder().setTitle(provider.first).setColor(Constants.BLUE)
@@ -39,7 +39,7 @@ class News : Dialog(ID) {
                     }
                     if (feed.isNotEmpty()) {
                         responseBuilder.descriptionBuilder.trim()
-                        result += MessageBuilder().setEmbeds(responseBuilder.build()).build()
+                        result += MessageCreateBuilder().setEmbeds(responseBuilder.build()).build()
                     }
                 }
             }

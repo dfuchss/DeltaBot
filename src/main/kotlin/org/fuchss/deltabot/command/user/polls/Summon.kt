@@ -99,7 +99,7 @@ class Summon(pollAdmin: IPollAdmin, configuration: BotConfiguration, scheduler: 
 
         val user = jda.fetchUser(uid)
         val newContent = msg.contentRaw + "\n\n${pollFinished.translate(language(msg.guild, user))}"
-        msg.editMessage(newContent).setActionRows(listOf()).complete().hide(directHide = false)
+        msg.editMessage(newContent).setComponents(listOf()).complete().hide(directHide = false)
         if (msg.isPinned) {
             msg.unpin().complete()
         }

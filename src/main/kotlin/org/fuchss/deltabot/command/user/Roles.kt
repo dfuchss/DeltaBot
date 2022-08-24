@@ -239,7 +239,7 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
         }
 
         val msg = guild.fetchMessage(guildState.channelId, guildState.messageId)!!
-        msg.editMessage(message).setActionRows(buttons.toActionRows()).queue()
+        msg.editMessage(message).setComponents(buttons.toActionRows()).queue()
     }
 
     private fun loadEmojiButton(guild: Guild, emoji: String): Button {

@@ -83,7 +83,7 @@ class PollAdmin : EventListener, IPollAdmin {
             globalActions += Button.of(ButtonStyle.SECONDARY, postpone_60.name, "+ 1 h", postpone_60)
         }
 
-        reply.editOriginal(message).setActionRows(globalActions.toActionRows(3)).queue()
+        reply.editOriginal(message).setComponents(globalActions.toActionRows(3)).queue()
     }
 
     override fun register(pollType: String, manager: IPollBase) {

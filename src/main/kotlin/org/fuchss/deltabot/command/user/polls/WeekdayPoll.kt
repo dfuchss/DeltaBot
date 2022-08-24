@@ -1,6 +1,5 @@
 package org.fuchss.deltabot.command.user.polls
 
-import net.dv8tion.jda.api.MessageBuilder
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.interaction.component.SelectMenuInteractionEvent
@@ -12,6 +11,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
 import net.dv8tion.jda.api.interactions.components.ActionRow
 import net.dv8tion.jda.api.interactions.components.selections.SelectMenu
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
 import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.utils.Scheduler
 import org.fuchss.deltabot.utils.Weekday
@@ -63,7 +63,7 @@ class WeekdayPoll(pollAdmin: IPollAdmin, scheduler: Scheduler, session: Session)
             Weekday.values().map { v -> SelectOption.of(v.name.translate(event), v.name.translate(event)) }
         ).setMinValues(1).setMaxValues(Weekday.values().size).build()
 
-        val msg = MessageBuilder().setContent(message).setActionRows(ActionRow.of(weekdays)).build()
+        val msg = MessageCreateBuilder().setContent(message).setComponents(ActionRow.of(weekdays)).build()
         event.reply(msg).queue()
     }
 }

@@ -215,7 +215,7 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
         val globalActions = listOf(Button.of(ButtonStyle.PRIMARY, admin.name + "", "Admin Area", admin))
         components.add(ActionRow.of(globalActions))
 
-        val msg = hook.editOriginal(response).setActionRows(components).complete()
+        val msg = hook.editOriginal(response).setComponents(components).complete()
         msg.pinAndDelete()
 
         val data = Poll(pollType, terminationTimestamp, msg.guild.id, msg.channel.id, msg.id, author.id, options.keys.map { e -> EmojiDTO.create(e) }, onlyOneOption)
@@ -258,7 +258,7 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
         }
         finalMsg += "\n${pollFinished.translate(language(msg.guild, user))}"
 
-        msg.editMessage(finalMsg).setActionRows(listOf()).complete().hide(directHide = false)
+        msg.editMessage(finalMsg).setComponents(listOf()).complete().hide(directHide = false)
         if (msg.isPinned) {
             msg.unpin().complete()
         }
@@ -278,7 +278,7 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
     }
 
     private fun refreshPoll(pollMessage: Message, poll: Poll) {
-        val newMessage = pollMessage.channel.sendMessage(pollMessage.contentRaw.split("\n")[0]).setActionRows(pollMessage.actionRows).complete()
+        val newMessage = pollMessage.channel.sendMessage(pollMessage.contentRaw.split("\n")[0]).setComponents(pollMessage.actionRows).complete()
         newMessage.pinAndDelete()
         recreateMessage(newMessage, poll)
         poll.mid = newMessage.id
