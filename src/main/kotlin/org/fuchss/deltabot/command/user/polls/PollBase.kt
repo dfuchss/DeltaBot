@@ -52,7 +52,8 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
     protected val polls: MutableSet<Poll> = mutableSetOf()
 
     init {
-        @Suppress("LeakingThis") pollAdmin.register(pollType, this)
+        @Suppress("LeakingThis")
+        pollAdmin.register(pollType, this)
     }
 
     // IPollBase
