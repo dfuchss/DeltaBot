@@ -103,11 +103,28 @@ private fun hideMessage(message: Message, hiddenMessage: HiddenMessage): Message
     }
 
     val firstLine = message.contentDisplay.split("\n")[0]
-    val newContent = (if (firstLine.length > maxContent) firstLine.substring(0, maxContent) else firstLine) + "..."
+    val newContent = (if (firstLine.length > maxContent) crop(firstLine) else firstLine) + "..."
     val edited = message.editMessage(newContent).complete()
     hiddenMessage.hidden = true
     hiddenMessages.persist(hiddenMessage)
     return edited
+}
+
+private fun crop(line: String): String {
+    val segments = line.split(' ')
+    var len = 0
+    val selectedSegments = mutableListOf<String>()
+    for (segment in segments) {
+        if (len + segment.length >= maxContent) {
+            break
+        }
+        selectedSegments.add(segment)
+        len += segment.length
+    }
+    if (selectedSegments.isNotEmpty()) {
+        return selectedSegments.joinToString(" ")
+    }
+    return line.substring(0, maxContent)
 }
 
 private fun unhideMessage(scheduler: Scheduler?, message: Message, hiddenMessage: HiddenMessage) {
