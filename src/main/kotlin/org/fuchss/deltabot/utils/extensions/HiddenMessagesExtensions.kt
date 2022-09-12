@@ -102,7 +102,7 @@ private fun hideMessage(message: Message, hiddenMessage: HiddenMessage): Message
         return message
     }
 
-    val firstLine = message.contentDisplay.split("\n")[0]
+    val firstLine = message.refresh().contentDisplay.split("\n")[0]
     val newContent = (if (firstLine.length > maxContent) crop(firstLine) else firstLine) + "..."
     val edited = message.editMessage(newContent).complete()
     hiddenMessage.hidden = true
