@@ -1,8 +1,8 @@
 package org.fuchss.deltabot.command.admin
 
 import net.dv8tion.jda.api.entities.Guild
-import net.dv8tion.jda.api.entities.MessageChannel
 import net.dv8tion.jda.api.entities.User
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction
 import net.dv8tion.jda.api.interactions.commands.build.Commands

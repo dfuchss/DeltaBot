@@ -1,7 +1,7 @@
 package org.fuchss.deltabot.command.user
 
 import net.dv8tion.jda.api.JDA
-import net.dv8tion.jda.api.entities.ChannelType
+import net.dv8tion.jda.api.entities.channel.ChannelType
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction
 import net.dv8tion.jda.api.interactions.commands.build.Commands

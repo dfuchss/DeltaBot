@@ -1,9 +1,9 @@
 package org.fuchss.deltabot.utils.extensions
 
 import net.dv8tion.jda.api.JDA
-import net.dv8tion.jda.api.entities.ChannelType
 import net.dv8tion.jda.api.entities.Message
-import net.dv8tion.jda.api.entities.PrivateChannel
+import net.dv8tion.jda.api.entities.channel.ChannelType
+import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
 import net.dv8tion.jda.api.events.message.MessageDeleteEvent
