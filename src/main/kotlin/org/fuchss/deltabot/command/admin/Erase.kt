@@ -44,6 +44,8 @@ class Erase : GuildCommand {
                 for (m in messages) {
                     if (user == null || m.author.id == user.id) {
                         m.delete().queue()
+                    } else if (m.author.isBot && user.isBot && m.author.name == user.name) {
+                        m.delete().queue()
                     }
                 }
                 messages = history.fetchHistory(retrieveMax)
