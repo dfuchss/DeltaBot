@@ -18,8 +18,7 @@ class PollAdmin : EventListener, IPollAdmin {
         private val delete = ":put_litter_in_its_place:".toEmoji()
         private val refresh = ":cyclone:".toEmoji()
 
-        private val postpone_60 = ":clock12:".toEmoji()
-        private val postpone_15 = ":clock3:".toEmoji()
+        private val postpones = listOf(":clock6" to -60, ":clock3:" to 15, ":clock12:" to 60)
 
         private const val pollTypeLine = "PollType: "
         private const val pollIdLine = "PollId: "
@@ -33,7 +32,7 @@ class PollAdmin : EventListener, IPollAdmin {
         }
 
         val buttonId = event.button.id ?: ""
-        if (buttonId !in listOf(finish, delete, refresh, postpone_15, postpone_60).map { e -> e.name }) {
+        if (buttonId !in (listOf(finish, delete, refresh) + postpones.map { it.first })) {
             return
         }
 
@@ -60,8 +59,7 @@ class PollAdmin : EventListener, IPollAdmin {
             finish.name -> handler.terminate(event.jda, event.user, mid)
             delete.name -> handler.removePoll(event.jda, event.user, mid)
             refresh.name -> handler.refreshPoll(event.jda, event.user, mid)
-            postpone_15.name -> handler.postpone(event.jda, event.user, mid, 15)
-            postpone_60.name -> handler.postpone(event.jda, event.user, mid, 60)
+            in postpones.map { it.first } -> handler.postpone(event.jda, event.user, mid, postpones.toMap()[buttonId]!!)
             else -> logger.error("ButtonId was $buttonId, but no method is registered!")
         }
     }
@@ -79,8 +77,9 @@ class PollAdmin : EventListener, IPollAdmin {
         )
 
         if (data.timestamp != null) {
-            globalActions += Button.of(ButtonStyle.SECONDARY, postpone_15.name, "+ 15 min", postpone_15)
-            globalActions += Button.of(ButtonStyle.SECONDARY, postpone_60.name, "+ 1 h", postpone_60)
+            for ((buttonId, minutes) in postpones) {
+                globalActions += Button.of(ButtonStyle.SECONDARY, buttonId, "${if (minutes >= 0) "+" else ""}$minutes min", buttonId.toEmoji())
+            }
         }
 
         reply.editOriginal(message).setComponents(globalActions.toActionRows(3)).queue()
