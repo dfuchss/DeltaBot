@@ -103,6 +103,18 @@ fun <E> List<E>.withFirst(e: E): List<E> {
 }
 
 /**
+ * Create a copy of a list with an additional element at the last index.
+ * @param[e] the new element
+ * @return the new list
+ */
+fun <E> List<E>.withLast(e: E): List<E> {
+    val newList = mutableListOf<E>()
+    newList.addAll(this)
+    newList.add(e)
+    return newList
+}
+
+/**
  * Create a copy of a list without a certain element.
  * @param[e] the new element
  * @return the new list

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.emoji.Emoji
 import org.fuchss.deltabot.utils.extensions.createObjectMapper
-import org.fuchss.deltabot.utils.extensions.withFirst
+import org.fuchss.deltabot.utils.extensions.withLast
 import org.fuchss.deltabot.utils.extensions.without
 import javax.persistence.Column
 import javax.persistence.Entity
@@ -81,12 +81,12 @@ class Poll {
     }
 
     fun addReact2User(react: String, uid: String) {
-        react2UserData[react] = (react2UserData[react] ?: mutableListOf()).withFirst(uid).toMutableList()
+        react2UserData[react] = (react2UserData[react] ?: mutableListOf()).withLast(uid).toMutableList()
         syncUser2React2UserData()
     }
 
     fun addUser2React(uid: String, react: String) {
-        user2ReactData[uid] = (user2ReactData[uid] ?: mutableListOf()).withFirst(react).toMutableList()
+        user2ReactData[uid] = (user2ReactData[uid] ?: mutableListOf()).withLast(react).toMutableList()
         syncUser2React2UserData()
     }
 
