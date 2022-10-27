@@ -2,15 +2,15 @@ package org.fuchss.deltabot.command.user.polls
 
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.events.GenericEvent
-import net.dv8tion.jda.api.events.interaction.component.SelectMenuInteractionEvent
+import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction
 import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.interactions.commands.build.OptionData
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
 import net.dv8tion.jda.api.interactions.components.ActionRow
-import net.dv8tion.jda.api.interactions.components.selections.SelectMenu
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption
+import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder
 import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.utils.Scheduler
@@ -34,14 +34,14 @@ class WeekdayPoll(pollAdmin: IPollAdmin, scheduler: Scheduler, session: Session)
     }
 
     override fun onEvent(event: GenericEvent) {
-        if (event is SelectMenuInteractionEvent && event.selectMenu.id == "weekday") {
+        if (event is StringSelectInteractionEvent && event.selectMenu.id == "weekday") {
             handleCreationOfSummon(event)
             return
         }
         super.onEvent(event)
     }
 
-    private fun handleCreationOfSummon(event: SelectMenuInteractionEvent) {
+    private fun handleCreationOfSummon(event: StringSelectInteractionEvent) {
         val hook = event.deferEdit().complete()
         val question = event.message.contentRaw.split("\n")[0]
         val weekdays = event.selectedOptions.map { o -> o.value }
@@ -59,7 +59,7 @@ class WeekdayPoll(pollAdmin: IPollAdmin, scheduler: Scheduler, session: Session)
 
         val message = "**$question**\n\n" + "*Please choose the Weekdays you want to use*".translate(event)
 
-        val weekdays = SelectMenu.create("weekday").addOptions(
+        val weekdays = StringSelectMenu.create("weekday").addOptions(
             Weekday.values().map { v -> SelectOption.of(v.name.translate(event), v.name.translate(event)) }
         ).setMinValues(1).setMaxValues(Weekday.values().size).build()
 
