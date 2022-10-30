@@ -30,7 +30,7 @@ class Poll {
     var optionsString: String = "[]"
 
     @Transient
-    private var optionsData: MutableList<PollBase.EmojiDTO> = mutableListOf()
+    var optionsData: MutableList<PollBase.EmojiDTO> = mutableListOf()
 
     @Column(name = "react2User")
     var react2UserString: String = "{}"

@@ -32,7 +32,7 @@ class PollAdmin : EventListener, IPollAdmin {
         }
 
         val buttonId = event.button.id ?: ""
-        if (buttonId !in (listOf(finish, delete, refresh) + postpones.map { it.first })) {
+        if (buttonId !in (listOf(finish, delete, refresh).map { it.name } + postpones.map { it.first })) {
             return
         }
 
