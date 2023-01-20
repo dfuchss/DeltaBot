@@ -273,3 +273,4 @@ config
 data
 target/
 bot.sqlite
+pom.xml.versionsBackup
