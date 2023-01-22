@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.entities.emoji.Emoji
 import net.dv8tion.jda.api.events.GenericEvent
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.hooks.EventListener
 import net.dv8tion.jda.api.interactions.commands.OptionType
 import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction
@@ -26,6 +27,7 @@ import org.fuchss.deltabot.utils.extensions.fetchMessage
 import org.fuchss.deltabot.utils.extensions.findAllEmojis
 import org.fuchss.deltabot.utils.extensions.internalLanguage
 import org.fuchss.deltabot.utils.extensions.logger
+import org.fuchss.deltabot.utils.extensions.reverseMap
 import org.fuchss.deltabot.utils.extensions.toActionRows
 import org.fuchss.deltabot.utils.extensions.translate
 import org.fuchss.objectcasket.objectpacker.port.Session
@@ -77,14 +79,13 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
     }
 
     override fun onEvent(event: GenericEvent) {
-        if (event !is ButtonInteractionEvent) {
-            return
-        }
-        if (!isGuildMessage(event.guild?.id ?: "", event.channel.id, event.messageId)) {
-            return
+        if (event is MessageReceivedEvent && event.isFromGuild && !event.author.isBot) {
+            handlePossibleMessageWithRole(event)
         }
 
-        handleRolesClick(event)
+        if (event is ButtonInteractionEvent && isGuildMessage(event.guild?.id ?: "", event.channel.id, event.messageId)) {
+            handleRolesClick(event)
+        }
     }
 
     override fun handle(event: SlashCommandInteraction) {
@@ -194,6 +195,25 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
 
         updateGuild(guild, guildState)
         event.reply("Updated role message".translate(event)).setEphemeral(true).queue()
+    }
+
+    private fun handlePossibleMessageWithRole(event: MessageReceivedEvent) {
+        val guild = event.guild
+        val state = getGuildState(guild) ?: return
+        val role2Emoji = state.emojiToRole().reverseMap()
+        val mentions = event.message.mentions.getMentions(Message.MentionType.ROLE)
+        for (m in mentions) {
+            val key = "<@&${m.id}>"
+            val emojiDefinition = role2Emoji[key] ?: continue
+
+            if (discordEmojiRegex.matches(emojiDefinition.first())) {
+                val emojiId = emojiDefinition.first().split(":")[2].dropLast(1)
+                val guildEmoji = guild.retrieveEmojiById(emojiId).complete()
+                event.message.addReaction(guildEmoji).queue()
+            } else {
+                event.message.addReaction(Emoji.fromUnicode(emojiDefinition.first())).queue()
+            }
+        }
     }
 
     private fun handleRolesClick(event: ButtonInteractionEvent) {
