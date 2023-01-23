@@ -12,7 +12,6 @@ import org.fuchss.deltabot.command.admin.Admin
 import org.fuchss.deltabot.command.admin.Channels
 import org.fuchss.deltabot.command.admin.Debug
 import org.fuchss.deltabot.command.admin.Echo
-import org.fuchss.deltabot.command.admin.Erase
 import org.fuchss.deltabot.command.admin.GuildAdmin
 import org.fuchss.deltabot.command.admin.GuildLanguage
 import org.fuchss.deltabot.command.admin.InitialAdminCommand
@@ -66,7 +65,6 @@ class CommandRegistry(private val configuration: BotConfiguration, dbLocation: S
         commands.add(Admin(configuration))
         commands.add(GuildAdmin(session))
         commands.add(State(configuration, scheduler, session))
-        commands.add(Erase())
         commands.add(Roles(session))
         commands.add(ResetStateAndCommands(configuration, dbLocation, session))
         commands.add(TransferText())

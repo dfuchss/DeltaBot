@@ -42,7 +42,6 @@ For details take a look at [commands.md](./commands.md)
 
 /echo: Simply Echo the text you are writing now ..
 /roll: roll a dice
-/erase: erase all content of a channel
 /language: set your bot language
 /guild-language: set the bot language of your guild
 ```
