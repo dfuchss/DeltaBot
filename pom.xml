@@ -22,7 +22,7 @@
         <kotlin.compiler.jvmTarget>17</kotlin.compiler.jvmTarget>
 
         <kotlin.version>1.8.0</kotlin.version>
-        <jackson.version>2.14.1</jackson.version>
+        <jackson.version>2.14.2</jackson.version>
         <jda.version>5.0.0-beta.3</jda.version>
         <slf4j.version>2.0.6</slf4j.version>
         <main.class>org.fuchss.deltabot.MainKt</main.class>
