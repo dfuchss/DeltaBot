@@ -1,5 +1,6 @@
 package org.fuchss.deltabot.db
 
+import jakarta.persistence.Entity
 import org.fuchss.deltabot.utils.extensions.logger
 import org.fuchss.objectcasket.objectpacker.PackerPort
 import org.fuchss.objectcasket.objectpacker.port.Configuration
@@ -9,7 +10,6 @@ import org.reflections.Reflections
 import org.sqlite.JDBC
 import java.io.File
 import java.sql.Driver
-import javax.persistence.Entity
 
 val DRIVER: Class<out Driver?> = JDBC::class.java
 const val DRIVER_NAME = "jdbc:sqlite:"

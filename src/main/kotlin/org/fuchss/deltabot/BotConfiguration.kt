@@ -1,5 +1,12 @@
 package org.fuchss.deltabot
 
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.Id
+import jakarta.persistence.ManyToMany
+import jakarta.persistence.Table
+import jakarta.persistence.Transient
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.User
 import org.fuchss.deltabot.db.dto.UserDTO
@@ -8,13 +15,6 @@ import org.fuchss.deltabot.utils.extensions.logger
 import org.fuchss.deltabot.utils.extensions.setLogLevel
 import org.fuchss.objectcasket.objectpacker.port.Session
 import org.slf4j.spi.LocationAwareLogger
-import javax.persistence.Column
-import javax.persistence.Entity
-import javax.persistence.GeneratedValue
-import javax.persistence.Id
-import javax.persistence.ManyToMany
-import javax.persistence.Table
-import javax.persistence.Transient
 
 @Entity
 @Table(name = "Configuration")

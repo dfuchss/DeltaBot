@@ -1,12 +1,12 @@
 package org.fuchss.deltabot.db.dto
 
+import jakarta.persistence.Entity
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.Id
+import jakarta.persistence.ManyToOne
+import jakarta.persistence.Table
 import org.fuchss.deltabot.Language
 import org.fuchss.objectcasket.objectpacker.port.Session
-import javax.persistence.Entity
-import javax.persistence.GeneratedValue
-import javax.persistence.Id
-import javax.persistence.ManyToOne
-import javax.persistence.Table
 
 @Entity
 @Table(name = "Language")

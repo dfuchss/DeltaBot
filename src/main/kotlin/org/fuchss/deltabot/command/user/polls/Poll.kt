@@ -1,16 +1,16 @@
 package org.fuchss.deltabot.command.user.polls
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.Id
+import jakarta.persistence.Table
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.emoji.Emoji
 import org.fuchss.deltabot.utils.extensions.createObjectMapper
 import org.fuchss.deltabot.utils.extensions.withLast
 import org.fuchss.deltabot.utils.extensions.without
-import javax.persistence.Column
-import javax.persistence.Entity
-import javax.persistence.GeneratedValue
-import javax.persistence.Id
-import javax.persistence.Table
 
 @Entity
 @Table(name = "Poll")

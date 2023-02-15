@@ -1,5 +1,8 @@
 package org.fuchss.deltabot.utils.extensions
 
+import jakarta.persistence.Entity
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.Id
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Message
 import net.dv8tion.jda.api.entities.channel.ChannelType
@@ -16,9 +19,6 @@ import org.fuchss.deltabot.utils.timestamp
 import org.fuchss.objectcasket.objectpacker.port.Session
 import java.time.Duration
 import java.time.LocalDateTime
-import javax.persistence.Entity
-import javax.persistence.GeneratedValue
-import javax.persistence.Id
 
 private val hiddenMessages = HiddenMessageManager()
 

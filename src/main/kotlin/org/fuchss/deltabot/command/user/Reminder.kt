@@ -1,5 +1,9 @@
 package org.fuchss.deltabot.command.user
 
+import jakarta.persistence.Entity
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.Id
+import jakarta.persistence.Table
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.channel.ChannelType
 import net.dv8tion.jda.api.interactions.commands.OptionType
@@ -20,10 +24,6 @@ import org.fuchss.deltabot.utils.extensions.logger
 import org.fuchss.deltabot.utils.extensions.translate
 import org.fuchss.deltabot.utils.timestamp
 import org.fuchss.objectcasket.objectpacker.port.Session
-import javax.persistence.Entity
-import javax.persistence.GeneratedValue
-import javax.persistence.Id
-import javax.persistence.Table
 
 /**
  * A [BotCommand] that creates & manages reminder messages.

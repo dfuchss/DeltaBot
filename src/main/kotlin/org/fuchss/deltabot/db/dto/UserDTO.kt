@@ -1,12 +1,12 @@
 package org.fuchss.deltabot.db.dto
 
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.Id
+import jakarta.persistence.Table
 import net.dv8tion.jda.api.entities.User
 import org.fuchss.objectcasket.objectpacker.port.Session
-import javax.persistence.Column
-import javax.persistence.Entity
-import javax.persistence.GeneratedValue
-import javax.persistence.Id
-import javax.persistence.Table
 
 @Entity
 @Table(name = "User")

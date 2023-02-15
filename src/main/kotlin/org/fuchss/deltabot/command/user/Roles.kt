@@ -1,6 +1,11 @@
 package org.fuchss.deltabot.command.user
 
 import com.fasterxml.jackson.module.kotlin.readValue
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.Id
+import jakarta.persistence.Table
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
@@ -31,11 +36,6 @@ import org.fuchss.deltabot.utils.extensions.reverseMap
 import org.fuchss.deltabot.utils.extensions.toActionRows
 import org.fuchss.deltabot.utils.extensions.translate
 import org.fuchss.objectcasket.objectpacker.port.Session
-import javax.persistence.Column
-import javax.persistence.Entity
-import javax.persistence.GeneratedValue
-import javax.persistence.Id
-import javax.persistence.Table
 
 /**
  * A [BotCommand] that provides tools to create messages that manages the [Roles][Role] of a [Member].
