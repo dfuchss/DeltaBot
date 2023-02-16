@@ -32,7 +32,6 @@ class State(private val config: BotConfiguration, private val scheduler: Schedul
 
     override fun handle(event: SlashCommandInteraction) {
         var msg = ""
-        msg += "NLU: ${config.nluUrl}, Threshold: ${config.nluThreshold}, State: ${if (config.disableNlu) "disabled" else "enabled"}\n"
         msg += "Admins: ${config.getAdmins(event.jda).joinToString { u -> u.asMention }}\n"
         if (event.isFromGuild) {
             val guild = GuildDTO.findDBGuild(session, event.guild!!)

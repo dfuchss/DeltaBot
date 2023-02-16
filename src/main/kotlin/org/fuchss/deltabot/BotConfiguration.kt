@@ -62,11 +62,6 @@ class BotConfiguration {
      */
     var debug: Boolean = false
 
-    /**
-     * Indicator whether the NLU Unit is disabled.
-     */
-    var disableNlu: Boolean = false
-
     init {
         if (runInDocker()) {
             ducklingUrl = "http://deltabot-duckling:8000"
