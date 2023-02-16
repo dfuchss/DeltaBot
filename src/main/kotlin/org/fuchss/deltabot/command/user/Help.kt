@@ -8,7 +8,6 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData
 import org.fuchss.deltabot.BotConfiguration
 import org.fuchss.deltabot.Constants
-import org.fuchss.deltabot.cognitive.dialogmanagement.DialogRegistry
 import org.fuchss.deltabot.command.BotCommand
 import org.fuchss.deltabot.command.CommandPermissions
 import org.fuchss.deltabot.command.GlobalCommand
@@ -54,13 +53,6 @@ open class Help(private val configuration: BotConfiguration, private val session
                 if (subcommands.isNotEmpty()) {
                     for (subcommand in subcommands)
                         message += "→ **${subcommand.name}**: ${subcommand.description}\n"
-                }
-            }
-
-            if (DialogRegistry.DialogToDescription.isNotEmpty()) {
-                message += "\n\n**Dialogs:**\n"
-                for (info in DialogRegistry.DialogToDescription.values.flatten().sorted()) {
-                    message += "* $info\n"
                 }
             }
 

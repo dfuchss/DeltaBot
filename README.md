@@ -5,7 +5,7 @@
 * Since discord.py will be discontinued, I've recreated DeltaBot using Kotlin and JDA.
 * You can find the old version of DeltaBot [here](https://github.com/dfuchss/DeltaBot/releases/tag/v1.0) or in a separate [project](https://github.com/dfuchss/DeltaBot-Legacy).
 
-This repo contains my first [Discord](https://discordapp.com/) bot. It uses [RASA]("https://rasa.com") for NLP. The NLU is located [here](https://github.com/dfuchss/DeltaBot-NLU).
+This repo contains my first [Discord](https://discordapp.com/) bot.
 
 Discord Permission Int: `026058370128`
 

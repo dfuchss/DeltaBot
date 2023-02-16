@@ -24,7 +24,6 @@ import org.fuchss.deltabot.command.admin.UnhideAll
 import org.fuchss.deltabot.command.user.Emojify
 import org.fuchss.deltabot.command.user.Help
 import org.fuchss.deltabot.command.user.Language
-import org.fuchss.deltabot.command.user.News
 import org.fuchss.deltabot.command.user.Reminder
 import org.fuchss.deltabot.command.user.Roles
 import org.fuchss.deltabot.command.user.Roll
@@ -74,7 +73,6 @@ class CommandRegistry(private val configuration: BotConfiguration, dbLocation: S
         commands.add(Language())
         commands.add(Help(configuration, session, this))
         commands.add(PersistentHelp(configuration, session, this))
-        commands.add(News())
         commands.add(Roll())
         commands.add(Teams())
         commands.add(Emojify())

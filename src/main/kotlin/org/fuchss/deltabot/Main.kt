@@ -2,7 +2,6 @@ package org.fuchss.deltabot
 
 import net.dv8tion.jda.api.JDABuilder
 import net.dv8tion.jda.api.requests.GatewayIntent
-import org.fuchss.deltabot.cognitive.dialogmanagement.DialogListener
 import org.fuchss.deltabot.command.CommandHandler
 import org.fuchss.deltabot.command.CommandRegistry
 import org.fuchss.deltabot.command.react.ReactionHandler
@@ -43,8 +42,7 @@ fun main() {
             ActivityChanger(),
             ReactionHandler(),
             commandRegistry,
-            CommandHandler(config, database, commandRegistry),
-            DialogListener(config)
+            CommandHandler(config, database, commandRegistry)
         ).build()
 
     initHiddenMessages(jda, scheduler, database)
