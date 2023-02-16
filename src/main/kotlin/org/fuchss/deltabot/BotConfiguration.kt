@@ -32,7 +32,7 @@ class BotConfiguration {
             }
             config.session = session
 
-            logger.info("Loaded Config: ${config.nluUrl}, ${config.nluThreshold}, ${config.ducklingUrl}, Admins: '${config.admins}', Debug: ${config.debug}")
+            logger.info("Loaded Config: ${config.ducklingUrl}, Admins: '${config.admins}', Debug: ${config.debug}")
 
             return config
         }
@@ -46,19 +46,9 @@ class BotConfiguration {
     var id: Int? = null
 
     /**
-     * The path to the multi nlu interpreter.
-     */
-    var nluUrl: String = "http://localhost:5005"
-
-    /**
      * The path to ducking service.
      */
     var ducklingUrl: String = "http://localhost:8000"
-
-    /**
-     * The threshold for filtering nlu intents.
-     */
-    var nluThreshold: Double = 0.7
 
     /**
      * A list of all global admins identified by [User.getId]
@@ -79,7 +69,6 @@ class BotConfiguration {
 
     init {
         if (runInDocker()) {
-            nluUrl = "http://deltabot-nlu:5005"
             ducklingUrl = "http://deltabot-duckling:8000"
         }
     }
