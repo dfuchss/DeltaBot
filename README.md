@@ -50,9 +50,7 @@ For details take a look at [commands.md](./commands.md)
 
 * maven 3 and Java 17
     * `mvn clean package`
-* Python 3.8 with pip (NLU only)
-    * `pip install -r rasa/requirements.txt`
-
+    
 ## Run the Bot (via Docker)
 
 You'll need the following two things:
