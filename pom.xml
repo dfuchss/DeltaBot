@@ -4,7 +4,7 @@
     <groupId>org.fuchss</groupId>
 
     <artifactId>deltabot</artifactId>
-    <version>3.0.5-SNAPSHOT</version>
+    <version>3.0.5</version>
     <packaging>jar</packaging>
 
     <name>DeltaBot V3</name>
@@ -12,7 +12,7 @@
     <scm>
         <connection>scm:git:git://github.com/dfuchss/Deltabot.git</connection>
         <developerConnection>scm:git:ssh://github.com:dfuchss/Deltabot.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>v3.0.5</tag>
         <url>https://github.com/dfuchss/Deltabot/tree/main</url>
     </scm>
 
