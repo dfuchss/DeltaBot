@@ -13,7 +13,7 @@ on:
         description: The version after release. E.g., "2.0.0-SNAPSHOT"
         required: true
 jobs:
-  update:
+  release:
     uses: dfuchss/actions/.github/workflows/maven-manual-release.yml@main
     secrets:
       # Needs to be a personal access token to push as a certain user; otherwise actions won't be triggered.
