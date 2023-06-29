@@ -249,7 +249,8 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
         var message = "${switcherText.translate(guild.internalLanguage())}\n${noRoles.translate(guild.internalLanguage())}"
         var buttons = emptyList<Button>()
 
-        val emoji2Role = guildState.emojiToRole().entries.sortedBy { (_, mention) -> guild.getRoleById(mention.drop("<@&".length).dropLast(">".length))?.name ?: "" }
+        val emoji2Role = guildState.emojiToRole().entries
+            .sortedBy { (_, mention) -> guild.getRoleById(mention.drop("<@&".length).dropLast(">".length))?.name ?: "" }
         if (emoji2Role.isNotEmpty()) {
             message = "${switcherText.translate(guild.internalLanguage())}\n\n${
                 emoji2Role.joinToString(separator = "\n", transform = { (emoji, roleMention) -> "$emoji → $roleMention" })

@@ -170,9 +170,15 @@ private class HiddenMessageManager : EventListener {
         val private = messageDeleteEvent.channelType == ChannelType.PRIVATE
 
         return if (private) {
-            hiddenMessagesData.find { hm -> hm.isPrivateChannel && hm.mid == messageDeleteEvent.messageId && hm.uid == (messageDeleteEvent.channel as PrivateChannel).user!!.id }
+            hiddenMessagesData.find { hm ->
+                hm.isPrivateChannel && hm.mid == messageDeleteEvent.messageId &&
+                    hm.uid == (messageDeleteEvent.channel as PrivateChannel).user!!.id
+            }
         } else {
-            hiddenMessagesData.find { hm -> !hm.isPrivateChannel && hm.mid == messageDeleteEvent.messageId && hm.cid == messageDeleteEvent.channel.id && hm.gid == messageDeleteEvent.guild.id }
+            hiddenMessagesData.find { hm ->
+                !hm.isPrivateChannel && hm.mid == messageDeleteEvent.messageId &&
+                    hm.cid == messageDeleteEvent.channel.id && hm.gid == messageDeleteEvent.guild.id
+            }
         }
     }
 

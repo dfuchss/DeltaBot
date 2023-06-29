@@ -45,7 +45,9 @@ import org.fuchss.objectcasket.objectpacker.port.Session
  * @param[scheduler] the scheduler of the bot
  * @param[session] the session / databse of the bot
  */
-class CommandRegistry(private val configuration: BotConfiguration, dbLocation: String, scheduler: Scheduler, session: Session) : ICommandRegistry, EventListener {
+class CommandRegistry(private val configuration: BotConfiguration, dbLocation: String, scheduler: Scheduler, session: Session) :
+    ICommandRegistry,
+    EventListener {
 
     private val pollAdmin: IPollAdmin = PollAdmin()
 
@@ -133,7 +135,9 @@ class CommandRegistry(private val configuration: BotConfiguration, dbLocation: S
 
         val commands = jda.updateCommands()
         commands.addCommands(globalCommands.map { it.createCommand().setDefaultPermissions(DefaultMemberPermissions.ENABLED) }).queue()
-        jda.guilds.forEach { it.updateCommands().addCommands(guildCommands.map { c -> c.createCommand(it).setDefaultPermissions(DefaultMemberPermissions.ENABLED) }).queue() }
+        jda.guilds.forEach {
+            it.updateCommands().addCommands(guildCommands.map { c -> c.createCommand(it).setDefaultPermissions(DefaultMemberPermissions.ENABLED) }).queue()
+        }
 
         globalCommands.forEach { it.registerJDA(jda) }
         guildCommands.forEach { it.registerJDA(jda) }

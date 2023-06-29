@@ -34,7 +34,10 @@ import org.fuchss.objectcasket.objectpacker.port.Session
  * @param[pollType] the type of the poll (simply a universal id of the class)
  * @param[scheduler] the scheduler instance for the poll
  */
-abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType: String, protected val scheduler: Scheduler, protected val session: Session) : GuildCommand, EventListener, IPollBase {
+abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType: String, protected val scheduler: Scheduler, protected val session: Session) :
+    GuildCommand,
+    EventListener,
+    IPollBase {
 
     companion object {
         private val admin = ":crown:".toEmoji()
@@ -211,7 +214,14 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
         message.editMessage(finalMessage).queue()
     }
 
-    protected fun createPoll(hook: InteractionHook, terminationTimestamp: Long?, author: User, response: String, options: Map<Emoji, Button>, onlyOneOption: Boolean) {
+    protected fun createPoll(
+        hook: InteractionHook,
+        terminationTimestamp: Long?,
+        author: User,
+        response: String,
+        options: Map<Emoji, Button>,
+        onlyOneOption: Boolean
+    ) {
         val components = options.values.toList<ItemComponent>().toActionRows().toMutableList()
         val globalActions = listOf(Button.of(ButtonStyle.PRIMARY, admin.name + "", "Admin Area", admin))
         components.add(ActionRow.of(globalActions))
@@ -219,7 +229,8 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
         val msg = hook.editOriginal(response).setComponents(components).complete()
         msg.pinAndDelete()
 
-        val data = Poll(pollType, terminationTimestamp, msg.guild.id, msg.channel.id, msg.id, author.id, options.keys.map { e -> EmojiDTO.create(e) }, onlyOneOption)
+        val data =
+            Poll(pollType, terminationTimestamp, msg.guild.id, msg.channel.id, msg.id, author.id, options.keys.map { e -> EmojiDTO.create(e) }, onlyOneOption)
         savePollToDB(data)
         if (terminationTimestamp != null) {
             scheduler.queue(msg.id, { terminate(data, hook.jda, author.id) }, terminationTimestamp)

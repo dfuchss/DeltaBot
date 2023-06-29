@@ -35,7 +35,8 @@ import kotlin.random.Random
 /**
  * A [Poll][PollBase] that asks [Members][Member] to play together.
  */
-class Summon(pollAdmin: IPollAdmin, configuration: BotConfiguration, scheduler: Scheduler, session: Session) : PollBase(pollAdmin, "summon", scheduler, session) {
+class Summon(pollAdmin: IPollAdmin, configuration: BotConfiguration, scheduler: Scheduler, session: Session) :
+    PollBase(pollAdmin, "summon", scheduler, session) {
 
     companion object {
         private val summonMessages = listOf(
@@ -44,7 +45,8 @@ class Summon(pollAdmin: IPollAdmin, configuration: BotConfiguration, scheduler: 
         )
 
         private val summonReactionsDefault = listOf(":+1:", ":thinking:", ":question:", ":pensive:", ":-1").map { e -> e.toEmoji() }
-        private val summonReactionsDefaultStyle = listOf(ButtonStyle.SUCCESS, ButtonStyle.SECONDARY, ButtonStyle.SECONDARY, ButtonStyle.SECONDARY, ButtonStyle.DANGER)
+        private val summonReactionsDefaultStyle =
+            listOf(ButtonStyle.SUCCESS, ButtonStyle.SECONDARY, ButtonStyle.SECONDARY, ButtonStyle.SECONDARY, ButtonStyle.DANGER)
         private const val GraceTimeInMinutes = 15L
     }
 

@@ -89,7 +89,8 @@ fun findAllEmojis(text: String): List<String> {
 /**
  * Create a revered map.
  */
-fun <K, V> Map<K, V>.reverseMap(): Map<V, List<K>> = entries.map { e -> e.value to e.key }.groupBy { e -> e.first }.map { e -> e.key to e.value.map { v -> v.second } }.toMap()
+fun <K, V> Map<K, V>.reverseMap(): Map<V, List<K>> =
+    entries.map { e -> e.value to e.key }.groupBy { e -> e.first }.map { e -> e.key to e.value.map { v -> v.second } }.toMap()
 
 /**
  * Create a copy of a list with an additional element at the first index.

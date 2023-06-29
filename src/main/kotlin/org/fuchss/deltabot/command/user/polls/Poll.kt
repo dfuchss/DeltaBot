@@ -49,7 +49,16 @@ class Poll {
 
     constructor()
 
-    constructor(pollType: String, timestamp: Long?, gid: String, cid: String, mid: String, uid: String, options: List<PollBase.EmojiDTO>, onlyOneOption: Boolean) {
+    constructor(
+        pollType: String,
+        timestamp: Long?,
+        gid: String,
+        cid: String,
+        mid: String,
+        uid: String,
+        options: List<PollBase.EmojiDTO>,
+        onlyOneOption: Boolean
+    ) {
         this.pollType = pollType
         this.timestamp = timestamp
         this.gid = gid
