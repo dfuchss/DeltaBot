@@ -107,12 +107,20 @@ class Channels : GuildCommand {
 
         return if (onlyText) {
             guild.createTextChannel(name).addRolePermissionOverride(role.idLong, listOf(Permission.VIEW_CHANNEL), null) //
-                .addRolePermissionOverride(guildRoleOfBot.idLong, listOf(Permission.VIEW_CHANNEL, Permission.MANAGE_CHANNEL, Permission.MESSAGE_MANAGE), null) //
+                .addRolePermissionOverride(
+                    guildRoleOfBot.idLong,
+                    listOf(Permission.VIEW_CHANNEL, Permission.MANAGE_CHANNEL, Permission.MESSAGE_MANAGE),
+                    null
+                ) //
                 .addRolePermissionOverride(everyone.idLong, null, listOf(Permission.VIEW_CHANNEL)) //
                 .complete()
         } else {
             guild.createVoiceChannel(name).addRolePermissionOverride(role.idLong, listOf(Permission.VIEW_CHANNEL), null) //
-                .addRolePermissionOverride(guildRoleOfBot.idLong, listOf(Permission.VIEW_CHANNEL, Permission.MANAGE_CHANNEL, Permission.MESSAGE_MANAGE), null) //
+                .addRolePermissionOverride(
+                    guildRoleOfBot.idLong,
+                    listOf(Permission.VIEW_CHANNEL, Permission.MANAGE_CHANNEL, Permission.MESSAGE_MANAGE),
+                    null
+                ) //
                 .addRolePermissionOverride(everyone.idLong, null, listOf(Permission.VIEW_CHANNEL)) //
                 .complete()
         }
