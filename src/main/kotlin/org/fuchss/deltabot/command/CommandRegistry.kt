@@ -48,7 +48,6 @@ import org.fuchss.objectcasket.objectpacker.port.Session
 class CommandRegistry(private val configuration: BotConfiguration, dbLocation: String, scheduler: Scheduler, session: Session) :
     ICommandRegistry,
     EventListener {
-
     private val pollAdmin: IPollAdmin = PollAdmin()
 
     private val globalCommands: MutableList<GlobalCommand> = mutableListOf()
@@ -93,7 +92,10 @@ class CommandRegistry(private val configuration: BotConfiguration, dbLocation: S
         commands.filterIsInstance(GuildCommand::class.java).forEach { gc -> guildCommands.add(gc) }
     }
 
-    private fun initialUser(jda: JDA, u: User) {
+    private fun initialUser(
+        jda: JDA,
+        u: User
+    ) {
         logger.info("Added initial admin $u")
         val command = globalCommands.filterIsInstance(InitialAdminCommand::class.java).firstOrNull() ?: return
         globalCommands.remove(command)

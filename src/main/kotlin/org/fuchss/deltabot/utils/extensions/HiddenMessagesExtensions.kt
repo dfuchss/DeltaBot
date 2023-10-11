@@ -22,7 +22,11 @@ import java.time.LocalDateTime
 
 private val hiddenMessages = HiddenMessageManager()
 
-fun initHiddenMessages(jda: JDA, scheduler: Scheduler, session: Session) {
+fun initHiddenMessages(
+    jda: JDA,
+    scheduler: Scheduler,
+    session: Session
+) {
     if (hiddenMessages.isInitialized()) {
         error("HM Manager already initialized")
     }
@@ -36,10 +40,10 @@ fun unhideAll(jda: JDA) {
     hiddenMessages.unhideAll(jda)
 }
 
-private const val hideId = "hide-message"
+private const val HIDE_ID = "hide-message"
 private val hideEmote = ":arrow_down_small:".toEmoji()
 
-private const val maxContent = 24
+private const val MAX_CONTENT = 24
 
 fun Message.isHidden(): Boolean {
     if (!hiddenMessages.isInitialized()) {
@@ -85,25 +89,29 @@ fun Message.unhide(): Message {
 }
 
 private fun createHiddenMessage(message: Message) {
-    val hiddenMessage = if (message.channelType == ChannelType.PRIVATE) {
-        HiddenMessage("", (message.channel as PrivateChannel).user!!.id, "", message.id, true, message.contentRaw, false)
-    } else {
-        HiddenMessage(message.guild.id, "", message.channel.id, message.id, false, message.contentRaw, false)
-    }
+    val hiddenMessage =
+        if (message.channelType == ChannelType.PRIVATE) {
+            HiddenMessage("", (message.channel as PrivateChannel).user!!.id, "", message.id, true, message.contentRaw, false)
+        } else {
+            HiddenMessage(message.guild.id, "", message.channel.id, message.id, false, message.contentRaw, false)
+        }
 
     hiddenMessages.addHM(hiddenMessage)
 
-    val hideButton = Button.of(ButtonStyle.SECONDARY, hideId, "Details", hideEmote)
+    val hideButton = Button.of(ButtonStyle.SECONDARY, HIDE_ID, "Details", hideEmote)
     message.editMessageComponents(ActionRow.of(hideButton)).complete()
 }
 
-private fun hideMessage(message: Message, hiddenMessage: HiddenMessage): Message {
+private fun hideMessage(
+    message: Message,
+    hiddenMessage: HiddenMessage
+): Message {
     if (hiddenMessage.hidden) {
         return message
     }
 
     val firstLine = message.refresh().contentDisplay.split("\n")[0]
-    val newContent = (if (firstLine.length > maxContent) crop(firstLine) else firstLine) + "..."
+    val newContent = (if (firstLine.length > MAX_CONTENT) crop(firstLine) else firstLine) + "..."
     val edited = message.editMessage(newContent).complete()
     hiddenMessage.hidden = true
     hiddenMessages.persist(hiddenMessage)
@@ -115,7 +123,7 @@ private fun crop(line: String): String {
     var len = 0
     val selectedSegments = mutableListOf<String>()
     for (segment in segments) {
-        if (len + segment.length >= maxContent) {
+        if (len + segment.length >= MAX_CONTENT) {
             break
         }
         selectedSegments.add(segment)
@@ -124,10 +132,14 @@ private fun crop(line: String): String {
     if (selectedSegments.isNotEmpty()) {
         return selectedSegments.joinToString(" ")
     }
-    return line.substring(0, maxContent)
+    return line.substring(0, MAX_CONTENT)
 }
 
-private fun unhideMessage(scheduler: Scheduler?, message: Message, hiddenMessage: HiddenMessage) {
+private fun unhideMessage(
+    scheduler: Scheduler?,
+    message: Message,
+    hiddenMessage: HiddenMessage
+) {
     if (!hiddenMessage.hidden) {
         return
     }
@@ -143,7 +155,11 @@ private class HiddenMessageManager : EventListener {
     private lateinit var scheduler: Scheduler
     private val hiddenMessagesData: MutableList<HiddenMessage> = mutableListOf()
 
-    fun init(jda: JDA, session: Session, scheduler: Scheduler) {
+    fun init(
+        jda: JDA,
+        session: Session,
+        scheduler: Scheduler
+    ) {
         val dbHiddenMessages = session.getAllObjects(HiddenMessage::class.java)
         hiddenMessagesData.addAll(dbHiddenMessages)
         this.scheduler = scheduler
@@ -190,7 +206,7 @@ private class HiddenMessageManager : EventListener {
             return
         }
 
-        if (event !is ButtonInteractionEvent || event.button.id != hideId) {
+        if (event !is ButtonInteractionEvent || event.button.id != HIDE_ID) {
             return
         }
 
@@ -198,7 +214,10 @@ private class HiddenMessageManager : EventListener {
         handleHiddenMessageClick(event, hiddenMessage)
     }
 
-    private fun handleHiddenMessageClick(event: ButtonInteractionEvent, hiddenMessage: HiddenMessage) {
+    private fun handleHiddenMessageClick(
+        event: ButtonInteractionEvent,
+        hiddenMessage: HiddenMessage
+    ) {
         event.deferEdit().complete()
         if (hiddenMessage.hidden) {
             unhideMessage(scheduler, event.message, hiddenMessage)
@@ -235,13 +254,14 @@ private class HiddenMessageManager : EventListener {
         messages.forEach { hm ->
             run {
                 try {
-                    val msg = if (hm.isPrivateChannel) {
-                        val channel = jda.openPrivateChannelById(hm.uid).complete()
-                        channel!!.retrieveMessageById(hm.mid).complete()
-                    } else {
-                        val channel = jda.fetchChannel(hm.gid, hm.cid)
-                        channel!!.retrieveMessageById(hm.mid).complete()
-                    }
+                    val msg =
+                        if (hm.isPrivateChannel) {
+                            val channel = jda.openPrivateChannelById(hm.uid).complete()
+                            channel!!.retrieveMessageById(hm.mid).complete()
+                        } else {
+                            val channel = jda.fetchChannel(hm.gid, hm.cid)
+                            channel!!.retrieveMessageById(hm.mid).complete()
+                        }
                     msg!!.unhide()
                 } catch (e: Exception) {
                     logger.error(e.message)

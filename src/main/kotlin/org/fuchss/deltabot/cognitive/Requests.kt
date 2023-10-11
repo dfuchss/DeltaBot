@@ -13,7 +13,10 @@ import java.nio.charset.StandardCharsets
  * @param[timeoutInMS] the timeout in milliseconds (if set)
  * @return the response as a string
  */
-fun get(url: String, timeoutInMS: Int? = null): String {
+fun get(
+    url: String,
+    timeoutInMS: Int? = null
+): String {
     val endpoint = URL(url)
     val urlConnection: HttpURLConnection = endpoint.openConnection() as HttpURLConnection
     if (timeoutInMS != null) {
@@ -33,7 +36,11 @@ fun get(url: String, timeoutInMS: Int? = null): String {
  * @param[postData] the data that shall be transmitted
  * @return the response as a string
  */
-fun post(url: String, contentType: String, postData: String) = post(url, contentType, postData.toByteArray(StandardCharsets.UTF_8))
+fun post(
+    url: String,
+    contentType: String,
+    postData: String
+) = post(url, contentType, postData.toByteArray(StandardCharsets.UTF_8))
 
 /**
  * Perform a post request for a certain URL.
@@ -42,7 +49,11 @@ fun post(url: String, contentType: String, postData: String) = post(url, content
  * @param[postData] the data that shall be transmitted
  * @return the response as a string
  */
-fun post(url: String, contentType: String, postData: ByteArray): String {
+fun post(
+    url: String,
+    contentType: String,
+    postData: ByteArray
+): String {
     val endpoint = URL(url)
     val urlConnection: HttpURLConnection = endpoint.openConnection() as HttpURLConnection
     urlConnection.requestMethod = "POST"

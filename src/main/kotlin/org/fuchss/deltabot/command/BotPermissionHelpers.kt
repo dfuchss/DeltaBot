@@ -6,7 +6,11 @@ import org.fuchss.deltabot.db.dto.GuildDTO
 import org.fuchss.deltabot.utils.extensions.fetchOwner
 import org.fuchss.objectcasket.objectpacker.port.Session
 
-fun isGuildAdmin(event: SlashCommandInteraction, configuration: BotConfiguration, session: Session): Boolean {
+fun isGuildAdmin(
+    event: SlashCommandInteraction,
+    configuration: BotConfiguration,
+    session: Session
+): Boolean {
     if (event.guild?.fetchOwner() == event.user) return true
 
     if (configuration.isAdmin(event.user)) return true

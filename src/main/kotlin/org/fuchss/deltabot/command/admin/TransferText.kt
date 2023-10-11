@@ -21,7 +21,6 @@ import java.time.format.DateTimeFormatter
  * A [BotCommand] that copies a text from one channel to another.
  */
 class TransferText : GuildCommand {
-
     override val permissions: CommandPermissions get() = CommandPermissions.GUILD_ADMIN
 
     override fun createCommand(guild: Guild): SlashCommandData {
@@ -62,7 +61,10 @@ class TransferText : GuildCommand {
         return "$author->[$date]: ```\n${content.lines().joinToString("\n") { it }}\n```"
     }
 
-    private fun sendMessage(channel: GuildChannelUnion, content: String): Boolean {
+    private fun sendMessage(
+        channel: GuildChannelUnion,
+        content: String
+    ): Boolean {
         if (channel is MessageChannel) {
             channel.sendMessage(content).queue()
             return true
@@ -70,7 +72,10 @@ class TransferText : GuildCommand {
         return false
     }
 
-    private fun historyOf(result: MutableList<Message>, channel: GuildChannelUnion) {
+    private fun historyOf(
+        result: MutableList<Message>,
+        channel: GuildChannelUnion
+    ) {
         require(result.isEmpty())
 
         if (channel is MessageChannel) {

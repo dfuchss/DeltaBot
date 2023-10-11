@@ -52,7 +52,11 @@ class State(private val config: BotConfiguration, private val scheduler: Schedul
         event.replyEmbeds(EmbedBuilder().setTitle("Current State").setDescription(msg).setColor(Constants.BLUE).build()).setEphemeral(true).queue()
     }
 
-    private fun findUsers(jda: JDA, session: Session, guild: Guild?): List<String> {
+    private fun findUsers(
+        jda: JDA,
+        session: Session,
+        guild: Guild?
+    ): List<String> {
         val users = session.getAllObjects(UserDTO::class.java)
         var discordUsers = users.mapNotNull { dto -> jda.fetchUser(dto.discordId) }
 

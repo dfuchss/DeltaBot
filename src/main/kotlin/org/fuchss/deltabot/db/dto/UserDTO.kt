@@ -11,15 +11,20 @@ import org.fuchss.objectcasket.objectpacker.port.Session
 @Entity
 @Table(name = "User")
 class UserDTO {
-
     companion object {
-        fun findDBUser(session: Session?, user: User): UserDTO? {
+        fun findDBUser(
+            session: Session?,
+            user: User
+        ): UserDTO? {
             val dbUser = findDBUser(session, user.id) ?: return null
             dbUser.update(session, user)
             return dbUser
         }
 
-        fun findDBUser(session: Session?, userId: String): UserDTO? {
+        fun findDBUser(
+            session: Session?,
+            userId: String
+        ): UserDTO? {
             if (session == null) {
                 return null
             }
@@ -45,7 +50,10 @@ class UserDTO {
     @Column(name = "readable_name")
     var readableName: String = ""
 
-    private fun update(session: Session?, user: User) {
+    private fun update(
+        session: Session?,
+        user: User
+    ) {
         readableName = "${user.name}#${user.discriminator}"
         session?.persist(this)
     }

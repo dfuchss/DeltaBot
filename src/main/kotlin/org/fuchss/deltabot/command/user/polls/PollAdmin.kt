@@ -20,8 +20,8 @@ class PollAdmin : EventListener, IPollAdmin {
 
         private val postpones = listOf(":clock6" to -60, ":clock3:" to 15, ":clock12:" to 60)
 
-        private const val pollTypeLine = "PollType: "
-        private const val pollIdLine = "PollId: "
+        private const val POLL_TYPE_LINE = "PollType: "
+        private const val POLL_ID_LINE = "PollId: "
     }
 
     private val pollXmanager: MutableMap<String, IPollBase> = mutableMapOf()
@@ -41,8 +41,8 @@ class PollAdmin : EventListener, IPollAdmin {
             return
         }
 
-        val type = if (rawMessage[0].startsWith(pollTypeLine)) rawMessage[0].substring(pollTypeLine.length).trim() else ""
-        val mid = if (rawMessage[1].startsWith(pollIdLine)) rawMessage[1].substring(pollIdLine.length).trim() else ""
+        val type = if (rawMessage[0].startsWith(POLL_TYPE_LINE)) rawMessage[0].substring(POLL_TYPE_LINE.length).trim() else ""
+        val mid = if (rawMessage[1].startsWith(POLL_ID_LINE)) rawMessage[1].substring(POLL_ID_LINE.length).trim() else ""
 
         if (type.isEmpty() || mid.isEmpty() || !pollXmanager.containsKey(type)) {
             event.reply("Message or Type not found".translate(event)).setEphemeral(true).queue()
@@ -64,17 +64,21 @@ class PollAdmin : EventListener, IPollAdmin {
         }
     }
 
-    override fun createAdminArea(reply: InteractionHook, data: Poll) {
+    override fun createAdminArea(
+        reply: InteractionHook,
+        data: Poll
+    ) {
         var message = ""
-        message += "$pollTypeLine${data.pollType}\n"
-        message += "$pollIdLine${data.mid}\n\n"
+        message += "$POLL_TYPE_LINE${data.pollType}\n"
+        message += "$POLL_ID_LINE${data.mid}\n\n"
         message += "This is the Admin Area of the Poll. Feel free to do what you want :)".translate(reply.interaction.user.internalLanguage())
 
-        val globalActions = mutableListOf( //
-            Button.of(ButtonStyle.SECONDARY, finish.name + "", "Finish", finish), //
-            Button.of(ButtonStyle.SECONDARY, delete.name, "Delete", delete), //
-            Button.of(ButtonStyle.SECONDARY, refresh.name, "Refresh", refresh)
-        )
+        val globalActions =
+            mutableListOf(
+                Button.of(ButtonStyle.SECONDARY, finish.name + "", "Finish", finish),
+                Button.of(ButtonStyle.SECONDARY, delete.name, "Delete", delete),
+                Button.of(ButtonStyle.SECONDARY, refresh.name, "Refresh", refresh)
+            )
 
         if (data.timestamp != null) {
             for ((buttonId, minutes) in postpones) {
@@ -85,7 +89,10 @@ class PollAdmin : EventListener, IPollAdmin {
         reply.editOriginal(message).setComponents(globalActions.toActionRows(3)).queue()
     }
 
-    override fun register(pollType: String, manager: IPollBase) {
+    override fun register(
+        pollType: String,
+        manager: IPollBase
+    ) {
         pollXmanager[pollType] = manager
     }
 

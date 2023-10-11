@@ -11,22 +11,34 @@ private val translations = mutableMapOf<Language, MutableMap<String, String>>()
 /**
  * Translate a string based the language retrieved for the [CommandInteraction].
  */
-fun String.translate(event: CommandInteraction, vararg attributes: Any) = this.translate(event.language(), *attributes)
+fun String.translate(
+    event: CommandInteraction,
+    vararg attributes: Any
+) = this.translate(event.language(), *attributes)
 
 /**
  * Translate a string based the language retrieved for the [ButtonInteractionEvent].
  */
-fun String.translate(event: ButtonInteractionEvent, vararg attributes: Any) = this.translate(event.language(), *attributes)
+fun String.translate(
+    event: ButtonInteractionEvent,
+    vararg attributes: Any
+) = this.translate(event.language(), *attributes)
 
 /**
  * Translate a string based the language retrieved for the [MessageReceivedEvent].
  */
-fun String.translate(event: MessageReceivedEvent, vararg attributes: Any) = this.translate(event.language(), *attributes)
+fun String.translate(
+    event: MessageReceivedEvent,
+    vararg attributes: Any
+) = this.translate(event.language(), *attributes)
 
 /**
  * Translate a string based on a [Language] and replace the "#" with the [attributes].
  */
-fun String.translate(language: Language?, vararg attributes: Any): String {
+fun String.translate(
+    language: Language?,
+    vararg attributes: Any
+): String {
     val lang = language ?: languageSettings().defaultLanguage()
     var text = this
     if (lang != Language.ENGLISH) {

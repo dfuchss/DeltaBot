@@ -35,20 +35,21 @@ class Emojify : GlobalCommand {
         reply.editOriginal("> $emojis").queue()
     }
 
-    private fun emojify(letter: Char): String = when (letter) {
-        ' ' -> " "
-        '?' -> ":question:"
-        '!' -> ":exclamation:"
-        '0' -> ":zero:"
-        '1' -> ":one:"
-        '2' -> ":two:"
-        '3' -> ":three:"
-        '4' -> ":four:"
-        '5' -> ":five:"
-        '6' -> ":six:"
-        '7' -> ":seven:"
-        '8' -> ":eight:"
-        '9' -> ":nine:"
-        else -> ":regional_indicator_${letter.lowercase()}:"
-    }
+    private fun emojify(letter: Char): String =
+        when (letter) {
+            ' ' -> " "
+            '?' -> ":question:"
+            '!' -> ":exclamation:"
+            '0' -> ":zero:"
+            '1' -> ":one:"
+            '2' -> ":two:"
+            '3' -> ":three:"
+            '4' -> ":four:"
+            '5' -> ":five:"
+            '6' -> ":six:"
+            '7' -> ":seven:"
+            '8' -> ":eight:"
+            '9' -> ":nine:"
+            else -> ":regional_indicator_${letter.lowercase()}:"
+        }
 }

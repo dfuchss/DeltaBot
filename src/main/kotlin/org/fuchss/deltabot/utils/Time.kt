@@ -10,51 +10,53 @@ import java.util.Calendar
 import java.util.Date
 
 enum class Weekday {
-    Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday
+    Monday,
+    Tuesday,
+    Wednesday,
+    Thursday,
+    Friday,
+    Saturday,
+    Sunday
 }
 
 // 'Regex' X 'Value in String' X 'Time Units'
-private val genericTimeSpansEN = listOf(
-    ("in \\d+ minute(s)?" to { s: String -> s.split(" ")[1].toInt() } to Duration.ofMinutes(1)),
-    ("in (one|a) minute" to { _: String -> 1 } to Duration.ofMinutes(1)),
+private val genericTimeSpansEN =
+    listOf(
+        ("in \\d+ minute(s)?" to { s: String -> s.split(" ")[1].toInt() } to Duration.ofMinutes(1)),
+        ("in (one|a) minute" to { _: String -> 1 } to Duration.ofMinutes(1)),
+        ("in \\d+ hour(s)?" to { s: String -> s.split(" ")[1].toInt() } to Duration.ofHours(1)),
+        ("in (one|a) hour" to { _: String -> 1 } to Duration.ofHours(1)),
+        ("in \\d+ day(s)?" to { s: String -> s.split(" ")[1].toInt() } to Duration.ofDays(1)),
+        ("in (one|a) day" to { _: String -> 1 } to Duration.ofDays(1)),
+        ("in \\d+ week(s)?" to { s: String -> s.split(" ")[1].toInt() } to Duration.ofDays(7)),
+        ("in (one|a) week" to { _: String -> 1 } to Duration.ofDays(7)),
+        ("next weekend" to { _: String -> nextWeekend() } to Duration.ofDays(1)),
+        ("today" to { _: String -> 0 } to Duration.ofDays(1)),
+        ("tomorrow" to { _: String -> 1 } to Duration.ofDays(1))
+    )
 
-    ("in \\d+ hour(s)?" to { s: String -> s.split(" ")[1].toInt() } to Duration.ofHours(1)),
-    ("in (one|a) hour" to { _: String -> 1 } to Duration.ofHours(1)),
-
-    ("in \\d+ day(s)?" to { s: String -> s.split(" ")[1].toInt() } to Duration.ofDays(1)),
-    ("in (one|a) day" to { _: String -> 1 } to Duration.ofDays(1)),
-
-    ("in \\d+ week(s)?" to { s: String -> s.split(" ")[1].toInt() } to Duration.ofDays(7)),
-    ("in (one|a) week" to { _: String -> 1 } to Duration.ofDays(7)),
-
-    ("next weekend" to { _: String -> nextWeekend() } to Duration.ofDays(1)),
-    ("today" to { _: String -> 0 } to Duration.ofDays(1)),
-    ("tomorrow" to { _: String -> 1 } to Duration.ofDays(1))
-)
-
-private val genericTimeSpansDE = listOf(
-    ("in \\d+ minute(n)?" to { s: String -> s.split(" ")[1].toInt() } to Duration.ofMinutes(1)),
-    ("in einer minute" to { _: String -> 1 } to Duration.ofMinutes(1)),
-
-    ("in \\d+ stunde(n)?" to { s: String -> s.split(" ")[1].toInt() } to Duration.ofHours(1)),
-    ("in einer stunde" to { _: String -> 1 } to Duration.ofHours(1)),
-
-    ("in \\d+ tag(en)?" to { s: String -> s.split(" ")[1].toInt() } to Duration.ofDays(1)),
-    ("in einem tag" to { _: String -> 1 } to Duration.ofDays(1)),
-
-    ("in \\d+ woche(n)?" to { s: String -> s.split(" ")[1].toInt() } to Duration.ofDays(7)),
-    ("in einer woche" to { _: String -> 1 } to Duration.ofDays(7)),
-
-    ("nächstes wochenende" to { _: String -> nextWeekend() } to Duration.ofDays(1)),
-    ("heute" to { _: String -> 0 } to Duration.ofDays(1)),
-    ("morgen" to { _: String -> 1 } to Duration.ofDays(1)),
-    ("übermorgen" to { _: String -> 1 } to Duration.ofDays(2))
-)
+private val genericTimeSpansDE =
+    listOf(
+        ("in \\d+ minute(n)?" to { s: String -> s.split(" ")[1].toInt() } to Duration.ofMinutes(1)),
+        ("in einer minute" to { _: String -> 1 } to Duration.ofMinutes(1)),
+        ("in \\d+ stunde(n)?" to { s: String -> s.split(" ")[1].toInt() } to Duration.ofHours(1)),
+        ("in einer stunde" to { _: String -> 1 } to Duration.ofHours(1)),
+        ("in \\d+ tag(en)?" to { s: String -> s.split(" ")[1].toInt() } to Duration.ofDays(1)),
+        ("in einem tag" to { _: String -> 1 } to Duration.ofDays(1)),
+        ("in \\d+ woche(n)?" to { s: String -> s.split(" ")[1].toInt() } to Duration.ofDays(7)),
+        ("in einer woche" to { _: String -> 1 } to Duration.ofDays(7)),
+        ("nächstes wochenende" to { _: String -> nextWeekend() } to Duration.ofDays(1)),
+        ("heute" to { _: String -> 0 } to Duration.ofDays(1)),
+        ("morgen" to { _: String -> 1 } to Duration.ofDays(1)),
+        ("übermorgen" to { _: String -> 1 } to Duration.ofDays(2))
+    )
 
 private val genericTimeSpans = mapOf(Language.ENGLISH to genericTimeSpansEN, Language.DEUTSCH to genericTimeSpansDE)
 
 private fun regex(data: Pair<Pair<String, (String) -> Int>, Duration>): String = data.first.first
+
 private fun extractor(data: Pair<Pair<String, (String) -> Int>, Duration>): (String) -> Int = data.first.second
+
 private fun unit(data: Pair<Pair<String, (String) -> Int>, Duration>): Duration = data.second
 
 private fun nextWeekend(): Int {
@@ -65,7 +67,11 @@ private fun nextWeekend(): Int {
     return if (diffToSaturday == 0) 7 else diffToSaturday
 }
 
-fun findGenericTimespan(message: String, language: Language, ducklingService: DucklingService? = null): LocalDateTime? {
+fun findGenericTimespan(
+    message: String,
+    language: Language,
+    ducklingService: DucklingService? = null
+): LocalDateTime? {
     if (message.isBlank()) {
         return null
     }

@@ -23,13 +23,14 @@ class BotConfiguration {
         fun loadConfig(session: Session): BotConfiguration {
             val configs = session.getAllObjects(BotConfiguration::class.java)
 
-            val config = if (configs.isEmpty()) {
-                val newConfig = BotConfiguration()
-                session.persist(newConfig)
-                newConfig
-            } else {
-                configs.first()
-            }
+            val config =
+                if (configs.isEmpty()) {
+                    val newConfig = BotConfiguration()
+                    session.persist(newConfig)
+                    newConfig
+                } else {
+                    configs.first()
+                }
             config.session = session
 
             logger.info("Loaded Config: ${config.ducklingUrl}, Admins: '${config.admins}', Debug: ${config.debug}")

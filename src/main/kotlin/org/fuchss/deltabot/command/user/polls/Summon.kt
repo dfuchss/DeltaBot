@@ -37,17 +37,17 @@ import kotlin.random.Random
  */
 class Summon(pollAdmin: IPollAdmin, configuration: BotConfiguration, scheduler: Scheduler, session: Session) :
     PollBase(pollAdmin, "summon", scheduler, session) {
-
     companion object {
-        private val summonMessages = listOf(
-            "%%%USER%%%: Who wants to play %%%MENTION%%% %%%TIME%%%?",
-            "%%%USER%%%: Who would be up for playing %%%MENTION%%% %%%TIME%%%?"
-        )
+        private val summonMessages =
+            listOf(
+                "%%%USER%%%: Who wants to play %%%MENTION%%% %%%TIME%%%?",
+                "%%%USER%%%: Who would be up for playing %%%MENTION%%% %%%TIME%%%?"
+            )
 
         private val summonReactionsDefault = listOf(":+1:", ":thinking:", ":question:", ":pensive:", ":-1").map { e -> e.toEmoji() }
         private val summonReactionsDefaultStyle =
             listOf(ButtonStyle.SUCCESS, ButtonStyle.SECONDARY, ButtonStyle.SECONDARY, ButtonStyle.SECONDARY, ButtonStyle.DANGER)
-        private const val GraceTimeInMinutes = 15L
+        private const val GRACE_TIME_IN_MINUTES = 15L
     }
 
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
@@ -56,7 +56,7 @@ class Summon(pollAdmin: IPollAdmin, configuration: BotConfiguration, scheduler: 
 
     override fun createCommand(guild: Guild): SlashCommandData {
         val command = Commands.slash("summon", "summon players and make a poll to play a game")
-        command.addOptions( //
+        command.addOptions(
             OptionData(OptionType.ROLE, "game", "the game as a role you want to play").setRequired(true),
             OptionData(OptionType.STRING, "time", "an optional time for the gameplay").setRequired(false)
         )
@@ -75,7 +75,13 @@ class Summon(pollAdmin: IPollAdmin, configuration: BotConfiguration, scheduler: 
         createSummon(event, event.guild!!, event.user, game, time)
     }
 
-    private fun createSummon(event: SlashCommandInteraction, guild: Guild, user: User, game: Role, time: String) {
+    private fun createSummon(
+        event: SlashCommandInteraction,
+        guild: Guild,
+        user: User,
+        game: Role,
+        time: String
+    ) {
         // TODO maybe specify default time to another time ..
         val extractedTime = findGenericTimespan(time, event.language(), ducklingService) ?: LocalDateTime.of(LocalDate.now(), LocalTime.of(19, 30))
 
@@ -92,10 +98,14 @@ class Summon(pollAdmin: IPollAdmin, configuration: BotConfiguration, scheduler: 
         response = response.replace("%%%TIME%%%", "<t:${extractedTime.timestamp()}:R>")
 
         val options = getEmojis(guild).zip(getButtons(guild)).toMap()
-        createPoll(reply, extractedTime.plusMinutes(GraceTimeInMinutes).timestamp(), user, response, options, true)
+        createPoll(reply, extractedTime.plusMinutes(GRACE_TIME_IN_MINUTES).timestamp(), user, response, options, true)
     }
 
-    override fun terminate(data: Poll, jda: JDA, uid: String) {
+    override fun terminate(
+        data: Poll,
+        jda: JDA,
+        uid: String
+    ) {
         removePollFromDB(data)
         val msg = jda.getGuildById(data.gid)?.fetchMessage(data.cid, data.mid) ?: return
 

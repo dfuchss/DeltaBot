@@ -46,8 +46,8 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
     private val guildRoles: MutableSet<GuildRoleState> = mutableSetOf()
 
     companion object {
-        private const val switcherText = "**Please choose your roles on this server :)**"
-        private const val noRoles = "*At the moment, no roles can be chosen .. please wait for your guild leader :)*"
+        private const val SWITCHER_TEXT = "**Please choose your roles on this server :)**"
+        private const val NO_ROLES = "*At the moment, no roles can be chosen .. please wait for your guild leader :)*"
     }
 
     override fun createCommand(guild: Guild): SlashCommandData {
@@ -105,7 +105,7 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
             return
         }
 
-        val initialText = "$switcherText\n$noRoles"
+        val initialText = "$SWITCHER_TEXT\n$NO_ROLES"
         val msg = event.channel.sendMessage(initialText).complete()
         addRoleMessage(guild, msg)
         event.reply("Role message created ..".translate(event)).setEphemeral(true).queue()
@@ -245,14 +245,18 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
         }
     }
 
-    private fun updateGuild(guild: Guild, guildState: GuildRoleState) {
-        var message = "${switcherText.translate(guild.internalLanguage())}\n${noRoles.translate(guild.internalLanguage())}"
+    private fun updateGuild(
+        guild: Guild,
+        guildState: GuildRoleState
+    ) {
+        var message = "${SWITCHER_TEXT.translate(guild.internalLanguage())}\n${NO_ROLES.translate(guild.internalLanguage())}"
         var buttons = emptyList<Button>()
 
-        val emoji2Role = guildState.emojiToRole().entries
-            .sortedBy { (_, mention) -> guild.getRoleById(mention.drop("<@&".length).dropLast(">".length))?.name ?: "" }
+        val emoji2Role =
+            guildState.emojiToRole().entries
+                .sortedBy { (_, mention) -> guild.getRoleById(mention.drop("<@&".length).dropLast(">".length))?.name ?: "" }
         if (emoji2Role.isNotEmpty()) {
-            message = "${switcherText.translate(guild.internalLanguage())}\n\n${
+            message = "${SWITCHER_TEXT.translate(guild.internalLanguage())}\n\n${
                 emoji2Role.joinToString(separator = "\n", transform = { (emoji, roleMention) -> "$emoji → $roleMention" })
             }"
             message += "\n\n" + "Please choose buttons to select your roles ..".translate(guild.internalLanguage())
@@ -263,7 +267,10 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
         msg.editMessage(message).setComponents(buttons.toActionRows()).queue()
     }
 
-    private fun loadEmojiButton(guild: Guild, emoji: String): Button {
+    private fun loadEmojiButton(
+        guild: Guild,
+        emoji: String
+    ): Button {
         if (!discordEmojiRegex.matches(emoji)) {
             return Button.secondary(emoji, Emoji.fromUnicode(emoji))
         }
@@ -273,14 +280,20 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
         return Button.secondary(guildEmoji.asMention, guildEmoji)
     }
 
-    private fun isGuildMessage(guildId: String, channelId: String, messageId: String): Boolean =
-        guildRoles.any { gr -> gr.guildId == guildId && gr.channelId == channelId && gr.messageId == messageId }
+    private fun isGuildMessage(
+        guildId: String,
+        channelId: String,
+        messageId: String
+    ): Boolean = guildRoles.any { gr -> gr.guildId == guildId && gr.channelId == channelId && gr.messageId == messageId }
 
     private fun hasRoleMessage(guild: Guild): Boolean = guildRoles.any { gr -> gr.guildId == guild.id }
 
     private fun getGuildState(guild: Guild) = guildRoles.find { gr -> gr.guildId == guild.id }
 
-    private fun addRoleMessage(guild: Guild, msg: Message) {
+    private fun addRoleMessage(
+        guild: Guild,
+        msg: Message
+    ) {
         val state = GuildRoleState(guild.id, msg.channel.id, msg.id)
         session.persist(state)
         guildRoles.add(state)
@@ -319,7 +332,10 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
             this.messageId = messageId
         }
 
-        fun setEmojiToRole(emoji: String, roleAsMention: String) {
+        fun setEmojiToRole(
+            emoji: String,
+            roleAsMention: String
+        ) {
             emojiToRoleData[emoji] = roleAsMention
             syncEmojiToRole()
         }

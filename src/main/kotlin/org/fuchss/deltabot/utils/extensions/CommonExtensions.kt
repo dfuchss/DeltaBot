@@ -55,7 +55,10 @@ fun createObjectMapper(): ObjectMapper {
  * @param[instance] a instance of the result type to get the class
  * @return the deserialized instance
  */
-fun <T : Any> ObjectMapper.readKtValue(data: String, instance: T): T = readValue(data, instance.javaClass)
+fun <T : Any> ObjectMapper.readKtValue(
+    data: String,
+    instance: T
+): T = readValue(data, instance.javaClass)
 
 /**
  * Read a value using the [ObjectMapper].
@@ -63,7 +66,10 @@ fun <T : Any> ObjectMapper.readKtValue(data: String, instance: T): T = readValue
  * @param[instance] a instance of the result type to get the class
  * @return the deserialized instance
  */
-fun <T : Any> ObjectMapper.readKtValue(data: ByteArray, instance: T): T = readValue(data, instance.javaClass)
+fun <T : Any> ObjectMapper.readKtValue(
+    data: ByteArray,
+    instance: T
+): T = readValue(data, instance.javaClass)
 
 /**
  * Convert a string emoji to an [Emoji].

@@ -52,7 +52,9 @@ private fun createConfig(dbFile: File): Configuration {
 }
 
 private fun addShutdownHook(session: Session) {
-    Runtime.getRuntime().addShutdownHook(object : Thread() {
-        override fun run() = PackerPort.PORT.sessionManager().terminate(session)
-    })
+    Runtime.getRuntime().addShutdownHook(
+        object : Thread() {
+            override fun run() = PackerPort.PORT.sessionManager().terminate(session)
+        }
+    )
 }

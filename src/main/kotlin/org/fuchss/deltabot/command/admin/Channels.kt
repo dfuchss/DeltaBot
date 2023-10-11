@@ -22,21 +22,22 @@ import java.awt.Color
  */
 class Channels : GuildCommand {
     companion object {
-        val COLORS: Map<String, Int> = mapOf(
-            "White" to Color.white.rgb,
-            "Light Gray" to Color.lightGray.rgb,
-            "Gray" to Color.gray.rgb,
-            "Dark Gray" to Color.darkGray.rgb,
-            "Black" to Color.black.rgb,
-            "Red" to Color.red.rgb,
-            "Pink" to Color.pink.rgb,
-            "Orange" to Color.orange.rgb,
-            "Yellow" to Color.yellow.rgb,
-            "Green" to Color.green.rgb,
-            "Magenta" to Color.magenta.rgb,
-            "Cyan" to Color.cyan.rgb,
-            "Blue" to Color.blue.rgb
-        )
+        val COLORS: Map<String, Int> =
+            mapOf(
+                "White" to Color.white.rgb,
+                "Light Gray" to Color.lightGray.rgb,
+                "Gray" to Color.gray.rgb,
+                "Dark Gray" to Color.darkGray.rgb,
+                "Black" to Color.black.rgb,
+                "Red" to Color.red.rgb,
+                "Pink" to Color.pink.rgb,
+                "Orange" to Color.orange.rgb,
+                "Yellow" to Color.yellow.rgb,
+                "Green" to Color.green.rgb,
+                "Magenta" to Color.magenta.rgb,
+                "Cyan" to Color.cyan.rgb,
+                "Blue" to Color.blue.rgb
+            )
     }
 
     override val permissions: CommandPermissions get() = CommandPermissions.GUILD_ADMIN
@@ -50,7 +51,6 @@ class Channels : GuildCommand {
                 OptionData(OptionType.STRING, "color", "the color to associate with the new role (default: none)").setRequired(false)
                     .addChoices(COLORS.toSortedMap().map { c -> Command.Choice(c.key, c.value.toString()) })
             ),
-
             SubcommandData("set", "add a new channel with a specific name for a certain role").addOptions(
                 OptionData(OptionType.ROLE, "role", "the name of the role").setRequired(true),
                 OptionData(OptionType.STRING, "name", "the name of the channel").setRequired(true),
@@ -101,7 +101,12 @@ class Channels : GuildCommand {
         hook.editOriginal("Welcome # on the server!".translate(event, channel.asMention)).queue()
     }
 
-    private fun createChannel(guild: Guild, role: Role, name: String, onlyText: Boolean): StandardGuildChannel {
+    private fun createChannel(
+        guild: Guild,
+        role: Role,
+        name: String,
+        onlyText: Boolean
+    ): StandardGuildChannel {
         val everyone = guild.publicRole
         val guildRoleOfBot = guild.getRoleByBot(guild.jda.selfUser)!!
 

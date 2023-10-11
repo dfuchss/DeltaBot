@@ -11,7 +11,8 @@ import org.fuchss.objectcasket.objectpacker.port.Session
  * Definition of all supported languages with their locales.
  */
 enum class Language(val locale: String) {
-    ENGLISH("en_GB"), DEUTSCH("de_DE");
+    ENGLISH("en_GB"),
+    DEUTSCH("de_DE");
 
     override fun toString(): String {
         val name = super.toString()
@@ -34,13 +35,19 @@ class LanguageSettings(private val session: Session) {
         return userDTOToLanguage()[user]?.language()
     }
 
-    fun userAndGuildToLanguage(userId: String, guildId: String): Language? {
+    fun userAndGuildToLanguage(
+        userId: String,
+        guildId: String
+    ): Language? {
         val userDTO = UserDTO.findDBUser(session, userId) ?: return null
         val guildDTO = GuildDTO.findDBGuild(session, guildId) ?: return null
         return userAndGuildDTOToLanguage()[userDTO to guildDTO]?.language()
     }
 
-    fun setUserToLanguage(user: User, language: Language) {
+    fun setUserToLanguage(
+        user: User,
+        language: Language
+    ) {
         removeUserToLanguage(user.id)
 
         val userDTO = UserDTO.findDBUser(session, user) ?: UserDTO(user)
@@ -55,14 +62,21 @@ class LanguageSettings(private val session: Session) {
         deleteLanguage(lang)
     }
 
-    fun removeUserAndGuildToLanguage(userId: String, guildId: String) {
+    fun removeUserAndGuildToLanguage(
+        userId: String,
+        guildId: String
+    ) {
         val userDTO = UserDTO.findDBUser(session, userId) ?: return
         val guildDTO = GuildDTO.findDBGuild(session, guildId) ?: return
         val lang = languages.find { l -> l.userDTO == userDTO && l.guildDTO == guildDTO } ?: return
         deleteLanguage(lang)
     }
 
-    fun setUserAndGuildToLanguage(user: User, guild: Guild, language: Language) {
+    fun setUserAndGuildToLanguage(
+        user: User,
+        guild: Guild,
+        language: Language
+    ) {
         removeUserAndGuildToLanguage(user.id, guild.id)
 
         val userDTO = UserDTO.findDBUser(session, user) ?: UserDTO(user)
@@ -83,7 +97,10 @@ class LanguageSettings(private val session: Session) {
         deleteLanguage(lang)
     }
 
-    fun setGuildToLanguage(guild: Guild, language: Language) {
+    fun setGuildToLanguage(
+        guild: Guild,
+        language: Language
+    ) {
         removeGuildToLanguage(guild.id)
 
         val guildDTO = GuildDTO.findDBGuild(session, guild) ?: GuildDTO(guild)
@@ -98,6 +115,8 @@ class LanguageSettings(private val session: Session) {
     }
 
     private fun userDTOToLanguage() = languages.filter { l -> l.userDTO != null && l.guildDTO == null }.associateBy { l -> l.userDTO!! }
+
     private fun guildDTOToLanguage() = languages.filter { l -> l.userDTO == null && l.guildDTO != null }.associateBy { l -> l.guildDTO!! }
+
     private fun userAndGuildDTOToLanguage() = languages.filter { l -> l.userDTO != null && l.guildDTO != null }.associateBy { l -> l.userDTO!! to l.guildDTO!! }
 }

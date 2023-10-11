@@ -11,7 +11,9 @@ import org.fuchss.deltabot.LanguageSettings
 import org.fuchss.objectcasket.objectpacker.port.Session
 
 private var internalLanguageSettings: LanguageSettings? = null
+
 fun languageSettings(): LanguageSettings = internalLanguageSettings ?: error("Language is not initialized")
+
 fun initLanguage(session: Session) {
     internalLanguageSettings = LanguageSettings(session)
 }
@@ -19,7 +21,10 @@ fun initLanguage(session: Session) {
 /**
  * Calculate the [Language] based on the current [Guild] and current [User].
  */
-fun language(guild: Guild?, user: User?): Language {
+fun language(
+    guild: Guild?,
+    user: User?
+): Language {
     if (guild != null) {
         val usersGuildLanguage = user?.internalLanguage(guild)
         if (usersGuildLanguage != null) {
@@ -64,7 +69,10 @@ fun User.setLanguage(language: Language?) {
 /**
  * Set the [Language] in a specific [Guild] for a [User].
  */
-fun User.setLanguage(language: Language?, guild: Guild) {
+fun User.setLanguage(
+    language: Language?,
+    guild: Guild
+) {
     if (language == null) {
         languageSettings().removeUserAndGuildToLanguage(this.id, guild.id)
     } else {

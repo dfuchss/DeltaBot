@@ -15,18 +15,21 @@ import java.util.StringJoiner
  * The implementation of an interface to a Duckling service at a certain [endpoint url][endpoint].
  */
 class DucklingService(private val endpoint: String) {
-
-    fun interpretTime(text: String, language: Language): List<LocalDateTime> {
+    fun interpretTime(
+        text: String,
+        language: Language
+    ): List<LocalDateTime> {
         val tz = ZoneId.systemDefault().id
         val locale = language.locale
         val dims = "[\"time\"]"
 
-        val payload = mapOf(
-            "tz" to tz,
-            "locale" to locale,
-            "text" to text,
-            "dims" to dims
-        )
+        val payload =
+            mapOf(
+                "tz" to tz,
+                "locale" to locale,
+                "text" to text,
+                "dims" to dims
+            )
 
         val postData = getDataString(payload).toByteArray(StandardCharsets.UTF_8)
 

@@ -17,7 +17,6 @@ import org.fuchss.objectcasket.objectpacker.port.Session
  * A [Poll][PollBase] that provides generic polls.
  */
 class SimplePoll(pollAdmin: IPollAdmin, scheduler: Scheduler, session: Session) : PollBase(pollAdmin, "SimplePoll", scheduler, session) {
-
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
 
     override fun createCommand(guild: Guild): SlashCommandData {
@@ -132,11 +131,12 @@ class SimplePoll(pollAdmin: IPollAdmin, scheduler: Scheduler, session: Session) 
 
         if (polls.size == 1) {
             var msg = "Poll **${polls[0].name}**: "
-            msg += if (polls[0].options.isEmpty()) {
-                "*No Options*".translate(event)
-            } else {
-                "\n" + polls[0].options.joinToString("\n") { s -> "- $s" }
-            }
+            msg +=
+                if (polls[0].options.isEmpty()) {
+                    "*No Options*".translate(event)
+                } else {
+                    "\n" + polls[0].options.joinToString("\n") { s -> "- $s" }
+                }
             event.reply(msg).setEphemeral(true).queue()
         } else {
             var msg = "**Polls**:"
@@ -164,7 +164,12 @@ class SimplePoll(pollAdmin: IPollAdmin, scheduler: Scheduler, session: Session) 
         createPoll(hook, null, user, question, options, onlyOneAnswer)
     }
 
-    private fun needPollData(event: SlashCommandInteraction, name: String, uid: String, shallBePresent: Boolean): InternalPoll? {
+    private fun needPollData(
+        event: SlashCommandInteraction,
+        name: String,
+        uid: String,
+        shallBePresent: Boolean
+    ): InternalPoll? {
         val poll = internalPollState.getPollData(name, uid)
         if ((poll != null) == shallBePresent) {
             return poll ?: InternalPoll("", "", "", false)
@@ -181,8 +186,10 @@ class SimplePoll(pollAdmin: IPollAdmin, scheduler: Scheduler, session: Session) 
     private data class InternalPollState(
         var polls: MutableList<InternalPoll> = mutableListOf()
     ) {
-
-        fun getPollData(name: String, uid: String): InternalPoll? {
+        fun getPollData(
+            name: String,
+            uid: String
+        ): InternalPoll? {
             return polls.find { d -> d.name == name && d.uid == uid }
         }
 

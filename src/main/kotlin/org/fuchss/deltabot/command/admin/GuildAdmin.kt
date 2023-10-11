@@ -17,7 +17,6 @@ import org.fuchss.objectcasket.objectpacker.port.Session
  * A [BotCommand] that toggles the admin state for a user in a guild.
  */
 class GuildAdmin(private val session: Session) : GuildCommand {
-
     override val permissions: CommandPermissions get() = CommandPermissions.GUILD_ADMIN
 
     override fun createCommand(guild: Guild): SlashCommandData {

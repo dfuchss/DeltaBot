@@ -48,6 +48,7 @@ class LanguageDTO {
     }
 
     fun language() = Language.valueOf(languageName!!)
+
     fun delete(session: Session) {
         guildDTO = null
         userDTO = null

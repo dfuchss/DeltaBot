@@ -59,7 +59,10 @@ fun Guild.fetchMember(uid: String): Member? {
     }
 }
 
-fun Guild.fetchMessage(cid: String, mid: String): Message? {
+fun Guild.fetchMessage(
+    cid: String,
+    mid: String
+): Message? {
     try {
         val channel = this.jda.fetchChannel(this.id, cid) ?: return null
         return channel.retrieveMessageById(mid).complete()
@@ -69,7 +72,10 @@ fun Guild.fetchMessage(cid: String, mid: String): Message? {
     }
 }
 
-fun JDA.fetchChannel(gid: String, cid: String): GuildMessageChannel? {
+fun JDA.fetchChannel(
+    gid: String,
+    cid: String
+): GuildMessageChannel? {
     try {
         val cached = this.getGuildChannelById(cid)
         if (cached != null) {
@@ -135,7 +141,10 @@ fun Message.pinAndDelete() {
  * @param[maxInRow] the maximum number of elements in a row
  * @param[tryModZero] indicator whether the system shall try to create rows with equal amounts of elements
  */
-fun <E : ItemComponent> List<E>.toActionRows(maxInRow: Int = 5, tryModZero: Boolean = true): List<ActionRow> {
+fun <E : ItemComponent> List<E>.toActionRows(
+    maxInRow: Int = 5,
+    tryModZero: Boolean = true
+): List<ActionRow> {
     var maxItems = max(min(maxInRow, 5), 1)
     if (tryModZero && maxItems > 3) {
         for (i in maxItems downTo 3) {

@@ -91,7 +91,10 @@ class Reminder(configuration: BotConfiguration, private val scheduler: Scheduler
         event.reply("I'll remind you <t:#:R>: '#'".translate(language, ts, message)).setEphemeral(true).queue()
     }
 
-    private fun remind(reminder: ReminderData, jda: JDA) {
+    private fun remind(
+        reminder: ReminderData,
+        jda: JDA
+    ) {
         removeReminder(reminder)
 
         val user = jda.fetchUser(reminder.uid)!!

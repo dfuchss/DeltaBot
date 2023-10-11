@@ -89,17 +89,26 @@ class Poll {
         syncUser2React2UserData()
     }
 
-    fun addReact2User(react: String, uid: String) {
+    fun addReact2User(
+        react: String,
+        uid: String
+    ) {
         react2UserData[react] = (react2UserData[react] ?: mutableListOf()).withLast(uid).toMutableList()
         syncUser2React2UserData()
     }
 
-    fun addUser2React(uid: String, react: String) {
+    fun addUser2React(
+        uid: String,
+        react: String
+    ) {
         user2ReactData[uid] = (user2ReactData[uid] ?: mutableListOf()).withLast(react).toMutableList()
         syncUser2React2UserData()
     }
 
-    fun removeReact2User(react: String, uid: String) {
+    fun removeReact2User(
+        react: String,
+        uid: String
+    ) {
         react2UserData[react] = (react2UserData[react] ?: mutableListOf()).without(uid).toMutableList()
         syncUser2React2UserData()
     }
@@ -109,12 +118,18 @@ class Poll {
         syncUser2React2UserData()
     }
 
-    fun removeUser2React(uid: String, react: String) {
+    fun removeUser2React(
+        uid: String,
+        react: String
+    ) {
         user2ReactData[uid] = (user2ReactData[uid] ?: mutableListOf()).without(react).toMutableList()
         syncUser2React2UserData()
     }
 
-    fun setUser2React(uid: String, newReactions: MutableList<String>) {
+    fun setUser2React(
+        uid: String,
+        newReactions: MutableList<String>
+    ) {
         user2ReactData[uid] = newReactions
         syncUser2React2UserData()
     }

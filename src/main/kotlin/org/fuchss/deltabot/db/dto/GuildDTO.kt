@@ -13,15 +13,20 @@ import org.fuchss.objectcasket.objectpacker.port.Session
 @Entity
 @Table(name = "Guild")
 class GuildDTO {
-
     companion object {
-        fun findDBGuild(session: Session?, guild: Guild): GuildDTO? {
+        fun findDBGuild(
+            session: Session?,
+            guild: Guild
+        ): GuildDTO? {
             val dbGuild = findDBGuild(session, guild.id) ?: return null
             dbGuild.update(session, guild)
             return dbGuild
         }
 
-        fun findDBGuild(session: Session?, guildId: String): GuildDTO? {
+        fun findDBGuild(
+            session: Session?,
+            guildId: String
+        ): GuildDTO? {
             if (session == null) {
                 return null
             }
@@ -50,20 +55,27 @@ class GuildDTO {
     @ManyToMany
     var admins: MutableSet<UserDTO> = mutableSetOf()
 
-    private fun update(session: Session?, guild: Guild) {
+    private fun update(
+        session: Session?,
+        guild: Guild
+    ) {
         readableName = guild.name
         session?.persist(this)
     }
 
-    fun toggleGuildAdmin(session: Session, user: User): Boolean {
+    fun toggleGuildAdmin(
+        session: Session,
+        user: User
+    ): Boolean {
         val userDTO = UserDTO.findDBUser(session, user) ?: UserDTO(user)
-        val nowAdmin = if (userDTO in admins) {
-            admins.remove(userDTO)
-            false
-        } else {
-            admins.add(userDTO)
-            true
-        }
+        val nowAdmin =
+            if (userDTO in admins) {
+                admins.remove(userDTO)
+                false
+            } else {
+                admins.add(userDTO)
+                true
+            }
         session.persist(this)
         return nowAdmin
     }

@@ -20,7 +20,6 @@ import org.fuchss.objectcasket.objectpacker.port.Session
  * A [BotCommand] that prints a temporary help message.
  */
 open class Help(private val configuration: BotConfiguration, private val session: Session, protected val registry: ICommandRegistry) : GlobalCommand {
-
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
 
     override fun createCommand(): SlashCommandData {
@@ -44,7 +43,10 @@ open class Help(private val configuration: BotConfiguration, private val session
     }
 
     companion object {
-        fun generateText(botName: String, rawCommands: List<Command>): MessageEmbed {
+        fun generateText(
+            botName: String,
+            rawCommands: List<Command>
+        ): MessageEmbed {
             val commands = rawCommands.sortedBy { c -> c.name.lowercase() }
             var message = ""
             for (cmd in commands) {

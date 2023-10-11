@@ -28,14 +28,22 @@ class ReactionHandler : EventListener {
         handle(event, ":arrow_down_small:") { m, _, _ -> handleHide(m) }
     }
 
-    private fun handle(event: MessageReactionAddEvent, emojiName: String, handler: (Message, String, User) -> Unit) {
+    private fun handle(
+        event: MessageReactionAddEvent,
+        emojiName: String,
+        handler: (Message, String, User) -> Unit
+    ) {
         val emoji = EmojiManager.getForAlias(emojiName).unicode
         if (event.reaction.emoji.name == emoji) {
             handler(event.retrieveMessage().complete(), emoji, event.user!!)
         }
     }
 
-    private fun handlePin(message: Message, reaction: String, user: User) {
+    private fun handlePin(
+        message: Message,
+        reaction: String,
+        user: User
+    ) {
         message.removeReaction(Emoji.fromUnicode(reaction), user).queue()
         if (message.isPinned) {
             message.unpin().queue()

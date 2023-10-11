@@ -47,6 +47,7 @@ class CommandHandler(private val configuration: BotConfiguration, private val se
 
     private class UnknownCommand : GlobalCommand {
         override val permissions: CommandPermissions get() = CommandPermissions.ALL
+
         override fun createCommand(): SlashCommandData = error("Command shall only be used internally")
 
         override fun handle(event: SlashCommandInteraction) {

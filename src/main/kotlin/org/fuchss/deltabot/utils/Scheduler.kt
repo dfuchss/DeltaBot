@@ -10,7 +10,6 @@ import java.util.PriorityQueue
 import java.util.concurrent.locks.ReentrantLock
 
 class Scheduler(private val sleepInterval: Int = 5) : EventListener {
-
     private val priorityQueue = PriorityQueue<QueueElement>()
     private val lock = ReentrantLock()
 
@@ -67,13 +66,20 @@ class Scheduler(private val sleepInterval: Int = 5) : EventListener {
         }
     }
 
-    fun queue(id: String?, runnable: Runnable, timestamp: Long) {
+    fun queue(
+        id: String?,
+        runnable: Runnable,
+        timestamp: Long
+    ) {
         lock.lock()
         priorityQueue.add(QueueElement(id, runnable, timestamp))
         lock.unlock()
     }
 
-    fun reschedule(id: String, newTimestamp: Long) {
+    fun reschedule(
+        id: String,
+        newTimestamp: Long
+    ) {
         lock.lock()
         val element = priorityQueue.find { qe -> qe.id == id }
         if (element != null) {

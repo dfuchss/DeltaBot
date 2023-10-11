@@ -38,7 +38,6 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
     GuildCommand,
     EventListener,
     IPollBase {
-
     companion object {
         private val admin = ":crown:".toEmoji()
 
@@ -60,24 +59,41 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
     }
 
     // IPollBase
-    override fun terminate(jda: JDA, user: User, mid: String) {
+    override fun terminate(
+        jda: JDA,
+        user: User,
+        mid: String
+    ) {
         val data = polls.find { p -> p.mid == mid } ?: return
         terminate(data, jda, user.id)
     }
 
-    override fun removePoll(jda: JDA, user: User, mid: String) {
+    override fun removePoll(
+        jda: JDA,
+        user: User,
+        mid: String
+    ) {
         val data = polls.find { p -> p.mid == mid } ?: return
         removePollFromDB(data)
         jda.getGuildById(data.gid)?.fetchMessage(data.cid, data.mid)?.delete()?.queue()
     }
 
-    override fun refreshPoll(jda: JDA, user: User, mid: String) {
+    override fun refreshPoll(
+        jda: JDA,
+        user: User,
+        mid: String
+    ) {
         val data = polls.find { p -> p.mid == mid } ?: return
         val message = jda.getGuildById(data.gid)?.fetchMessage(data.cid, data.mid) ?: return
         refreshPoll(message, data)
     }
 
-    override fun postpone(jda: JDA, user: User, mid: String, minutes: Int) {
+    override fun postpone(
+        jda: JDA,
+        user: User,
+        mid: String,
+        minutes: Int
+    ) {
         val data = polls.find { p -> p.mid == mid } ?: return
 
         data.timestamp = data.timestamp!! + (60 * minutes)
@@ -95,7 +111,10 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
         message.editMessage(rawMessage).queue()
     }
 
-    override fun isOwner(event: ButtonInteractionEvent, mid: String): Boolean {
+    override fun isOwner(
+        event: ButtonInteractionEvent,
+        mid: String
+    ): Boolean {
         val data = polls.find { p -> p.mid == mid }
         if (data == null) {
             event.reply("Poll was not found!".translate(event)).setEphemeral(true).queue()
@@ -131,7 +150,10 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
         }
     }
 
-    private fun createTermination(jda: JDA, update: Poll) {
+    private fun createTermination(
+        jda: JDA,
+        update: Poll
+    ) {
         try {
             terminate(update, jda, update.uid)
         } catch (e: Exception) {
@@ -140,7 +162,10 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
         }
     }
 
-    private fun handleButtonEvent(event: ButtonInteractionEvent, data: Poll) {
+    private fun handleButtonEvent(
+        event: ButtonInteractionEvent,
+        data: Poll
+    ) {
         val buttonId = event.button.id ?: ""
 
         if (admin.name == buttonId) {
@@ -161,7 +186,11 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
         recreateMessage(event.message, data)
     }
 
-    private fun updateUser(uid: String, buttonId: String, data: Poll) {
+    private fun updateUser(
+        uid: String,
+        buttonId: String,
+        data: Poll
+    ) {
         val reactions = data.user2ReactData[uid] ?: listOf()
 
         if (data.onlyOneOption) {
@@ -188,7 +217,10 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
         data.cleanup()
     }
 
-    private fun isOwner(event: ButtonInteractionEvent, data: Poll): Boolean {
+    private fun isOwner(
+        event: ButtonInteractionEvent,
+        data: Poll
+    ): Boolean {
         if (data.uid == event.user.id) {
             return true
         }
@@ -196,13 +228,17 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
         return false
     }
 
-    private fun recreateMessage(message: Message, data: Poll) {
+    private fun recreateMessage(
+        message: Message,
+        data: Poll
+    ) {
         val jda = message.jda
         val intro = message.contentRaw.split("\n")[0]
 
         val emojis = data.getEmojis(message.guild)
-        val reactions = emojis.map { e -> data.react2UserData.getOrDefault(e.name, mutableListOf()) }.zip(emojis).filter { (list, _) -> list.isNotEmpty() }
-            .map { (list, emoji) -> emoji to list.mapNotNull { u -> jda.fetchUser(u)?.asMention } }
+        val reactions =
+            emojis.map { e -> data.react2UserData.getOrDefault(e.name, mutableListOf()) }.zip(emojis).filter { (list, _) -> list.isNotEmpty() }
+                .map { (list, emoji) -> emoji to list.mapNotNull { u -> jda.fetchUser(u)?.asMention } }
 
         val reactionText = reactions.filter { (_, l) -> l.isNotEmpty() }.joinToString("\n") { (emoji, list) -> "${emoji.formatted}: ${list.joinToString(" ")}" }
 
@@ -256,7 +292,11 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
         return Emoji.fromUnicode(random)
     }
 
-    protected open fun terminate(data: Poll, jda: JDA, uid: String) {
+    protected open fun terminate(
+        data: Poll,
+        jda: JDA,
+        uid: String
+    ) {
         removePollFromDB(data)
         val msg = jda.getGuildById(data.gid)?.fetchMessage(data.cid, data.mid) ?: return
 
@@ -289,7 +329,10 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
         session.delete(poll)
     }
 
-    private fun refreshPoll(pollMessage: Message, poll: Poll) {
+    private fun refreshPoll(
+        pollMessage: Message,
+        poll: Poll
+    ) {
         val newMessage = pollMessage.channel.sendMessage(pollMessage.contentRaw.split("\n")[0]).setComponents(pollMessage.actionRows).complete()
         newMessage.pinAndDelete()
         recreateMessage(newMessage, poll)
