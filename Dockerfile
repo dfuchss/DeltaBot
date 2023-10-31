@@ -1,11 +1,11 @@
-FROM maven:3-eclipse-temurin-17 as builder
+FROM maven:3-eclipse-temurin-21 AS builder
 
 WORKDIR /usr/src/bot
 COPY src src
 COPY pom.xml pom.xml
 RUN mvn clean package
 
-FROM eclipse-temurin:17-alpine
+FROM eclipse-temurin:21-alpine
 
 ENV RUN_IN_DOCKER true
 ENV DISCORD_TOKEN MY_TOKEN

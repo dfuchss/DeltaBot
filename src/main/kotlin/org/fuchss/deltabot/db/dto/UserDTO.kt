@@ -54,7 +54,7 @@ class UserDTO {
         session: Session?,
         user: User
     ) {
-        readableName = "${user.name}#${user.discriminator}"
+        readableName = "${user.name}#${user.id}"
         session?.persist(this)
     }
 

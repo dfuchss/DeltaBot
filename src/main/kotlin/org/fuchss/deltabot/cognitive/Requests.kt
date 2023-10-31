@@ -3,7 +3,7 @@ package org.fuchss.deltabot.cognitive
 import java.io.DataOutputStream
 import java.io.InputStream
 import java.net.HttpURLConnection
-import java.net.URL
+import java.net.URI
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 
@@ -17,7 +17,7 @@ fun get(
     url: String,
     timeoutInMS: Int? = null
 ): String {
-    val endpoint = URL(url)
+    val endpoint = URI(url).toURL()
     val urlConnection: HttpURLConnection = endpoint.openConnection() as HttpURLConnection
     if (timeoutInMS != null) {
         urlConnection.connectTimeout = timeoutInMS
@@ -54,7 +54,7 @@ fun post(
     contentType: String,
     postData: ByteArray
 ): String {
-    val endpoint = URL(url)
+    val endpoint = URI(url).toURL()
     val urlConnection: HttpURLConnection = endpoint.openConnection() as HttpURLConnection
     urlConnection.requestMethod = "POST"
     urlConnection.useCaches = false
