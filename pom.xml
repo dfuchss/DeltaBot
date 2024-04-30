@@ -9,7 +9,7 @@
     </parent>
 
     <artifactId>deltabot</artifactId>
-    <version>3.25.12-SNAPSHOT</version>
+    <version>3.25.12</version>
     <packaging>jar</packaging>
 
     <name>DeltaBot V3</name>
