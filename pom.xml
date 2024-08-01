@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.fuchss</groupId>
         <artifactId>maven-parent</artifactId>
-        <version>0.21.28</version>
+        <version>0.21.31</version>
     </parent>
 
     <artifactId>deltabot</artifactId>
@@ -23,7 +23,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jda.version>5.0.0-beta.24</jda.version>
+        <jda.version>5.0.1</jda.version>
         <main.class>org.fuchss.deltabot.MainKt</main.class>
     </properties>
 
@@ -51,7 +51,7 @@
         <dependency>
             <groupId>org.fuchss</groupId>
             <artifactId>object-casket</artifactId>
-            <version>0.20.9</version>
+            <version>0.20.11</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
@@ -77,7 +77,7 @@
         <dependency>
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
-            <version>3.46.0.0</version>
+            <version>3.46.0.1</version>
         </dependency>
     </dependencies>
 
