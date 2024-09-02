@@ -33,7 +33,11 @@ class Teams : GuildCommand {
             return
         }
 
-        val members: MutableList<User> = voiceChannel.members.map { m -> m.user }.sortedBy { u -> u.name.lowercase() }.toMutableList()
+        val members: MutableList<User> =
+            voiceChannel.members
+                .map { m -> m.user }
+                .sortedBy { u -> u.name.lowercase() }
+                .toMutableList()
         if (members.size < 2) {
             event.reply("There are not enough members in the voice channel".translate(event)).setEphemeral(true).queue()
             return

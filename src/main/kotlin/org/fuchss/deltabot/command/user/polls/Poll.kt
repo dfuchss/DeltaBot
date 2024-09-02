@@ -76,9 +76,7 @@ class Poll {
         this.user2ReactData = oom.readValue(this.user2ReactString)
     }
 
-    fun getEmojis(guild: Guild): List<Emoji> {
-        return optionsData.map { dto -> dto.getEmoji(guild) }
-    }
+    fun getEmojis(guild: Guild): List<Emoji> = optionsData.map { dto -> dto.getEmoji(guild) }
 
     fun cleanup() {
         val emptyFieldsU2R = user2ReactData.filter { e -> e.value.isEmpty() }

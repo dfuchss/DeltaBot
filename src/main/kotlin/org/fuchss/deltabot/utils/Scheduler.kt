@@ -9,7 +9,9 @@ import java.time.Instant
 import java.util.PriorityQueue
 import java.util.concurrent.locks.ReentrantLock
 
-class Scheduler(private val sleepInterval: Int = 5) : EventListener {
+class Scheduler(
+    private val sleepInterval: Int = 5
+) : EventListener {
     private val priorityQueue = PriorityQueue<QueueElement>()
     private val lock = ReentrantLock()
 
@@ -89,7 +91,11 @@ class Scheduler(private val sleepInterval: Int = 5) : EventListener {
         lock.unlock()
     }
 
-    private class QueueElement(val id: String?, val runnable: Runnable, val timestamp: Long) : Comparable<QueueElement> {
+    private class QueueElement(
+        val id: String?,
+        val runnable: Runnable,
+        val timestamp: Long
+    ) : Comparable<QueueElement> {
         override fun compareTo(other: QueueElement): Int = timestamp.compareTo(other.timestamp)
     }
 

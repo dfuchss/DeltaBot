@@ -12,7 +12,9 @@ import org.fuchss.deltabot.utils.extensions.toActionRows
 import org.fuchss.deltabot.utils.extensions.toEmoji
 import org.fuchss.deltabot.utils.extensions.translate
 
-class PollAdmin : EventListener, IPollAdmin {
+class PollAdmin :
+    EventListener,
+    IPollAdmin {
     companion object {
         private val finish = ":octagonal_sign:".toEmoji()
         private val delete = ":put_litter_in_its_place:".toEmoji()

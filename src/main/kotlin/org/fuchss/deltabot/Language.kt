@@ -10,7 +10,9 @@ import org.fuchss.objectcasket.objectpacker.port.Session
 /**
  * Definition of all supported languages with their locales.
  */
-enum class Language(val locale: String) {
+enum class Language(
+    val locale: String
+) {
     ENGLISH("en_GB"),
     DEUTSCH("de_DE");
 
@@ -20,7 +22,9 @@ enum class Language(val locale: String) {
     }
 }
 
-class LanguageSettings(private val session: Session) {
+class LanguageSettings(
+    private val session: Session
+) {
     private var languages: MutableSet<LanguageDTO> = mutableSetOf()
 
     init {

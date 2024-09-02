@@ -40,7 +40,10 @@ import org.fuchss.objectcasket.objectpacker.port.Session
 /**
  * A [BotCommand] that provides tools to create messages that manages the [Roles][Role] of a [Member].
  */
-class Roles(private val session: Session) : GuildCommand, EventListener {
+class Roles(
+    private val session: Session
+) : GuildCommand,
+    EventListener {
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
 
     private val guildRoles: MutableSet<GuildRoleState> = mutableSetOf()
@@ -253,7 +256,9 @@ class Roles(private val session: Session) : GuildCommand, EventListener {
         var buttons = emptyList<Button>()
 
         val emoji2Role =
-            guildState.emojiToRole().entries
+            guildState
+                .emojiToRole()
+                .entries
                 .sortedBy { (_, mention) -> guild.getRoleById(mention.drop("<@&".length).dropLast(">".length))?.name ?: "" }
         if (emoji2Role.isNotEmpty()) {
             message = "${SWITCHER_TEXT.translate(guild.internalLanguage())}\n\n${

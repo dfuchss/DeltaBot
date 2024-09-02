@@ -36,14 +36,15 @@ fun main() {
 
     val builder = JDABuilder.createDefault(token).enableIntents(GatewayIntent.MESSAGE_CONTENT)
     val jda =
-        builder.addEventListeners(
-            scheduler,
-            LoggerListener(config),
-            ActivityChanger(),
-            ReactionHandler(),
-            commandRegistry,
-            CommandHandler(config, database, commandRegistry)
-        ).build()
+        builder
+            .addEventListeners(
+                scheduler,
+                LoggerListener(config),
+                ActivityChanger(),
+                ReactionHandler(),
+                commandRegistry,
+                CommandHandler(config, database, commandRegistry)
+            ).build()
 
     initHiddenMessages(jda, scheduler, database)
     jda.awaitReady()

@@ -14,14 +14,13 @@ import net.dv8tion.jda.api.interactions.components.ItemComponent
 import kotlin.math.max
 import kotlin.math.min
 
-fun MessageHistory.fetchHistory(amount: Int): List<Message> {
-    return try {
+fun MessageHistory.fetchHistory(amount: Int): List<Message> =
+    try {
         this.retrievePast(amount).complete()
     } catch (e: Exception) {
         logger.error(e.message)
         listOf()
     }
-}
 
 fun Guild.fetchCommands(): List<Command> {
     return try {

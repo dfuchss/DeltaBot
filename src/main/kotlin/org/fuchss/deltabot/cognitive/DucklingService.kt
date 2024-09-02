@@ -14,7 +14,9 @@ import java.util.StringJoiner
 /**
  * The implementation of an interface to a Duckling service at a certain [endpoint url][endpoint].
  */
-class DucklingService(private val endpoint: String) {
+class DucklingService(
+    private val endpoint: String
+) {
     fun interpretTime(
         text: String,
         language: Language
@@ -46,14 +48,13 @@ class DucklingService(private val endpoint: String) {
         }
     }
 
-    private fun extractTime(t: DucklingResponseValue): String {
-        return if (t.value == null) {
+    private fun extractTime(t: DucklingResponseValue): String =
+        if (t.value == null) {
             // From & To are set ..
             t.from!!.value!!
         } else {
             t.value!!
         }
-    }
 
     private fun getDataString(params: Map<String, Any>): String {
         val result = StringJoiner("&")

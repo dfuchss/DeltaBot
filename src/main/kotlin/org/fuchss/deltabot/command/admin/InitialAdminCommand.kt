@@ -14,7 +14,10 @@ import java.util.function.BiConsumer
 /**
  * A [BotCommand] that performs the task of creation of an initial admin user.
  */
-class InitialAdminCommand(private val configuration: BotConfiguration, private val adminAddedCallback: BiConsumer<JDA, User>) : GlobalCommand {
+class InitialAdminCommand(
+    private val configuration: BotConfiguration,
+    private val adminAddedCallback: BiConsumer<JDA, User>
+) : GlobalCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
 
     override fun createCommand(): SlashCommandData = Commands.slash("initial-admin", "create an initial admin user")

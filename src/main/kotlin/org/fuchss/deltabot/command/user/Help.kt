@@ -19,12 +19,14 @@ import org.fuchss.objectcasket.objectpacker.port.Session
 /**
  * A [BotCommand] that prints a temporary help message.
  */
-open class Help(private val configuration: BotConfiguration, private val session: Session, protected val registry: ICommandRegistry) : GlobalCommand {
+open class Help(
+    private val configuration: BotConfiguration,
+    private val session: Session,
+    protected val registry: ICommandRegistry
+) : GlobalCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
 
-    override fun createCommand(): SlashCommandData {
-        return Commands.slash("help", "Prints a help message")
-    }
+    override fun createCommand(): SlashCommandData = Commands.slash("help", "Prints a help message")
 
     override fun handle(event: SlashCommandInteraction) {
         val visibilities = mutableListOf(CommandPermissions.ALL)
@@ -53,12 +55,17 @@ open class Help(private val configuration: BotConfiguration, private val session
                 message += "**/${cmd.name}**: ${cmd.description}\n"
                 val subcommands = cmd.subcommands
                 if (subcommands.isNotEmpty()) {
-                    for (subcommand in subcommands)
+                    for (subcommand in subcommands) {
                         message += "→ **${subcommand.name}**: ${subcommand.description}\n"
+                    }
                 }
             }
 
-            return EmbedBuilder().setTitle("$botName Help").setDescription(message.trim()).setColor(Constants.BLUE).build()
+            return EmbedBuilder()
+                .setTitle("$botName Help")
+                .setDescription(message.trim())
+                .setColor(Constants.BLUE)
+                .build()
         }
     }
 }

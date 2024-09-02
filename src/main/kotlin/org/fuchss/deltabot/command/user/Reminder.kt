@@ -28,7 +28,11 @@ import org.fuchss.objectcasket.objectpacker.port.Session
 /**
  * A [BotCommand] that creates & manages reminder messages.
  */
-class Reminder(configuration: BotConfiguration, private val scheduler: Scheduler, private val session: Session) : GlobalCommand {
+class Reminder(
+    configuration: BotConfiguration,
+    private val scheduler: Scheduler,
+    private val session: Session
+) : GlobalCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
 
     private val reminders: MutableSet<ReminderData> = mutableSetOf()
@@ -55,8 +59,9 @@ class Reminder(configuration: BotConfiguration, private val scheduler: Scheduler
     }
 
     private fun initScheduler(jda: JDA) {
-        for (reminder in reminders)
+        for (reminder in reminders) {
             scheduler.queue(null, { remind(reminder, jda) }, reminder.timestamp)
+        }
     }
 
     override fun handle(event: SlashCommandInteraction) {

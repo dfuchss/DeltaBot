@@ -16,12 +16,14 @@ import java.io.File
 /**
  * A [BotCommand] that resets the command states of all bot commands in discord.
  */
-class ResetStateAndCommands(private val configuration: BotConfiguration, private val dbLocation: String, private val session: Session) : GlobalCommand {
+class ResetStateAndCommands(
+    private val configuration: BotConfiguration,
+    private val dbLocation: String,
+    private val session: Session
+) : GlobalCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.ADMIN
 
-    override fun createCommand(): SlashCommandData {
-        return Commands.slash("deinit", "main reset command. resets the states and deletes all registered commands")
-    }
+    override fun createCommand(): SlashCommandData = Commands.slash("deinit", "main reset command. resets the states and deletes all registered commands")
 
     override fun handle(event: SlashCommandInteraction) {
         if (!configuration.isAdmin(event.user)) {

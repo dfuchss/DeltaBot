@@ -23,12 +23,14 @@ import org.fuchss.objectcasket.objectpacker.port.Session
 /**
  * A [BotCommand] that prints the current state of the bot to discord.
  */
-class State(private val config: BotConfiguration, private val scheduler: Scheduler, private val session: Session) : GlobalCommand {
+class State(
+    private val config: BotConfiguration,
+    private val scheduler: Scheduler,
+    private val session: Session
+) : GlobalCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.ADMIN
 
-    override fun createCommand(): SlashCommandData {
-        return Commands.slash("state", "print the state of the bot")
-    }
+    override fun createCommand(): SlashCommandData = Commands.slash("state", "print the state of the bot")
 
     override fun handle(event: SlashCommandInteraction) {
         var msg = ""
@@ -49,7 +51,15 @@ class State(private val config: BotConfiguration, private val scheduler: Schedul
         }
 
         msg += "Registered Users: ${findUsers(event.jda, session, event.guild)}"
-        event.replyEmbeds(EmbedBuilder().setTitle("Current State").setDescription(msg).setColor(Constants.BLUE).build()).setEphemeral(true).queue()
+        event
+            .replyEmbeds(
+                EmbedBuilder()
+                    .setTitle("Current State")
+                    .setDescription(msg)
+                    .setColor(Constants.BLUE)
+                    .build()
+            ).setEphemeral(true)
+            .queue()
     }
 
     private fun findUsers(

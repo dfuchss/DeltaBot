@@ -11,12 +11,12 @@ import org.fuchss.deltabot.command.GlobalCommand
 /**
  * A [BotCommand] that toggles the debug state.
  */
-class Debug(private val configuration: BotConfiguration) : GlobalCommand {
+class Debug(
+    private val configuration: BotConfiguration
+) : GlobalCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.ADMIN
 
-    override fun createCommand(): SlashCommandData {
-        return Commands.slash("debug", "toggle the debug flag")
-    }
+    override fun createCommand(): SlashCommandData = Commands.slash("debug", "toggle the debug flag")
 
     override fun handle(event: SlashCommandInteraction) {
         event.reply("Debug is now ${configuration.toggleDebug()}").setEphemeral(true).queue()

@@ -45,8 +45,12 @@ import org.fuchss.objectcasket.objectpacker.port.Session
  * @param[scheduler] the scheduler of the bot
  * @param[session] the session / databse of the bot
  */
-class CommandRegistry(private val configuration: BotConfiguration, dbLocation: String, scheduler: Scheduler, session: Session) :
-    ICommandRegistry,
+class CommandRegistry(
+    private val configuration: BotConfiguration,
+    dbLocation: String,
+    scheduler: Scheduler,
+    session: Session
+) : ICommandRegistry,
     EventListener {
     private val pollAdmin: IPollAdmin = PollAdmin()
 
@@ -101,7 +105,11 @@ class CommandRegistry(private val configuration: BotConfiguration, dbLocation: S
         globalCommands.remove(command)
         updateHooks.forEach { r -> r.run() }
 
-        jda.fetchCommands().find { c -> c.name == command.createCommand().name }?.delete()?.complete()
+        jda
+            .fetchCommands()
+            .find { c -> c.name == command.createCommand().name }
+            ?.delete()
+            ?.complete()
     }
 
     override fun permissions(command: Command): CommandPermissions {

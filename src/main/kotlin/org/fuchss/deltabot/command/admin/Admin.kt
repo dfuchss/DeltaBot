@@ -14,7 +14,9 @@ import org.fuchss.deltabot.command.GuildCommand
 /**
  * A [BotCommand] that toggles the admin state for a user.
  */
-class Admin(private val configuration: BotConfiguration) : GuildCommand {
+class Admin(
+    private val configuration: BotConfiguration
+) : GuildCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.ADMIN
 
     override fun createCommand(guild: Guild): SlashCommandData {

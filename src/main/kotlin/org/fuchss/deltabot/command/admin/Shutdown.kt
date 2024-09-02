@@ -13,9 +13,7 @@ import org.fuchss.deltabot.command.GlobalCommand
 class Shutdown : GlobalCommand {
     override val permissions: CommandPermissions get() = CommandPermissions.ADMIN
 
-    override fun createCommand(): SlashCommandData {
-        return Commands.slash("shutdown", "Shutdown/Restart the bot")
-    }
+    override fun createCommand(): SlashCommandData = Commands.slash("shutdown", "Shutdown/Restart the bot")
 
     override fun handle(event: SlashCommandInteraction) {
         event.reply("Shutting down").setEphemeral(true).complete()

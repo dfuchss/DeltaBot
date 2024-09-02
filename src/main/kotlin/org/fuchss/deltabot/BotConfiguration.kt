@@ -71,9 +71,7 @@ class BotConfiguration {
 
     fun runInDocker() = System.getenv("RUN_IN_DOCKER") == "true"
 
-    fun isAdmin(user: User): Boolean {
-        return admins.any { u -> u.discordId == user.id }
-    }
+    fun isAdmin(user: User): Boolean = admins.any { u -> u.discordId == user.id }
 
     fun toggleAdmin(user: User): Boolean {
         if (admins.any { u -> u.discordId == user.id }) {
@@ -86,9 +84,7 @@ class BotConfiguration {
         return admins.any { u -> u.discordId == user.id }
     }
 
-    fun getAdmins(jda: JDA): List<User> {
-        return admins.mapNotNull { u -> jda.fetchUser(u.discordId) }
-    }
+    fun getAdmins(jda: JDA): List<User> = admins.mapNotNull { u -> jda.fetchUser(u.discordId) }
 
     fun toggleDebug(): Boolean {
         debug = !debug

@@ -16,7 +16,11 @@ import org.fuchss.objectcasket.objectpacker.port.Session
 /**
  * A [Poll][PollBase] that provides generic polls.
  */
-class SimplePoll(pollAdmin: IPollAdmin, scheduler: Scheduler, session: Session) : PollBase(pollAdmin, "SimplePoll", scheduler, session) {
+class SimplePoll(
+    pollAdmin: IPollAdmin,
+    scheduler: Scheduler,
+    session: Session
+) : PollBase(pollAdmin, "SimplePoll", scheduler, session) {
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
 
     override fun createCommand(guild: Guild): SlashCommandData {
@@ -189,9 +193,7 @@ class SimplePoll(pollAdmin: IPollAdmin, scheduler: Scheduler, session: Session) 
         fun getPollData(
             name: String,
             uid: String
-        ): InternalPoll? {
-            return polls.find { d -> d.name == name && d.uid == uid }
-        }
+        ): InternalPoll? = polls.find { d -> d.name == name && d.uid == uid }
 
         fun add(data: InternalPoll) {
             this.polls.add(data)

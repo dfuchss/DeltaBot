@@ -21,7 +21,11 @@ import org.fuchss.objectcasket.objectpacker.port.Session
 /**
  * A [Poll][PollBase] that provides polls for weekdays.
  */
-class WeekdayPoll(pollAdmin: IPollAdmin, scheduler: Scheduler, session: Session) : PollBase(pollAdmin, "weekday", scheduler, session) {
+class WeekdayPoll(
+    pollAdmin: IPollAdmin,
+    scheduler: Scheduler,
+    session: Session
+) : PollBase(pollAdmin, "weekday", scheduler, session) {
     override val permissions: CommandPermissions get() = CommandPermissions.ALL
 
     override fun createCommand(guild: Guild): SlashCommandData {
@@ -59,9 +63,13 @@ class WeekdayPoll(pollAdmin: IPollAdmin, scheduler: Scheduler, session: Session)
         val message = "**$question**\n\n" + "*Please choose the Weekdays you want to use*".translate(event)
 
         val weekdays =
-            StringSelectMenu.create("weekday").addOptions(
-                Weekday.values().map { v -> SelectOption.of(v.name.translate(event), v.name.translate(event)) }
-            ).setMinValues(1).setMaxValues(Weekday.values().size).build()
+            StringSelectMenu
+                .create("weekday")
+                .addOptions(
+                    Weekday.values().map { v -> SelectOption.of(v.name.translate(event), v.name.translate(event)) }
+                ).setMinValues(1)
+                .setMaxValues(Weekday.values().size)
+                .build()
 
         val msg = MessageCreateBuilder().setContent(message).setComponents(ActionRow.of(weekdays)).build()
         event.reply(msg).queue()

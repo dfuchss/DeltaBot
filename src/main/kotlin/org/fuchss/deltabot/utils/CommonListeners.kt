@@ -12,7 +12,9 @@ import org.fuchss.deltabot.utils.extensions.logger
 /**
  * A listener that simply logs [GenericEvent] based on the log level in [BotConfiguration.debug].
  */
-class LoggerListener(private val configuration: BotConfiguration) : EventListener {
+class LoggerListener(
+    private val configuration: BotConfiguration
+) : EventListener {
     override fun onEvent(event: GenericEvent) {
         if (configuration.debug) {
             logger.debug(event.toString())

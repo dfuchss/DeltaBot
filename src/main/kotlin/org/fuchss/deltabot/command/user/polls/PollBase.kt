@@ -34,8 +34,12 @@ import org.fuchss.objectcasket.objectpacker.port.Session
  * @param[pollType] the type of the poll (simply a universal id of the class)
  * @param[scheduler] the scheduler instance for the poll
  */
-abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType: String, protected val scheduler: Scheduler, protected val session: Session) :
-    GuildCommand,
+abstract class PollBase(
+    private val pollAdmin: IPollAdmin,
+    private val pollType: String,
+    protected val scheduler: Scheduler,
+    protected val session: Session
+) : GuildCommand,
     EventListener,
     IPollBase {
     companion object {
@@ -75,7 +79,11 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
     ) {
         val data = polls.find { p -> p.mid == mid } ?: return
         removePollFromDB(data)
-        jda.getGuildById(data.gid)?.fetchMessage(data.cid, data.mid)?.delete()?.queue()
+        jda
+            .getGuildById(data.gid)
+            ?.fetchMessage(data.cid, data.mid)
+            ?.delete()
+            ?.queue()
     }
 
     override fun refreshPoll(
@@ -145,8 +153,10 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
     }
 
     private fun initScheduler(jda: JDA) {
-        for (update in polls) if (update.timestamp != null) {
-            scheduler.queue(update.mid, { createTermination(jda, update) }, update.timestamp!!)
+        for (update in polls) {
+            if (update.timestamp != null) {
+                scheduler.queue(update.mid, { createTermination(jda, update) }, update.timestamp!!)
+            }
         }
     }
 
@@ -237,7 +247,10 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
 
         val emojis = data.getEmojis(message.guild)
         val reactions =
-            emojis.map { e -> data.react2UserData.getOrDefault(e.name, mutableListOf()) }.zip(emojis).filter { (list, _) -> list.isNotEmpty() }
+            emojis
+                .map { e -> data.react2UserData.getOrDefault(e.name, mutableListOf()) }
+                .zip(emojis)
+                .filter { (list, _) -> list.isNotEmpty() }
                 .map { (list, emoji) -> emoji to list.mapNotNull { u -> jda.fetchUser(u)?.asMention } }
 
         val reactionText = reactions.filter { (_, l) -> l.isNotEmpty() }.joinToString("\n") { (emoji, list) -> "${emoji.formatted}: ${list.joinToString(" ")}" }
@@ -258,7 +271,11 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
         options: Map<Emoji, Button>,
         onlyOneOption: Boolean
     ) {
-        val components = options.values.toList<ItemComponent>().toActionRows().toMutableList()
+        val components =
+            options.values
+                .toList<ItemComponent>()
+                .toActionRows()
+                .toMutableList()
         val globalActions = listOf(Button.of(ButtonStyle.PRIMARY, admin.name + "", "Admin Area", admin))
         components.add(ActionRow.of(globalActions))
 
@@ -310,7 +327,11 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
         }
         finalMsg += "\n${pollFinished.translate(language(msg.guild, user))}"
 
-        msg.editMessage(finalMsg).setComponents(listOf()).complete().hide(directHide = false)
+        msg
+            .editMessage(finalMsg)
+            .setComponents(listOf())
+            .complete()
+            .hide(directHide = false)
         if (msg.isPinned) {
             msg.unpin().complete()
         }
@@ -333,7 +354,11 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
         pollMessage: Message,
         poll: Poll
     ) {
-        val newMessage = pollMessage.channel.sendMessage(pollMessage.contentRaw.split("\n")[0]).setComponents(pollMessage.actionRows).complete()
+        val newMessage =
+            pollMessage.channel
+                .sendMessage(pollMessage.contentRaw.split("\n")[0])
+                .setComponents(pollMessage.actionRows)
+                .complete()
         newMessage.pinAndDelete()
         recreateMessage(newMessage, poll)
         poll.mid = newMessage.id
@@ -359,8 +384,8 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
         }
 
         companion object {
-            fun create(emoji: Emoji): EmojiDTO {
-                return if (emoji is CustomEmoji) {
+            fun create(emoji: Emoji): EmojiDTO =
+                if (emoji is CustomEmoji) {
                     val id = emoji.id
                     val name = emoji.name
                     EmojiDTO(id, name)
@@ -368,7 +393,6 @@ abstract class PollBase(private val pollAdmin: IPollAdmin, private val pollType:
                     val name = emoji.name
                     EmojiDTO("0", name)
                 }
-            }
         }
     }
 }

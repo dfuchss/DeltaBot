@@ -48,7 +48,8 @@ class Channels : GuildCommand {
             SubcommandData("new", "add a new role with text and voice channel").addOptions(
                 OptionData(OptionType.STRING, "name", "the name of the role").setRequired(true),
                 OptionData(OptionType.BOOLEAN, "only-text", "only create a text channel (default: false)").setRequired(false),
-                OptionData(OptionType.STRING, "color", "the color to associate with the new role (default: none)").setRequired(false)
+                OptionData(OptionType.STRING, "color", "the color to associate with the new role (default: none)")
+                    .setRequired(false)
                     .addChoices(COLORS.toSortedMap().map { c -> Command.Choice(c.key, c.value.toString()) })
             ),
             SubcommandData("set", "add a new channel with a specific name for a certain role").addOptions(
@@ -86,7 +87,13 @@ class Channels : GuildCommand {
         }
 
         val hook = event.deferReply().complete()
-        val role = guild.createRole().setName(name).setMentionable(true).setColor(color).complete()
+        val role =
+            guild
+                .createRole()
+                .setName(name)
+                .setMentionable(true)
+                .setColor(color)
+                .complete()
 
         createChannel(guild, role, name, onlyText)
         hook.editOriginal("Welcome # on the server!".translate(event, role.asMention)).queue()
@@ -111,7 +118,9 @@ class Channels : GuildCommand {
         val guildRoleOfBot = guild.getRoleByBot(guild.jda.selfUser)!!
 
         return if (onlyText) {
-            guild.createTextChannel(name).addRolePermissionOverride(role.idLong, listOf(Permission.VIEW_CHANNEL), null) //
+            guild
+                .createTextChannel(name)
+                .addRolePermissionOverride(role.idLong, listOf(Permission.VIEW_CHANNEL), null) //
                 .addRolePermissionOverride(
                     guildRoleOfBot.idLong,
                     listOf(Permission.VIEW_CHANNEL, Permission.MANAGE_CHANNEL, Permission.MESSAGE_MANAGE),
@@ -120,7 +129,9 @@ class Channels : GuildCommand {
                 .addRolePermissionOverride(everyone.idLong, null, listOf(Permission.VIEW_CHANNEL)) //
                 .complete()
         } else {
-            guild.createVoiceChannel(name).addRolePermissionOverride(role.idLong, listOf(Permission.VIEW_CHANNEL), null) //
+            guild
+                .createVoiceChannel(name)
+                .addRolePermissionOverride(role.idLong, listOf(Permission.VIEW_CHANNEL), null) //
                 .addRolePermissionOverride(
                     guildRoleOfBot.idLong,
                     listOf(Permission.VIEW_CHANNEL, Permission.MANAGE_CHANNEL, Permission.MESSAGE_MANAGE),

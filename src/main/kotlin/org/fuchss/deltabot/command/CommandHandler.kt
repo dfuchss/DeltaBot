@@ -14,7 +14,11 @@ import org.fuchss.objectcasket.objectpacker.port.Session
  * @param[session] the session (DB) of the bot
  * @param[commandRegistry] the registry of all commands
  */
-class CommandHandler(private val configuration: BotConfiguration, private val session: Session, private val commandRegistry: ICommandRegistry) : EventListener {
+class CommandHandler(
+    private val configuration: BotConfiguration,
+    private val session: Session,
+    private val commandRegistry: ICommandRegistry
+) : EventListener {
     private var nameToCommand: Map<String, BotCommand> = commandRegistry.nameToCommand()
 
     init {

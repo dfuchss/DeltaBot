@@ -14,12 +14,14 @@ import org.fuchss.objectcasket.objectpacker.port.Session
 /**
  * A [BotCommand] that prints a persistent help message.
  */
-class PersistentHelp(configuration: BotConfiguration, session: Session, registry: ICommandRegistry) : Help(configuration, session, registry) {
+class PersistentHelp(
+    configuration: BotConfiguration,
+    session: Session,
+    registry: ICommandRegistry
+) : Help(configuration, session, registry) {
     override val permissions: CommandPermissions get() = CommandPermissions.GUILD_ADMIN
 
-    override fun createCommand(): SlashCommandData {
-        return Commands.slash("help-persist", "Prints a help message that will be persisted")
-    }
+    override fun createCommand(): SlashCommandData = Commands.slash("help-persist", "Prints a help message that will be persisted")
 
     override fun handle(event: SlashCommandInteraction) {
         var commands = if (event.isFromGuild) event.guild!!.fetchCommands() + event.jda.fetchCommands() else event.jda.fetchCommands()
