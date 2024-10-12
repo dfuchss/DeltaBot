@@ -24,14 +24,12 @@ import org.fuchss.deltabot.command.admin.UnhideAll
 import org.fuchss.deltabot.command.user.Emojify
 import org.fuchss.deltabot.command.user.Help
 import org.fuchss.deltabot.command.user.Language
-import org.fuchss.deltabot.command.user.Reminder
 import org.fuchss.deltabot.command.user.Roles
 import org.fuchss.deltabot.command.user.Roll
 import org.fuchss.deltabot.command.user.Teams
 import org.fuchss.deltabot.command.user.polls.IPollAdmin
 import org.fuchss.deltabot.command.user.polls.PollAdmin
 import org.fuchss.deltabot.command.user.polls.SimplePoll
-import org.fuchss.deltabot.command.user.polls.Summon
 import org.fuchss.deltabot.command.user.polls.WeekdayPoll
 import org.fuchss.deltabot.utils.Scheduler
 import org.fuchss.deltabot.utils.extensions.fetchCommands
@@ -82,8 +80,6 @@ class CommandRegistry(
         commands.add(Teams())
         commands.add(Emojify())
 
-        commands.add(Summon(pollAdmin, configuration, scheduler, session))
-        commands.add(Reminder(configuration, scheduler, session))
         commands.add(WeekdayPoll(pollAdmin, scheduler, session))
         commands.add(SimplePoll(pollAdmin, scheduler, session))
 
@@ -92,8 +88,8 @@ class CommandRegistry(
             commands.add(InitialAdminCommand(configuration) { jda, u -> initialUser(jda, u) })
         }
 
-        commands.filterIsInstance(GlobalCommand::class.java).forEach { gc -> globalCommands.add(gc) }
-        commands.filterIsInstance(GuildCommand::class.java).forEach { gc -> guildCommands.add(gc) }
+        commands.filterIsInstance<GlobalCommand>().forEach { gc -> globalCommands.add(gc) }
+        commands.filterIsInstance<GuildCommand>().forEach { gc -> guildCommands.add(gc) }
     }
 
     private fun initialUser(

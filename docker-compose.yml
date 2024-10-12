@@ -1,4 +1,3 @@
-version: "3"
 services:
   deltabot:
     image: ghcr.io/dfuchss/deltabot
@@ -7,19 +6,3 @@ services:
       - ./data:/usr/src/bot/data
     environment:
       - DISCORD_TOKEN=$DISCORD_TOKEN
-    networks:
-      - deltabot
-    depends_on:
-      - deltabot-duckling
-
-  deltabot-duckling:
-    image: ghcr.io/dfuchss/duckling
-    restart: unless-stopped
-    expose:
-      - 8000
-    networks:
-      - deltabot
-
-# Our docker network!
-networks:
-  deltabot:
