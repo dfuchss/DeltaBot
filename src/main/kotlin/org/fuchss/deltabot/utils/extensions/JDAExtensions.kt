@@ -42,8 +42,6 @@ fun JDA.fetchCommands(): List<Command> {
     }
 }
 
-fun Message.fetchCommands(): List<Command> = if (this.isFromGuild) this.guild.fetchCommands() else this.jda.fetchCommands()
-
 fun Guild.fetchMember(uid: String): Member? {
     try {
         val cached = this.getMemberById(uid)

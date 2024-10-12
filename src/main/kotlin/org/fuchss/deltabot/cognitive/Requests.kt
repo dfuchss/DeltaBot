@@ -5,7 +5,6 @@ import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URI
 import java.nio.charset.Charset
-import java.nio.charset.StandardCharsets
 
 /**
  * Perform a get request for a certain URL.
@@ -28,19 +27,6 @@ fun get(
     urlConnection.setRequestProperty("charset", "utf-8")
     return readInputStream(urlConnection.inputStream)
 }
-
-/**
- * Perform a post request for a certain URL.
- * @param[url] the url
- * @param[contentType] the content type
- * @param[postData] the data that shall be transmitted
- * @return the response as a string
- */
-fun post(
-    url: String,
-    contentType: String,
-    postData: String
-) = post(url, contentType, postData.toByteArray(StandardCharsets.UTF_8))
 
 /**
  * Perform a post request for a certain URL.
