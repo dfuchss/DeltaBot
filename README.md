@@ -38,8 +38,6 @@ For details take a look at [commands.md](./commands.md)
 
 /poll-weekday: create a poll that has the weekdays as options
 
-/reminder: create reminders for certain times
-
 /echo: Simply Echo the text you are writing now ..
 /roll: roll a dice
 /language: set your bot language

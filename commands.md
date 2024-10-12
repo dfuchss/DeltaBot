@@ -21,9 +21,3 @@ Just an overview on some commands & functions of the bot
 → create a poll that has the weekdays as options
 <br>
 <img src="https://user-images.githubusercontent.com/22198798/134391157-cb20bfdb-abdc-470a-a9ec-c7701e32884b.png" width=50% />
-
-
-## /reminder
-→ create reminders for certain times
-<br>
-<img src="https://user-images.githubusercontent.com/22198798/134391812-487cb46e-67d6-48f0-a6a7-fde245cfdb9a.png" width=50% />
