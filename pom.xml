@@ -51,7 +51,7 @@
         <dependency>
             <groupId>org.fuchss</groupId>
             <artifactId>object-casket</artifactId>
-            <version>0.20.14</version>
+            <version>0.20.16</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
@@ -77,7 +77,7 @@
         <dependency>
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
-            <version>3.47.0.0</version>
+            <version>3.47.1.0</version>
         </dependency>
     </dependencies>
 
