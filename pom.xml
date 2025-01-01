@@ -23,7 +23,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jda.version>5.2.1</jda.version>
+        <jda.version>5.2.2</jda.version>
         <main.class>org.fuchss.deltabot.MainKt</main.class>
     </properties>
 
@@ -51,7 +51,7 @@
         <dependency>
             <groupId>org.fuchss</groupId>
             <artifactId>object-casket</artifactId>
-            <version>0.20.16</version>
+            <version>0.20.17</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
