@@ -23,7 +23,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jda.version>5.5.1</jda.version>
+        <jda.version>5.6.1</jda.version>
         <main.class>org.fuchss.deltabot.MainKt</main.class>
     </properties>
 
