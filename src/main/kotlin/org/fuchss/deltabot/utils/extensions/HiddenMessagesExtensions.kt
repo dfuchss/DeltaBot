@@ -187,13 +187,16 @@ private class HiddenMessageManager : EventListener {
 
         return if (private) {
             hiddenMessagesData.find { hm ->
-                hm.isPrivateChannel && hm.mid == messageDeleteEvent.messageId &&
+                hm.isPrivateChannel &&
+                    hm.mid == messageDeleteEvent.messageId &&
                     hm.uid == (messageDeleteEvent.channel as PrivateChannel).user!!.id
             }
         } else {
             hiddenMessagesData.find { hm ->
-                !hm.isPrivateChannel && hm.mid == messageDeleteEvent.messageId &&
-                    hm.cid == messageDeleteEvent.channel.id && hm.gid == messageDeleteEvent.guild.id
+                !hm.isPrivateChannel &&
+                    hm.mid == messageDeleteEvent.messageId &&
+                    hm.cid == messageDeleteEvent.channel.id &&
+                    hm.gid == messageDeleteEvent.guild.id
             }
         }
     }
